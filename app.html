@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AppDz Exchange</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:100vh;
+  display:flex; flex-direction:column; overflow-x:hidden; }
+.header { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff;
+  padding:14px 16px 16px; position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 12px rgba(0,0,0,.2); }
+.header-top { display:flex; align-items:center; justify-content:space-between; }
+.header-logo { font-size:17px; font-weight:800; letter-spacing:.3px; }
+.header-user { font-size:12px; opacity:.85; }
+.taux-bar { background:rgba(255,255,255,.15); border-radius:8px;
+  padding:6px 10px; margin-top:10px; display:flex; align-items:center;
+  justify-content:space-between; }
+.taux-label { font-size:11px; opacity:.8; }
+.taux-value { font-size:14px; font-weight:800; }
+.content { flex:1; padding:14px 14px 80px; overflow-y:auto; }
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; background:#fff;
+  display:flex; border-top:1px solid #e5eaf2;
+  box-shadow:0 -4px 16px rgba(0,0,0,.08); z-index:100; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:8px 4px; cursor:pointer;
+  color:#aaa; transition:.15s; border:none; background:none; }
+.nav-item.active { color:#1254a0; }
+.nav-icon { font-size:22px; }
+.nav-label { font-size:10px; font-weight:600; margin-top:2px; }
+.panel { display:none; }
+.panel.active { display:block; }
+.card { background:#fff; border-radius:16px; padding:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:12px; }
+.tx-item { background:#fff; border-radius:14px; padding:14px 14px 12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:10px;
+  cursor:pointer; transition:.15s; border-left:4px solid #e0e8f5; }
+.tx-item:active { transform:scale(.98); }
+.tx-item.st-en_attente    { border-color:#f59e0b; }
+.tx-item.st-preuve_envoyee{ border-color:#3b82f6; }
+.tx-item.st-validee       { border-color:#8b5cf6; }
+.tx-item.st-terminee      { border-color:#10b981; }
+.tx-item.st-rejetee       { border-color:#ef4444; }
+.tx-item.st-annulee       { border-color:#9ca3af; }
+.tx-item.st-manque_info   { border-color:#f97316; }
+.tx-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.tx-amount { font-size:16px; font-weight:800; color:#1254a0; }
+.tx-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+.badge-en_attente     { background:#fef3c7; color:#92400e; }
+.badge-preuve_envoyee { background:#dbeafe; color:#1e40af; }
+.badge-validee        { background:#ede9fe; color:#5b21b6; }
+.badge-terminee       { background:#d1fae5; color:#065f46; }
+.badge-rejetee        { background:#fee2e2; color:#991b1b; }
+.badge-annulee        { background:#f3f4f6; color:#6b7280; }
+.badge-manque_info    { background:#fff7ed; color:#c2410c; }
+.progress-steps { display:flex; align-items:flex-start; margin:16px 0 8px; }
+.step-wrap { flex:1; display:flex; flex-direction:column; align-items:center; }
+.step-circle { width:30px; height:30px; border-radius:50%; display:flex;
+  align-items:center; justify-content:center; font-size:13px; font-weight:800;
+  background:#e5eaf2; color:#aaa; position:relative; z-index:1; }
+.step-circle.done { background:#10b981; color:#fff; }
+.step-circle.active { background:#1254a0; color:#fff; box-shadow:0 0 0 4px rgba(18,84,160,.2); }
+.step-circle.rejected { background:#ef4444; color:#fff; }
+.step-line { flex:1; height:3px; background:#e5eaf2; margin-top:13px; }
+.step-line.done { background:#10b981; }
+.step-label { font-size:9px; color:#888; text-align:center; margin-top:5px;
+  line-height:1.3; max-width:64px; font-weight:600; }
+.step-label.active { color:#1254a0; }
+.step-label.done { color:#10b981; }
+.detail-overlay { position:fixed; inset:0; background:#f0f4fa; z-index:200;
+  display:none; flex-direction:column; overflow-y:auto; }
+.detail-overlay.open { display:flex; }
+.detail-header { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff;
+  padding:14px 16px; display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.back-btn { background:rgba(255,255,255,.2); border:none; color:#fff;
+  border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; font-weight:700; }
+.detail-title { font-size:16px; font-weight:800; }
+.detail-body { padding:14px; flex:1; }
+.upload-area { border:2px dashed #c7d8f0; border-radius:14px; padding:20px;
+  text-align:center; background:#f8fafc; cursor:pointer; }
+.upload-area:active { background:#e8f0fd; }
+.upload-icon { font-size:36px; }
+.upload-text { font-size:13px; color:#666; margin-top:6px; }
+.field { margin-bottom:14px; }
+.field label { font-size:11px; color:#666; font-weight:700;
+  display:block; margin-bottom:4px; letter-spacing:.4px; }
+.field input { width:100%; padding:12px 13px; border:1.5px solid #e0e8f5;
+  border-radius:11px; font-size:15px; color:#333; outline:none;
+  background:#f8fafc; transition:.2s; }
+.field input:focus { border-color:#1254a0; background:#fff; }
+.field .hint { font-size:11px; color:#aaa; margin-top:4px; }
+.dzd-display { background:#e8f4ff; border:1.5px solid #1254a0; border-radius:11px;
+  padding:12px 13px; font-size:18px; font-weight:800; color:#1254a0;
+  text-align:center; }
+.info-box { background:#f0f7ff; border:1px solid #c7d8f0; border-radius:12px;
+  padding:12px 14px; margin-bottom:14px; }
+.info-box .info-title { font-size:11px; font-weight:800; color:#1254a0;
+  margin-bottom:6px; letter-spacing:.4px; }
+.info-row { display:flex; justify-content:space-between; align-items:center;
+  font-size:13px; color:#444; margin-bottom:3px; }
+.info-row b { color:#1254a0; }
+.btn { width:100%; padding:14px; border:none; border-radius:13px;
+  font-size:15px; font-weight:700; cursor:pointer; transition:.15s; }
+.btn-primary { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff; }
+.btn-primary:active { transform:scale(.97); }
+.btn-danger  { background:#fee2e2; color:#dc2626; }
+.loader { display:none; text-align:center; padding:10px; color:#1254a0; font-size:13px; }
+.error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px;
+  padding:10px 12px; font-size:13px; color:#dc2626; margin-bottom:12px; display:none; }
+.empty-state { text-align:center; padding:40px 20px; color:#aaa; }
+.empty-icon { font-size:48px; margin-bottom:10px; }
+.empty-text { font-size:14px; }
+.chat-thread { display:flex; flex-direction:column; gap:10px; padding-bottom:160px; }
+.bubble { max-width:78%; padding:10px 14px; border-radius:18px; font-size:13px; line-height:1.5; word-break:break-word; }
+.bubble-user  { align-self:flex-end; background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff; border-bottom-right-radius:4px; }
+.bubble-admin { align-self:flex-start; background:#fff; color:#222; border:1px solid #e0e8f5; border-bottom-left-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.bubble-time  { font-size:10px; opacity:.6; margin-top:4px; }
+.chat-input-bar { position:fixed; bottom:64px; left:0; right:0; background:#fff;
+  border-top:1px solid #e5eaf2; padding:10px 12px; display:flex; gap:8px; z-index:99; }
+.chat-input { flex:1; border:1.5px solid #e0e8f5; border-radius:22px; padding:10px 14px;
+  font-size:13px; outline:none; background:#f8fafc; }
+.chat-input:focus { border-color:#1254a0; }
+.chat-send-btn { background:linear-gradient(135deg,#1254a0,#0097a7); border:none; color:#fff;
+  border-radius:50%; width:42px; height:42px; font-size:18px; cursor:pointer; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; }
+.nav-badge { position:absolute; top:6px; right:calc(50% - 16px); background:#ef4444;
+  color:#fff; font-size:9px; font-weight:800; border-radius:10px; padding:1px 5px; min-width:16px; text-align:center; }
+.nav-item { position:relative; }
+.chat-empty { text-align:center; padding:40px 20px; color:#aaa; }
+.img-viewer { position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:600;
+  display:none; align-items:center; justify-content:center; flex-direction:column; }
+.img-viewer.open { display:flex; }
+.img-viewer img { max-width:95vw; max-height:80vh; border-radius:10px; object-fit:contain; }
+.img-viewer-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.15);
+  border:none; color:#fff; font-size:22px; width:40px; height:40px; border-radius:50%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500;
+  display:none; align-items:center; justify-content:center; padding:24px; }
+.modal-backdrop.open { display:flex; }
+.modal-box { background:#fff; border-radius:18px; padding:24px 20px 16px;
+  width:100%; max-width:320px; box-shadow:0 8px 32px rgba(0,0,0,.2); }
+.modal-title { font-size:16px; font-weight:800; color:#1a1a2e; margin-bottom:8px; }
+.modal-msg { font-size:14px; color:#555; margin-bottom:20px; line-height:1.5; }
+.modal-actions { display:flex; gap:10px; }
+.modal-btn { flex:1; padding:12px; border:none; border-radius:12px;
+  font-size:14px; font-weight:700; cursor:pointer; }
+.modal-btn-cancel { background:#f0f4fa; color:#555; }
+.modal-btn-confirm { background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; }
+.profile-avatar { width:72px; height:72px; border-radius:50%;
+  background:linear-gradient(135deg,#1254a0,#0097a7);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; color:#fff; margin:0 auto 12px; }
+.profile-name { font-size:18px; font-weight:800; color:#1a1a2e; text-align:center; margin-bottom:4px; }
+.profile-email { font-size:13px; color:#888; text-align:center; margin-bottom:16px; }
+.profile-row { display:flex; justify-content:space-between; align-items:center;
+  padding:12px 0; border-bottom:1px solid #f0f4fa; font-size:14px; color:#333; }
+.profile-row:last-child { border-bottom:none; }
+.profile-row label { color:#888; font-size:12px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-logo">AppDz Exchange</div>
+    <div class="header-user" id="headerUser">Chargement...</div>
+  </div>
+  <div class="taux-bar">
+    <span class="taux-label">Taux EUR > DZD</span>
+    <span class="taux-value" id="tauxValue">-- DZD</span>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- PANEL ACCUEIL -->
+  <div id="panelAccueil" class="panel active">
+    <div id="publicFeedSection" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:800;color:#065f46;margin-bottom:8px;letter-spacing:.4px;">DERNIERS ECHANGES FINALISES</div>
+      <div id="publicFeedList"></div>
+    </div>
+    <div id="loaderAccueil" class="loader">Chargement de vos transferts...</div>
+    <div id="txList"></div>
+  </div>
+
+  <!-- PANEL NOUVEAU TRANSFERT -->
+  <div id="panelNouveau" class="panel">
+    <div class="card">
+      <h3 style="font-size:16px;color:#1254a0;font-weight:800;margin-bottom:14px;">
+        Nouvelle demande de transfert
+      </h3>
+      <div id="newError" class="error-box"></div>
+      <div class="info-box">
+        <div class="info-title">VIREMENT BARIDIMOB (CCP ADMIN)</div>
+        <div class="info-row">
+          <span>Numero CCP</span>
+          <b id="adminCCPDisplay">--</b>
+        </div>
+        <div style="font-size:11px;color:#666;margin-top:4px;">
+          Effectuez d'abord votre virement vers ce CCP, puis soumettez la demande et uploadez la preuve.
+        </div>
+      </div>
+      <div class="field">
+        <label>MONTANT EN EUROS *</label>
+        <input type="number" id="montantEur" placeholder="ex: 100" min="20" max="1000"
+          inputmode="decimal" oninput="calcDzd()">
+        <div class="hint">Minimum 20 EUR - Maximum 1 000 EUR</div>
+      </div>
+      <div class="field">
+        <label>EQUIVALENT EN DZD</label>
+        <div class="dzd-display" id="montantDzd">-- DZD</div>
+      </div>
+      <div class="info-box" style="margin-top:6px;">
+        <div class="info-title">VOS INFORMATIONS ENREGISTREES</div>
+        <div class="info-row"><label>CCP (Baridimob)</label><b id="userCCPDisplay">--</b></div>
+        <div class="info-row"><label>Email Paysera</label><b id="userPayseraDisplay">--</b></div>
+      </div>
+      <div id="newLoader" class="loader">Creation de la demande...</div>
+      <button class="btn btn-primary" onclick="handleCreateTransfert()">
+        Soumettre la demande
+      </button>
+    </div>
+  </div>
+
+  <!-- PANEL PROFIL -->
+  <div id="panelProfil" class="panel">
+    <div class="card">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-name" id="profileNom">--</div>
+      <div class="profile-email" id="profileEmail">--</div>
+      <div class="profile-row">
+        <label>EMAIL PAYSERA</label>
+        <span id="profilePaysera" style="color:#1254a0;font-weight:600;">--</span>
+      </div>
+      <div class="profile-row">
+        <label>CCP (BARIDIMOB)</label>
+        <span id="profileCCP" style="color:#1254a0;font-weight:600;">--</span>
+      </div>
+      <div class="profile-row">
+        <label>MEMBRE DEPUIS</label>
+        <span id="profileDate">--</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openEditProfile()" style="margin-top:6px;margin-bottom:8px;">
+      Modifier mon profil
+    </button>
+    <button class="btn btn-danger" onclick="handleLogout()" style="margin-top:0;">
+      Se deconnecter
+    </button>
+  </div>
+
+  <!-- PANEL MESSAGES -->
+  <div id="panelMessages" class="panel">
+    <div style="font-size:15px;font-weight:800;color:#1254a0;margin-bottom:14px;">Support</div>
+    <div id="chatThread" class="chat-thread">
+      <div class="chat-empty">
+        <div style="font-size:40px;margin-bottom:10px;">&#128172;</div>
+        <div style="font-size:14px;">Posez-nous votre question,<br>nous vous repondrons rapidement.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="navAccueil" onclick="showNav('Accueil')">
+    <span class="nav-icon">&#127968;</span>
+    <span class="nav-label">Accueil</span>
+  </button>
+  <button class="nav-item" id="navNouveau" onclick="showNav('Nouveau')">
+    <span class="nav-icon">&#10133;</span>
+    <span class="nav-label">Nouveau</span>
+  </button>
+  <button class="nav-item" id="navProfil" onclick="showNav('Profil')">
+    <span class="nav-icon">&#128100;</span>
+    <span class="nav-label">Profil</span>
+  </button>
+  <button class="nav-item" id="navMessages" onclick="showNav('Messages')">
+    <span class="nav-icon">&#128172;</span>
+    <span class="nav-label">Support</span>
+    <span id="msgBadge" class="nav-badge" style="display:none;">0</span>
+  </button>
+</nav>
+
+<!-- CHAT INPUT BAR -->
+<div id="chatInputBar" class="chat-input-bar" style="display:none;">
+  <input class="chat-input" id="chatInput" type="text" placeholder="Votre message..." maxlength="500"
+    onkeydown="if(event.key==='Enter')sendChatMessage()">
+  <button class="chat-send-btn" onclick="sendChatMessage()">&#10148;</button>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div id="imgViewer" class="img-viewer" onclick="closeImgViewer()">
+  <button class="img-viewer-close" onclick="closeImgViewer()">&#10005;</button>
+  <img id="imgViewerSrc" src="" alt="Preuve" onclick="event.stopPropagation()">
+</div>
+
+<!-- MODAL ANNULATION -->
+<div id="modalCancel" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-title">Annuler le transfert</div>
+    <div class="modal-msg">Voulez-vous vraiment annuler cette demande ? Cette action est irreversible.</div>
+    <div id="cancelLoader" class="loader" style="display:none;">Annulation...</div>
+    <div id="cancelError" class="error-box"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()">Retour</button>
+      <button class="modal-btn modal-btn-confirm" style="background:#dc2626;" onclick="confirmCancel()">Annuler le transfert</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITION PROFIL -->
+<div id="modalEditProfile" class="modal-backdrop">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-title">Modifier le profil</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;">NOM COMPLET</label>
+      <input id="editNom" type="text" placeholder="Votre nom complet"
+        style="width:100%;box-sizing:border-box;border:1.5px solid #e0e8f5;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#f8fafc;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;">EMAIL PAYSERA</label>
+      <input id="editPaysera" type="email" placeholder="votre@paysera.com"
+        style="width:100%;box-sizing:border-box;border:1.5px solid #e0e8f5;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#f8fafc;">
+    </div>
+    <div style="margin-bottom:4px;">
+      <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;">NUMERO CCP (9 chiffres)</label>
+      <div style="display:flex;align-items:center;border:1.5px solid #e0e8f5;border-radius:10px;background:#f8fafc;overflow:hidden;">
+        <span style="padding:10px 8px;font-size:12px;color:#888;white-space:nowrap;border-right:1px solid #e0e8f5;">00799999000</span>
+        <input id="editCCP" type="tel" placeholder="123456789" maxlength="9" inputmode="numeric"
+          style="flex:1;border:none;padding:10px 10px;font-size:14px;outline:none;background:transparent;">
+      </div>
+    </div>
+    <div id="editProfileLoader" class="loader" style="display:none;">Mise a jour...</div>
+    <div id="editProfileError" class="error-box" style="margin-top:8px;"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="modal-btn modal-btn-cancel" onclick="closeEditProfile()">Annuler</button>
+      <button class="modal-btn modal-btn-confirm" style="background:linear-gradient(135deg,#1254a0,#0097a7);" onclick="confirmEditProfile()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DECONNEXION -->
+<div id="modalLogout" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-title">Deconnexion</div>
+    <div class="modal-msg">Voulez-vous vraiment vous deconnecter ?</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">Annuler</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">Deconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div id="detailOverlay" class="detail-overlay">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">Retour</button>
+    <span class="detail-title">Detail du transfert</span>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- Hidden file input for upload -->
+<input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+// ── Firebase Init ──
+const firebaseConfig = {
+  apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
+  authDomain: "appdzexchange.firebaseapp.com",
+  projectId: "appdzexchange",
+  storageBucket: "appdzexchange.firebasestorage.app",
+  messagingSenderId: "217882852483",
+  appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
+};
+firebase.initializeApp(firebaseConfig);
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+const storage = firebase.storage();
+const ADMIN_EMAIL = "giftformenow@gmail.com";
+const ADMIN_CCP_DEFAULT = "00799999000965940950";
+
+// ── State ──
+var currentUser  = null;
+var currentUid   = null;
+var currentTaux  = 0;
+var adminCCP     = ADMIN_CCP_DEFAULT;
+var transferts   = [];
+var currentTxId  = null;
+var messagesListener = null;
+
+// ── Auth Guard ──
+auth.onAuthStateChanged(function(user) {
+  if (!user) { window.location.href = 'auth.html'; return; }
+  if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
+  if (!user.emailVerified) { window.location.href = 'auth.html'; return; }
+  currentUid = user.uid;
+  loadInit();
+});
+
+function loadInit() {
+  loadUserInfo();
+  loadTaux();
+  loadAdminCCP();
+  loadPublicFeed();
+  loadTransferts();
+  loadUnreadCount();
+}
+
+// ── USER INFO ──
+function loadUserInfo() {
+  db.collection('users').doc(currentUid).get().then(function(snap) {
+    if (!snap.exists) return;
+    currentUser = snap.data();
+    currentUser.id = currentUid;
+    document.getElementById('headerUser').textContent = currentUser.nom || currentUser.email || '';
+    document.getElementById('userCCPDisplay').textContent = currentUser.ccp || 'Non renseigne';
+    document.getElementById('userPayseraDisplay').textContent = currentUser.emailPaysera || 'Non renseigne';
+    renderProfile();
+  });
+}
+
+function renderProfile() {
+  if (!currentUser) return;
+  var initiale = (currentUser.nom || '?').charAt(0).toUpperCase();
+  document.getElementById('profileAvatar').textContent = initiale;
+  document.getElementById('profileNom').textContent    = currentUser.nom || '--';
+  document.getElementById('profileEmail').textContent  = currentUser.email || '--';
+  document.getElementById('profilePaysera').textContent = currentUser.emailPaysera || 'Non renseigne';
+  document.getElementById('profileCCP').textContent     = currentUser.ccp || 'Non renseigne';
+  if (currentUser.createdAt && currentUser.createdAt.toDate) {
+    document.getElementById('profileDate').textContent = currentUser.createdAt.toDate().toLocaleDateString('fr-DZ');
+  }
+}
+
+// ── TAUX ──
+function loadTaux() {
+  db.collection('config').doc('settings').get().then(function(snap) {
+    if (snap.exists) {
+      var d = snap.data();
+      currentTaux = parseFloat(d.taux) || 0;
+      document.getElementById('tauxValue').textContent = currentTaux.toLocaleString('fr-DZ') + ' DZD';
+      calcDzd();
+    }
+  });
+}
+
+// ── ADMIN CCP ──
+function loadAdminCCP() {
+  db.collection('config').doc('settings').get().then(function(snap) {
+    if (snap.exists && snap.data().adminCCP) {
+      adminCCP = snap.data().adminCCP;
+    } else {
+      adminCCP = ADMIN_CCP_DEFAULT;
+    }
+    document.getElementById('adminCCPDisplay').textContent = adminCCP;
+  });
+}
+
+// ── PUBLIC FEED ──
+function loadPublicFeed() {
+  db.collection('transferts')
+    .where('statut', '==', 'terminee')
+    .orderBy('createdAt', 'desc')
+    .limit(5)
+    .get().then(function(snap) {
+      if (snap.empty) return;
+      var section = document.getElementById('publicFeedSection');
+      var list    = document.getElementById('publicFeedList');
+      section.style.display = 'block';
+      list.innerHTML = snap.docs.map(function(doc) {
+        var d = doc.data();
+        var initiale = (d.nomUser || '?').charAt(0).toUpperCase() + '.';
+        var date = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleDateString('fr-DZ') : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(187,247,208,.6);font-size:13px;">' +
+          '<span style="color:#065f46;"><b>' + escHtml(initiale) + '</b> -- ' +
+            Number(d.montantEur).toLocaleString('fr-DZ') + ' EUR > ' +
+            Number(d.montantDzd||0).toLocaleString('fr-DZ') + ' DZD</span>' +
+          '<span style="font-size:11px;color:#6b7280;">' + date + '</span>' +
+        '</div>';
+      }).join('');
+    });
+}
+
+// ── TRANSFERTS LIST ──
+function loadTransferts() {
+  document.getElementById('loaderAccueil').style.display = 'block';
+  document.getElementById('txList').innerHTML = '';
+  db.collection('transferts')
+    .where('userId', '==', currentUid)
+    .orderBy('createdAt', 'desc')
+    .get().then(function(snap) {
+      document.getElementById('loaderAccueil').style.display = 'none';
+      transferts = snap.docs.map(function(doc) {
+        var d = doc.data();
+        d.id = doc.id;
+        d.createdAt = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().getTime() : 0;
+        d.dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-DZ') + ' ' +
+          new Date(d.createdAt).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
+        return d;
+      });
+      renderTxList();
+    }).catch(function(err) {
+      document.getElementById('loaderAccueil').style.display = 'none';
+      console.error(err);
+    });
+}
+
+function renderTxList() {
+  var list = document.getElementById('txList');
+  if (!transferts.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128301;</div>' +
+      '<div class="empty-text">Aucun transfert pour l\'instant.<br>' +
+      'Appuyez sur <b>+ Nouveau</b> pour commencer.</div></div>';
+    return;
+  }
+  list.innerHTML = transferts.map(function(tx) {
+    return '<div class="tx-item st-'+tx.statut+'" onclick="openDetail(\''+tx.id+'\')">' +
+      '<div class="tx-header">' +
+        '<span class="tx-amount">'+tx.montantEur+' EUR</span>' +
+        '<span class="tx-badge badge-'+tx.statut+'">'+statutLabel(tx.statut)+'</span>' +
+      '</div>' +
+      '<div style="font-size:12px;color:#555;margin-bottom:4px;">' +
+        (tx.montantDzd ? Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD' : '--') + '</div>' +
+      '<div style="font-size:11px;color:#aaa;">'+tx.dateStr+'</div>' +
+    '</div>';
+  }).join('');
+}
+
+function statutLabel(s) {
+  return {
+    en_attente:'En attente', preuve_envoyee:'Preuve envoyee',
+    validee:'Valide', terminee:'Termine', rejetee:'Rejete',
+    annulee:'Annulee', manque_info:'Info manquante'
+  }[s] || s;
+}
+
+// ── CALC DZD ──
+function calcDzd() {
+  var eur = parseFloat(document.getElementById('montantEur').value) || 0;
+  if (eur > 0 && currentTaux > 0) {
+    document.getElementById('montantDzd').textContent = Math.round(eur * currentTaux).toLocaleString('fr-DZ') + ' DZD';
+  } else {
+    document.getElementById('montantDzd').textContent = '-- DZD';
+  }
+}
+
+// ── NAV ──
+function showNav(name) {
+  ['Accueil','Nouveau','Profil','Messages'].forEach(function(n) {
+    document.getElementById('panel'+n).classList.remove('active');
+    document.getElementById('nav'+n).classList.remove('active');
+  });
+  document.getElementById('panel'+name).classList.add('active');
+  document.getElementById('nav'+name).classList.add('active');
+  var isMsg = (name === 'Messages');
+  document.getElementById('chatInputBar').style.display = isMsg ? 'flex' : 'none';
+  document.querySelector('.content').style.paddingBottom = isMsg ? '140px' : '80px';
+  if (isMsg) loadMessages();
+  if (name === 'Accueil') loadTransferts();
+  if (name === 'Profil')  renderProfile();
+}
+
+// ── DETAIL ──
+function openDetail(id) {
+  currentTxId = id;
+  var tx = transferts.find(function(t){ return t.id === id; });
+  if (!tx) return;
+  renderDetail(tx);
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  currentTxId = null;
+}
+
+function renderDetail(tx) {
+  var steps = ['en_attente','preuve_envoyee','validee','terminee'];
+  var stepLabels = ['Demande\nsoumise','Preuve\nenvoyee','Valide\npar admin','Transfert\ntermine'];
+  var currentIdx = steps.indexOf(tx.statut);
+  var isSpecial = (tx.statut === 'rejetee' || tx.statut === 'annulee' || tx.statut === 'manque_info');
+  var progressHtml = '<div class="progress-steps">';
+  for (var i=0; i<steps.length; i++) {
+    var cc = 'step-circle', lc = 'step-label';
+    if (isSpecial) { if (i===0){ cc+=' rejected'; lc+=' active'; } }
+    else {
+      if (i < currentIdx) { cc+=' done'; lc+=' done'; }
+      if (i === currentIdx){ cc+=' active'; lc+=' active'; }
+    }
+    progressHtml += '<div class="step-wrap"><div class="'+cc+'">'+(i+1)+'</div>';
+    progressHtml += '<div class="'+lc+'" style="white-space:pre-line;">'+stepLabels[i]+'</div></div>';
+    if (i < steps.length-1) progressHtml += '<div class="step-line'+(!isSpecial&&i<currentIdx?' done':'')+'"></div>';
+  }
+  progressHtml += '</div>';
+
+  var rejectedHtml = '';
+  if (tx.statut === 'rejetee') rejectedHtml = '<div class="error-box" style="display:block;margin-bottom:14px;">Demande rejetee'+(tx.motifRejet?' : '+tx.motifRejet:'')+'</div>';
+  else if (tx.statut === 'annulee') rejectedHtml = '<div class="error-box" style="display:block;margin-bottom:14px;background:#f9fafb;border-color:#9ca3af;color:#374151;">Demande annulee'+(tx.motifAnnulation?' : '+tx.motifAnnulation:'')+'</div>';
+  else if (tx.statut === 'manque_info') rejectedHtml = '<div class="error-box" style="display:block;margin-bottom:14px;background:#fff7ed;border-color:#f97316;color:#c2410c;">Information manquante'+(tx.infoManquante?' : '+tx.infoManquante:'')+'<br><span style="font-size:11px;">Veuillez contacter le support.</span></div>';
+
+  var recapHtml = '<div class="info-box" style="margin-bottom:14px;"><div class="info-title">RESUME DU TRANSFERT</div>' +
+    '<div class="info-row"><label>Montant</label><b>'+tx.montantEur+' EUR</b></div>' +
+    '<div class="info-row"><label>Equivalent DZD</label><b>'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'--')+'</b></div>' +
+    '<div class="info-row"><label>Taux applique</label><b>'+(tx.taux||'--')+' DZD/EUR</b></div>' +
+    '<div class="info-row"><label>Email Paysera</label><b>'+(tx.emailPaysera||'--')+'</b></div>' +
+    '<div class="info-row"><label>Date</label><b>'+tx.dateStr+'</b></div>' +
+    '</div>';
+
+  var uploadHtml = '';
+  if (tx.statut !== 'annulee' && tx.statut !== 'rejetee') {
+    if (tx.statut === 'en_attente') {
+      uploadHtml = '<div style="background:linear-gradient(135deg,#fff7ed,#fef3c7);border:2px solid #f59e0b;border-radius:14px;padding:14px;margin-bottom:14px;">' +
+        '<div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:8px;">OU ENVOYER VOTRE VIREMENT BARIDIMOB ?</div>' +
+        '<div style="font-size:11px;color:#78350f;margin-bottom:6px;">Numero CCP a crediter :</div>' +
+        '<div style="font-size:17px;font-weight:900;color:#1254a0;letter-spacing:1px;background:#fff;border-radius:8px;padding:8px 12px;text-align:center;">'+adminCCP+'</div>' +
+        '<div style="font-size:11px;color:#92400e;margin-top:8px;text-align:center;">Montant a envoyer : <b>'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'-- DZD')+'</b></div>' +
+        '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:#1254a0;margin-bottom:10px;">ENVOYER LA PREUVE DE VIREMENT</div>' +
+        '<div class="upload-area" onclick="triggerUpload()"><div class="upload-icon">&#128247;</div>' +
+        '<div class="upload-text">Cliquez pour choisir une image<br><span style="color:#aaa;font-size:11px;">JPG, PNG</span></div></div>' +
+        '<div id="uploadLoader" class="loader">Upload en cours...</div>';
+    } else if (tx.statut === 'manque_info') {
+      uploadHtml = '<div style="background:#fff7ed;border:2px solid #f97316;border-radius:12px;padding:12px;margin-bottom:12px;">' +
+        '<div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:4px;">Preuve insuffisante</div>' +
+        '<div style="font-size:12px;color:#92400e;">Veuillez renvoyer une meilleure photo de votre recu de virement.</div></div>';
+      if (tx.preuveUserUrl) uploadHtml += '<img src="'+tx.preuveUserUrl+'" style="width:100%;border-radius:10px;border:1px solid #e0e8f5;cursor:pointer;margin-bottom:10px;" onclick="openImgViewer(\''+tx.preuveUserUrl+'\')" />';
+      uploadHtml += '<div class="upload-area" onclick="triggerUpload()"><div class="upload-icon">&#128247;</div><div class="upload-text">Envoyer une nouvelle preuve</div></div>' +
+        '<div id="uploadLoader" class="loader">Upload en cours...</div>';
+    } else if (tx.preuveUserUrl) {
+      uploadHtml = '<img src="'+tx.preuveUserUrl+'" style="width:100%;border-radius:10px;border:1px solid #e0e8f5;cursor:pointer;" onclick="openImgViewer(\''+tx.preuveUserUrl+'\')" />';
+      if (tx.statut === 'preuve_envoyee') {
+        uploadHtml += '<button onclick="triggerUpload()" style="width:100%;margin-top:10px;padding:10px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;color:#0369a1;font-size:13px;font-weight:700;cursor:pointer;">Modifier la preuve</button>' +
+          '<div id="uploadLoader" class="loader">Upload en cours...</div>';
+      }
+    }
+  }
+
+  var adminProofHtml = '';
+  if (tx.preuveAdminUrl) adminProofHtml = '<div style="margin-top:16px;font-size:12px;font-weight:700;color:#059669;margin-bottom:8px;">Preuve du virement Paysera :</div>' +
+    '<img src="'+tx.preuveAdminUrl+'" style="width:100%;border-radius:10px;border:1px solid #d1fae5;cursor:pointer;" onclick="openImgViewer(\''+tx.preuveAdminUrl+'\')" />';
+
+  var cancelHtml = '';
+  if (tx.statut === 'en_attente') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
+
+  document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml;
+}
+
+// ── UPLOAD PREUVE ──
+function triggerUpload() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileSelected(input) {
+  var file = input.files[0];
+  if (!file || !currentTxId) return;
+  var loader = document.getElementById('uploadLoader');
+  if (loader) loader.style.display = 'block';
+  var ref = storage.ref('preuves/' + currentTxId + '/user_' + Date.now() + '.' + file.name.split('.').pop());
+  ref.put(file).then(function(snap) {
+    return snap.ref.getDownloadURL();
+  }).then(function(url) {
+    return db.collection('transferts').doc(currentTxId).update({
+      statut: 'preuve_envoyee',
+      preuveUserUrl: url,
+      preuveUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }).then(function() {
+    if (loader) loader.style.display = 'none';
+    return db.collection('transferts').doc(currentTxId).get();
+  }).then(function(snap) {
+    var d = snap.data(); d.id = snap.id;
+    d.createdAt = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().getTime() : 0;
+    d.dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-DZ') + ' ' +
+      new Date(d.createdAt).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
+    var idx = transferts.findIndex(function(t){ return t.id === d.id; });
+    if (idx >= 0) transferts[idx] = d; else transferts.unshift(d);
+    renderDetail(d);
+  }).catch(function(err) {
+    if (loader) loader.style.display = 'none';
+    alert('Erreur upload : ' + err.message);
+  });
+  input.value = '';
+}
+
+// ── CREATE TRANSFERT ──
+function handleCreateTransfert() {
+  var eur = parseFloat(document.getElementById('montantEur').value);
+  var errEl = document.getElementById('newError');
+  errEl.style.display = 'none';
+  if (!eur || eur < 20 || eur > 1000) {
+    errEl.textContent = 'Montant invalide. Entre 20 et 1 000 EUR.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!currentUser) { errEl.textContent = 'Donnees utilisateur non chargees. Rechargez la page.'; errEl.style.display='block'; return; }
+  var dzd = Math.round(eur * currentTaux);
+  document.getElementById('newLoader').style.display = 'block';
+  db.collection('transferts').add({
+    userId: currentUid,
+    nomUser: currentUser.nom || '',
+    email: currentUser.email || '',
+    emailPaysera: currentUser.emailPaysera || '',
+    ccpUser: currentUser.ccp || '',
+    montantEur: eur,
+    montantDzd: dzd,
+    taux: currentTaux,
+    statut: 'en_attente',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(ref) {
+    document.getElementById('newLoader').style.display = 'none';
+    document.getElementById('montantEur').value = '';
+    document.getElementById('montantDzd').textContent = '-- DZD';
+    return db.collection('transferts').doc(ref.id).get();
+  }).then(function(snap) {
+    var d = snap.data(); d.id = snap.id;
+    d.createdAt = Date.now();
+    d.dateStr = new Date().toLocaleDateString('fr-DZ') + ' ' + new Date().toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
+    transferts.unshift(d);
+    currentTxId = d.id;
+    renderTxList();
+    ['Accueil','Nouveau','Profil'].forEach(function(n){
+      document.getElementById('panel'+n).classList.remove('active');
+      document.getElementById('nav'+n).classList.remove('active');
+    });
+    document.getElementById('panelAccueil').classList.add('active');
+    document.getElementById('navAccueil').classList.add('active');
+    renderDetail(d);
+    document.getElementById('detailOverlay').classList.add('open');
+  }).catch(function(err) {
+    document.getElementById('newLoader').style.display = 'none';
+    errEl.textContent = 'Erreur : ' + err.message;
+    errEl.style.display = 'block';
+  });
+}
+
+// ── CANCEL TRANSFERT ──
+function openCancelModal() {
+  document.getElementById('cancelError').style.display = 'none';
+  document.getElementById('cancelLoader').style.display = 'none';
+  document.getElementById('modalCancel').classList.add('open');
+}
+function closeCancelModal() { document.getElementById('modalCancel').classList.remove('open'); }
+function confirmCancel() {
+  if (!currentTxId) return;
+  document.getElementById('cancelLoader').style.display = 'block';
+  document.getElementById('cancelError').style.display = 'none';
+  db.collection('transferts').doc(currentTxId).update({
+    statut: 'annulee', motifAnnulation: "Annule par l'utilisateur"
+  }).then(function() {
+    document.getElementById('modalCancel').classList.remove('open');
+    var idx = transferts.findIndex(function(t){ return t.id === currentTxId; });
+    if (idx >= 0) {
+      transferts[idx].statut = 'annulee';
+      transferts[idx].motifAnnulation = "Annule par l'utilisateur";
+      renderDetail(transferts[idx]);
+      renderTxList();
+    }
+  }).catch(function(err) {
+    document.getElementById('cancelLoader').style.display = 'none';
+    var el = document.getElementById('cancelError');
+    el.textContent = err.message; el.style.display = 'block';
+  });
+}
+
+// ── EDIT PROFILE ──
+function openEditProfile() {
+  if (!currentUser) return;
+  document.getElementById('editNom').value = currentUser.nom || '';
+  document.getElementById('editPaysera').value = currentUser.emailPaysera || '';
+  var ccp = currentUser.ccp || '';
+  if (ccp.startsWith('00799999000')) ccp = ccp.slice(11);
+  document.getElementById('editCCP').value = ccp;
+  document.getElementById('editProfileError').style.display = 'none';
+  document.getElementById('editProfileLoader').style.display = 'none';
+  document.getElementById('modalEditProfile').classList.add('open');
+}
+function closeEditProfile() { document.getElementById('modalEditProfile').classList.remove('open'); }
+function confirmEditProfile() {
+  var nom     = document.getElementById('editNom').value.trim();
+  var paysera = document.getElementById('editPaysera').value.trim();
+  var ccpRaw  = document.getElementById('editCCP').value.trim();
+  var errEl   = document.getElementById('editProfileError');
+  errEl.style.display = 'none';
+  if (!nom)     { errEl.textContent = 'Le nom ne peut pas etre vide.'; errEl.style.display='block'; return; }
+  if (ccpRaw && !/^\d{9}$/.test(ccpRaw)) { errEl.textContent = 'Le CCP doit contenir exactement 9 chiffres.'; errEl.style.display='block'; return; }
+  var fullCcp = ccpRaw ? '00799999000'+ccpRaw : (currentUser.ccp||'');
+  document.getElementById('editProfileLoader').style.display = 'block';
+  db.collection('users').doc(currentUid).update({ nom:nom, emailPaysera:paysera, ccp:fullCcp })
+    .then(function() {
+      document.getElementById('editProfileLoader').style.display = 'none';
+      currentUser.nom = nom; currentUser.emailPaysera = paysera; currentUser.ccp = fullCcp;
+      renderProfile();
+      document.getElementById('headerUser').textContent = nom;
+      document.getElementById('userCCPDisplay').textContent = fullCcp || 'Non renseigne';
+      document.getElementById('userPayseraDisplay').textContent = paysera || 'Non renseigne';
+      closeEditProfile();
+    }).catch(function(err) {
+      document.getElementById('editProfileLoader').style.display = 'none';
+      errEl.textContent = 'Erreur : ' + err.message; errEl.style.display='block';
+    });
+}
+
+// ── LOGOUT ──
+function handleLogout() { document.getElementById('modalLogout').classList.add('open'); }
+function closeLogoutModal() { document.getElementById('modalLogout').classList.remove('open'); }
+function confirmLogout() {
+  auth.signOut().then(function() { window.location.href = 'auth.html'; });
+}
+
+// ── CHAT ──
+function loadMessages() {
+  if (messagesListener) { messagesListener(); messagesListener = null; }
+  messagesListener = db.collection('messages')
+    .where('userId', '==', currentUid)
+    .orderBy('timestamp', 'asc')
+    .onSnapshot(function(snap) {
+      var msgs = snap.docs.map(function(doc){ return doc.data(); });
+      renderChat(msgs);
+      // Mark as read
+      snap.docs.forEach(function(doc) {
+        if (doc.data().from === 'admin' && !doc.data().readByUser) {
+          doc.ref.update({ readByUser: true });
+        }
+      });
+      document.getElementById('msgBadge').style.display = 'none';
+    });
+}
+
+function loadUnreadCount() {
+  db.collection('messages')
+    .where('userId', '==', currentUid)
+    .where('from', '==', 'admin')
+    .where('readByUser', '==', false)
+    .get().then(function(snap) {
+      var count = snap.size;
+      var badge = document.getElementById('msgBadge');
+      if (count > 0) { badge.textContent = count; badge.style.display = 'block'; }
+      else badge.style.display = 'none';
+    });
+}
+
+function renderChat(messages) {
+  var thread = document.getElementById('chatThread');
+  if (!messages || !messages.length) {
+    thread.innerHTML = '<div class="chat-empty"><div style="font-size:40px;margin-bottom:10px;">&#128172;</div>' +
+      '<div style="font-size:14px;">Posez-nous votre question,<br>nous vous repondrons rapidement.</div></div>';
+    return;
+  }
+  thread.innerHTML = messages.map(function(m) {
+    var isUser = m.from === 'user';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(isUser?'flex-end':'flex-start')+';width:100%;overflow:hidden;">' +
+      '<div class="bubble bubble-'+(isUser?'user':'admin')+'">'+escHtml(m.text||'')+'</div>' +
+      '<div class="bubble-time" style="text-align:'+(isUser?'right':'left')+';padding:0 4px;">' +
+        (isUser?'':'Support · ')+formatMsgTime(m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : m.timestamp) +
+      '</div></div>';
+  }).join('');
+  var c = document.querySelector('.content');
+  if (c) setTimeout(function(){ c.scrollTop = c.scrollHeight; }, 100);
+}
+
+function formatMsgTime(ts) {
+  if (!ts) return '';
+  var d = new Date(Number(ts));
+  return d.toLocaleDateString('fr-DZ',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
+}
+
+function sendChatMessage() {
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.disabled = true;
+  db.collection('messages').add({
+    userId: currentUid,
+    from: 'user',
+    text: text,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    readByAdmin: false,
+    readByUser: true
+  }).then(function() {
+    input.disabled = false;
+  }).catch(function(err) {
+    input.disabled = false;
+    alert('Erreur : ' + err.message);
+  });
+}
+
+// ── HELPERS ──
+function openImgViewer(url) {
+  document.getElementById('imgViewerSrc').src = url;
+  document.getElementById('imgViewer').classList.add('open');
+}
+function closeImgViewer() {
+  document.getElementById('imgViewer').classList.remove('open');
+  document.getElementById('imgViewerSrc').src = '';
+}
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
