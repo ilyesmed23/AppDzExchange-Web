@@ -1,7 +1,291 @@
-﻿wsl : cat: /sessions/exciting-sharp-dijkstra/auth.html: No such file or directory
-Au caractère Ligne:3 : 1
-+ wsl -e cat /sessions/exciting-sharp-dijkstra/auth.html 2>&1 | Out-Fil ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (cat: /sessions/...le or directory:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AppDz Exchange</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Segoe UI',Arial,sans-serif; min-height:100vh;
+  background:linear-gradient(160deg,#1254a0 0%,#0097a7 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:16px; overflow-x:hidden; }
+.logo-banner { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; }
+.logo-icon { width:48px; height:48px; border-radius:12px; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  box-shadow:0 4px 14px rgba(0,0,0,.2); }
+.logo-arrow { color:#fff; font-size:26px; font-weight:700; }
+.app-title { color:#fff; font-size:20px; font-weight:800; }
+.card { background:#fff; border-radius:22px; padding:26px 22px;
+  width:100%; max-width:400px; box-shadow:0 16px 48px rgba(0,0,0,.25); }
+.card h2 { font-size:21px; color:#1254a0; font-weight:800; text-align:center; margin-bottom:18px; }
+.panel { display:none; }
+.panel.active { display:block; }
+.field { margin-bottom:13px; }
+.field label { font-size:11px; color:#666; font-weight:700; display:block; margin-bottom:4px; letter-spacing:.4px; }
+.field input { width:100%; padding:12px 13px; border:1.5px solid #e0e8f5;
+  border-radius:11px; font-size:14px; color:#333; outline:none; background:#f8fafc; transition:.2s; }
+.field input:focus { border-color:#1254a0; background:#fff; }
+.field .hint { font-size:10px; color:#aaa; margin-top:3px; }
+.ccp-row { display:flex; align-items:center; gap:6px; }
+.ccp-prefix { font-size:12px; color:#888; font-weight:700; white-space:nowrap; }
+.btn { width:100%; padding:13px; border:none; border-radius:13px; font-size:15px;
+  font-weight:700; cursor:pointer; transition:.15s; margin-top:4px; }
+.btn-primary { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff; }
+.btn-primary:active { transform:scale(.97); }
+.btn-link { background:none; color:#1254a0; font-size:13px; font-weight:600;
+  border:none; cursor:pointer; padding:8px; width:100%; text-align:center; }
+.divider { text-align:center; color:#ddd; font-size:11px; margin:8px 0; }
+.error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px;
+  padding:10px 12px; font-size:13px; color:#dc2626; margin-bottom:12px; display:none; }
+.success-box { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;
+  padding:14px; font-size:13px; color:#166534; text-align:center; display:none; }
+.loader { display:none; text-align:center; padding:8px; color:#1254a0; font-size:13px; }
+.verif-icon { font-size:46px; text-align:center; margin-bottom:10px; }
+.verif-msg { font-size:13px; color:#555; text-align:center; line-height:1.6; margin-bottom:14px; }
+.verif-email { font-weight:700; color:#1254a0; }
+</style>
+</head>
+<body>
+
+<div class="logo-banner">
+  <div class="logo-icon">&#127968;</div>
+  <span class="logo-arrow">&#8644;</span>
+  <div class="logo-icon">&#128179;</div>
+  <span class="app-title">AppDz Exchange</span>
+</div>
+
+<div class="card">
+
+  <!-- CONNEXION -->
+  <div id="loginPanel" class="panel active">
+    <h2>Connexion</h2>
+    <div id="loginError" class="error-box"></div>
+    <div class="field">
+      <label>EMAIL</label>
+      <input type="email" id="loginEmail" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>MOT DE PASSE</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <div id="loginLoader" class="loader">Connexion en cours...</div>
+    <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+    <div class="divider">────────────</div>
+    <button class="btn-link" onclick="showPanel('forgotPanel')">Mot de passe oublie ?</button>
+    <button class="btn-link" onclick="showPanel('registerPanel')">Pas encore inscrit ? <b>S'inscrire</b></button>
+  </div>
+
+  <!-- INSCRIPTION -->
+  <div id="registerPanel" class="panel">
+    <h2>Inscription</h2>
+    <div id="registerError" class="error-box"></div>
+    <div class="field"><label>NOM COMPLET *</label>
+      <input type="text" id="regNom" placeholder="Prenom Nom"></div>
+    <div class="field"><label>EMAIL *</label>
+      <input type="email" id="regEmail" placeholder="votre@email.com"></div>
+    <div class="field"><label>EMAIL PAYSERA</label>
+      <input type="email" id="regEmailPaysera" placeholder="exemple@paysera.com">
+      <div class="hint">Laissez vide si vous n'avez pas encore de compte Paysera</div></div>
+    <div class="field"><label>NUMERO CCP (BARIDIMOB)</label>
+      <div class="ccp-row">
+        <span class="ccp-prefix">00799999000</span>
+        <input type="text" id="regCCP" placeholder="123456789" maxlength="9" inputmode="numeric" style="flex:1;">
+      </div>
+      <div class="hint">Saisissez les 9 derniers chiffres de votre numero CCP</div></div>
+    <div class="field"><label>MOT DE PASSE *</label>
+      <input type="password" id="regPassword" placeholder="Minimum 6 caracteres"></div>
+    <div id="registerLoader" class="loader">Creation du compte...</div>
+    <button class="btn btn-primary" onclick="handleRegister()">Creer mon compte</button>
+    <div class="divider">────────────</div>
+    <button class="btn-link" onclick="showPanel('loginPanel')">Deja inscrit ? <b>Se connecter</b></button>
+  </div>
+
+  <!-- VERIFICATION EMAIL -->
+  <div id="verifPanel" class="panel">
+    <div class="verif-icon">&#128236;</div>
+    <h2>Confirmez votre email</h2>
+    <p class="verif-msg">Un lien de confirmation a ete envoye a <br>
+      <span class="verif-email" id="verifEmailDisplay"></span><br><br>
+      Cliquez sur le lien puis revenez ici.</p>
+    <button class="btn btn-primary" onclick="handleCheckVerif()">J'ai confirme</button>
+    <div class="divider">────────────</div>
+    <button class="btn-link" onclick="handleResendVerif()">Renvoyer l'email</button>
+    <button class="btn-link" onclick="handleLogoutVerif()">Retour connexion</button>
+  </div>
+
+  <!-- MOT DE PASSE OUBLIE -->
+  <div id="forgotPanel" class="panel">
+    <h2>Mot de passe oublie</h2>
+    <div id="forgotError" class="error-box"></div>
+    <div id="forgotSuccess" class="success-box">Email de reinitialisation envoye !<br>
+      Verifiez votre boite mail et vos spams.</div>
+    <div id="forgotForm">
+      <p style="font-size:13px;color:#777;margin-bottom:14px;">
+        Entrez votre email pour recevoir un lien de reinitialisation.</p>
+      <div class="field"><label>EMAIL</label>
+        <input type="email" id="forgotEmail" placeholder="votre@email.com"></div>
+      <div id="forgotLoader" class="loader">Envoi en cours...</div>
+      <button class="btn btn-primary" onclick="handleReset()">Envoyer le lien</button>
+    </div>
+    <div class="divider">────────────</div>
+    <button class="btn-link" onclick="showPanel('loginPanel')">Retour connexion</button>
+  </div>
+
+</div>
+
+<!-- Firebase v9 compat -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
+  authDomain: "appdzexchange.firebaseapp.com",
+  projectId: "appdzexchange",
+  storageBucket: "appdzexchange.firebasestorage.app",
+  messagingSenderId: "217882852483",
+  appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+const ADMIN_EMAIL = "giftformenow@gmail.com";
+
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
+    if (user.emailVerified) { window.location.href = 'app.html'; }
+  }
+});
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.error-box').forEach(function(e){ e.style.display='none'; e.textContent=''; });
+}
+function showError(id, msg) {
+  var el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+function setLoader(id, show) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = show ? 'block' : 'none';
+}
+
+function handleLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPassword').value;
+  if (!email || !pass) { showError('loginError','Veuillez remplir tous les champs.'); return; }
+  setLoader('loginLoader', true);
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      var user = cred.user;
+      return db.collection('users').doc(user.uid).get().then(function(snap) {
+        var data = snap.exists ? snap.data() : {};
+        if (data.blocked) {
+          auth.signOut();
+          setLoader('loginLoader', false);
+          showError('loginError', 'Votre compte a ete suspendu. Contactez le support.');
+          return;
+        }
+        if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; }
+        else if (!user.emailVerified) {
+          setLoader('loginLoader', false);
+          document.getElementById('verifEmailDisplay').textContent = user.email;
+          showPanel('verifPanel');
+        } else { window.location.href = 'app.html'; }
+      });
+    })
+    .catch(function(err) {
+      setLoader('loginLoader', false);
+      var m = {
+        'auth/wrong-password':'Mot de passe incorrect.',
+        'auth/user-not-found':'Aucun compte avec cet email.',
+        'auth/invalid-email':'Adresse email invalide.',
+        'auth/too-many-requests':'Trop de tentatives. Reessayez plus tard.',
+        'auth/invalid-credential':'Email ou mot de passe incorrect.'
+      };
+      showError('loginError', m[err.code] || 'Erreur de connexion.');
+    });
+}
+
+function handleRegister() {
+  var nom     = document.getElementById('regNom').value.trim();
+  var email   = document.getElementById('regEmail').value.trim();
+  var paysera = document.getElementById('regEmailPaysera').value.trim();
+  var ccp     = document.getElementById('regCCP').value.trim();
+  var pass    = document.getElementById('regPassword').value;
+  if (!nom || !email || !pass) { showError('registerError','Veuillez remplir tous les champs obligatoires (*).'); return; }
+  if (pass.length < 6) { showError('registerError','Mot de passe minimum 6 caracteres.'); return; }
+  if (ccp && (!/^\d{9}$/.test(ccp))) { showError('registerError','Le numero CCP doit contenir exactement 9 chiffres apres le prefixe.'); return; }
+  setLoader('registerLoader', true);
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      var user = cred.user;
+      var fullCcp = ccp ? '00799999000' + ccp : '';
+      return db.collection('users').doc(user.uid).set({
+        nom: nom, email: email, emailPaysera: paysera, ccp: fullCcp,
+        blocked: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        return user.sendEmailVerification();
+      }).then(function() {
+        setLoader('registerLoader', false);
+        document.getElementById('verifEmailDisplay').textContent = email;
+        showPanel('verifPanel');
+      });
+    })
+    .catch(function(err) {
+      setLoader('registerLoader', false);
+      var m = {
+        'auth/email-already-in-use':'Cet email est deja utilise.',
+        'auth/invalid-email':'Adresse email invalide.',
+        'auth/weak-password':'Mot de passe trop faible (6 caracteres minimum).'
+      };
+      showError('registerError', m[err.code] || 'Erreur : ' + err.message);
+    });
+}
+
+function handleCheckVerif() {
+  var user = auth.currentUser;
+  if (!user) { showPanel('loginPanel'); return; }
+  user.reload().then(function() {
+    if (user.emailVerified) { window.location.href = 'app.html'; }
+    else { alert('Email pas encore confirme. Verifiez votre boite mail.'); }
+  });
+}
+function handleResendVerif() {
+  var user = auth.currentUser;
+  if (user) user.sendEmailVerification().then(function() { alert('Email renvoye !'); });
+}
+function handleLogoutVerif() {
+  auth.signOut().then(function() { showPanel('loginPanel'); });
+}
+
+function handleReset() {
+  var email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { showError('forgotError','Veuillez entrer votre email.'); return; }
+  setLoader('forgotLoader', true);
+  auth.sendPasswordResetEmail(email)
+    .then(function() {
+      setLoader('forgotLoader', false);
+      document.getElementById('forgotForm').style.display = 'none';
+      document.getElementById('forgotSuccess').style.display = 'block';
+    })
+    .catch(function(err) {
+      setLoader('forgotLoader', false);
+      showError('forgotError', 'Erreur : ' + err.message);
+    });
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  var active = document.querySelector('.panel.active');
+  if (!active) return;
+  if (active.id === 'loginPanel') handleLogin();
+  if (active.id === 'registerPanel') handleRegister();
+  if (active.id === 'forgotPanel') handleReset();
+});
+</script>
+</body>
+</html>
