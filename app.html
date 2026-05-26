@@ -655,17 +655,79 @@ function renderTxList() {
       'Appuyez sur <b>+ Nouveau</b> pour commencer.</div></div>';
     return;
   }
-  list.innerHTML = transferts.map(function(tx) {
-    return '<div class="tx-item st-'+tx.statut+'" onclick="openDetail(\''+tx.id+'\')">' +
-      '<div class="tx-header">' +
-        '<span class="tx-amount">'+tx.montantEur+' EUR</span>' +
-        '<span class="tx-badge badge-'+tx.statut+'">'+statutLabel(tx.statut)+'</span>' +
-      '</div>' +
-      '<div style="font-size:12px;color:#555;margin-bottom:4px;">' +
-        (tx.montantDzd ? Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD' : '--') + '</div>' +
-      '<div style="font-size:11px;color:#aaa;">'+tx.dateStr+'</div>' +
-    '</div>';
-  }).join('');
+
+  var actifs   = transferts.filter(function(t){ return ['en_attente','preuve_envoyee','validee'].indexOf(t.statut) >= 0; });
+  var termines = transferts.filter(function(t){ return t.statut === 'terminee'; });
+  var autres   = transferts.filter(function(t){ return ['rejetee','annulee','manque_info'].indexOf(t.statut) >= 0; });
+
+  var html = '';
+
+  // ─── En cours ───
+  if (actifs.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#1254a0;letter-spacing:.6px;margin-bottom:10px;">EN COURS</div>';
+    actifs.forEach(function(tx) {
+      var steps = ['en_attente','preuve_envoyee','validee','terminee'];
+      var labels = ['Demande','Preuve','Validé','Terminé'];
+      var idx = steps.indexOf(tx.statut);
+      var stepsHtml = '<div style="display:flex;align-items:center;margin:12px 0 6px;">';
+      for (var i = 0; i < steps.length; i++) {
+        var done = i < idx, active = i === idx;
+        var bg = done ? '#10b981' : (active ? '#1254a0' : '#e5eaf2');
+        var tc = (done||active) ? '#fff' : '#bbb';
+        var lc = done ? '#10b981' : (active ? '#1254a0' : '#bbb');
+        stepsHtml += '<div style="display:flex;flex-direction:column;align-items:center;flex:1;">' +
+          '<div style="width:26px;height:26px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+tc+';">'+(done?'✓':(i+1))+'</div>' +
+          '<div style="font-size:9px;font-weight:700;color:'+lc+';margin-top:3px;text-align:center;">'+labels[i]+'</div>' +
+          '</div>';
+        if (i < steps.length-1) stepsHtml += '<div style="flex:1;height:3px;background:'+(i<idx?'#10b981':'#e5eaf2')+';margin-bottom:13px;max-width:30px;"></div>';
+      }
+      stepsHtml += '</div>';
+      html += '<div class="tx-item st-'+tx.statut+'" onclick="openDetail(\''+tx.id+'\')" style="border-left-width:5px;padding:14px 16px;margin-bottom:10px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:20px;font-weight:900;color:#1254a0;">'+tx.montantEur+' EUR</span>' +
+          '<span class="tx-badge badge-'+tx.statut+'">'+statutLabel(tx.statut)+'</span>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#666;margin-top:2px;">'+(tx.montantDzd ? Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD' : '')+'</div>' +
+        stepsHtml +
+        '<div style="font-size:11px;color:#bbb;text-align:right;">'+tx.dateStr+'</div>' +
+      '</div>';
+    });
+  }
+
+  // ─── Terminés ───
+  if (termines.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#059669;letter-spacing:.6px;margin:14px 0 8px;">TERMINÉS ('+termines.length+')</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:4px;">';
+    termines.forEach(function(tx) {
+      html += '<div class="tx-item st-'+tx.statut+'" onclick="openDetail(\''+tx.id+'\')" style="padding:12px;margin-bottom:0;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+          '<span style="font-size:15px;font-weight:800;color:#1254a0;">'+tx.montantEur+' EUR</span>' +
+          '<span style="font-size:16px;">&#9989;</span>' +
+        '</div>' +
+        '<div style="font-size:12px;color:#777;">'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>' +
+        '<div style="font-size:10px;color:#bbb;margin-top:3px;">'+tx.dateStr+'</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  // ─── Annulés / Rejetés ───
+  if (autres.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#9ca3af;letter-spacing:.6px;margin:14px 0 8px;">AUTRES ('+autres.length+')</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">';
+    autres.forEach(function(tx) {
+      html += '<div class="tx-item st-'+tx.statut+'" onclick="openDetail(\''+tx.id+'\')" style="padding:12px;margin-bottom:0;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+          '<span style="font-size:15px;font-weight:800;color:#555;">'+tx.montantEur+' EUR</span>' +
+          '<span class="tx-badge badge-'+tx.statut+'" style="font-size:10px;">'+statutLabel(tx.statut)+'</span>' +
+        '</div>' +
+        '<div style="font-size:10px;color:#bbb;margin-top:3px;">'+tx.dateStr+'</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  list.innerHTML = html;
 }
 
 function statutLabel(s) {
