@@ -525,7 +525,7 @@ function loadInit() {
   loadAdminCCP();
   loadPublicFeed();
   loadTransferts();
-  loadUnreadCount();
+  loadMessages(); // listener permanent → badge toujours à jour
 }
 
 // ── USER INFO ──
@@ -759,7 +759,6 @@ function showNav(name) {
   var isMsg = (name === 'Messages');
   document.getElementById('chatInputBar').style.display = isMsg ? 'flex' : 'none';
   document.querySelector('.content').style.paddingBottom = isMsg ? '140px' : '80px';
-  if (isMsg) loadMessages();
   if (name === 'Accueil') loadTransferts();
   if (name === 'Profil')  renderProfile();
 }
@@ -1012,29 +1011,40 @@ function confirmLogout() {
 // ── CHAT ──
 function loadMessages() {
   if (messagesListener) { messagesListener(); messagesListener = null; }
+  // Pas d'orderBy → pas d'index composite requis, tri côté client
   messagesListener = db.collection('messages')
     .where('userId', '==', currentUid)
-    .orderBy('timestamp', 'asc')
     .onSnapshot(function(snap) {
       var msgs = snap.docs.map(function(doc){ return doc.data(); });
+      // Tri chronologique côté client
+      msgs.sort(function(a, b) {
+        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
+        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
+        return ta - tb;
+      });
       renderChat(msgs);
-      // Mark as read
+      // Marquer les messages admin comme lus
       snap.docs.forEach(function(doc) {
         if (doc.data().from === 'admin' && !doc.data().readByUser) {
           doc.ref.update({ readByUser: true });
         }
       });
-      document.getElementById('msgBadge').style.display = 'none';
+      // Mettre à jour le badge
+      var unread = snap.docs.filter(function(d){ return d.data().from === 'admin' && !d.data().readByUser; }).length;
+      var badge = document.getElementById('msgBadge');
+      if (unread > 0) { badge.textContent = unread; badge.style.display = 'block'; }
+      else badge.style.display = 'none';
+    }, function(err) {
+      console.error('Messages error:', err);
     });
 }
 
 function loadUnreadCount() {
+  // Utiliser onSnapshot sans orderBy ni where multiple (éviter index requis)
   db.collection('messages')
     .where('userId', '==', currentUid)
-    .where('from', '==', 'admin')
-    .where('readByUser', '==', false)
     .get().then(function(snap) {
-      var count = snap.size;
+      var count = snap.docs.filter(function(d){ return d.data().from === 'admin' && !d.data().readByUser; }).length;
       var badge = document.getElementById('msgBadge');
       if (count > 0) { badge.textContent = count; badge.style.display = 'block'; }
       else badge.style.display = 'none';
