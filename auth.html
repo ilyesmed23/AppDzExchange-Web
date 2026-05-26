@@ -44,6 +44,64 @@ body { font-family:'Segoe UI',Arial,sans-serif; min-height:100vh;
 .verif-icon { font-size:46px; text-align:center; margin-bottom:10px; }
 .verif-msg { font-size:13px; color:#555; text-align:center; line-height:1.6; margin-bottom:14px; }
 .verif-email { font-weight:700; color:#1254a0; }
+
+/* ── DESKTOP ── */
+@media (min-width: 769px) {
+  body {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+  }
+  /* Panneau gauche : branding */
+  body::before {
+    content: '';
+    flex: 1;
+    background: linear-gradient(160deg,#1254a0 0%,#0097a7 100%);
+    display: flex;
+    position: relative;
+    min-height: 100vh;
+  }
+  /* Overlay texte côté gauche */
+  .logo-banner {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(50vw - 20px);
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+    color: #fff;
+    z-index: 10;
+  }
+  .app-title {
+    font-size: 28px;
+    font-weight: 900;
+    text-align: center;
+  }
+  .logo-banner::after {
+    content: "Transférez vos euros vers l'Algérie en toute sécurité · Paysera ↔ BaridiMob";
+    display: block;
+    font-size: 14px;
+    opacity: .8;
+    text-align: center;
+    line-height: 1.6;
+    margin-top: 8px;
+    color: #fff;
+  }
+  /* Panneau droit : formulaire */
+  .card {
+    position: relative;
+    z-index: 20;
+    margin: auto;
+    margin-right: 8%;
+    border-radius: 24px;
+    min-width: 400px;
+    max-width: 440px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.2);
+  }
+}
 </style>
 </head>
 <body>
