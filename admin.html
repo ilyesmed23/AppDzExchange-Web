@@ -12,22 +12,20 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .header-logo { font-size:17px; font-weight:800; }
 .admin-badge { background:#f59e0b; color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:20px; margin-left:8px; }
 .btn-logout { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; }
-.btn-logout:hover { background:rgba(255,0,0,.3); }
 .stats-row { display:flex; gap:6px; margin-top:10px; overflow-x:auto; padding-bottom:4px; }
 .stat-box { flex:0 0 auto; background:rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; text-align:center; min-width:70px; }
 .stat-num { font-size:20px; font-weight:800; }
 .stat-label { font-size:9px; opacity:.75; margin-top:2px; }
 .tabs { display:flex; background:#fff; border-bottom:2px solid #e5eaf2; position:sticky; top:90px; z-index:90; }
-.tab { flex:1; padding:12px 4px; text-align:center; font-size:11px; font-weight:700; color:#aaa; cursor:pointer; border-bottom:3px solid transparent; transition:.15s; }
+.tab { flex:1; padding:12px 4px; text-align:center; font-size:11px; font-weight:700; color:#aaa; cursor:pointer; border-bottom:3px solid transparent; }
 .tab.active { color:#1254a0; border-color:#1254a0; }
 .content { flex:1; padding:12px; padding-bottom:30px; }
 .tab-panel { display:none; }
 .tab-panel.active { display:block; }
 .card { background:#fff; border-radius:14px; padding:14px; box-shadow:0 2px 10px rgba(0,0,0,.07); margin-bottom:12px; }
 .section-title { font-size:13px; font-weight:800; color:#1254a0; margin-bottom:10px; }
-/* Transfers */
 .tx-item { background:#fff; border-radius:13px; padding:13px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:10px; border-left:4px solid #e0e8f5; cursor:pointer; transition:.15s; }
-.tx-item:hover { box-shadow:0 4px 16px rgba(0,0,0,.12); transform:translateY(-1px); }
+.tx-item:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.12); }
 .tx-item.st-en_attente { border-color:#f59e0b; }
 .tx-item.st-preuve_envoyee { border-color:#3b82f6; }
 .tx-item.st-validee { border-color:#10b981; }
@@ -47,12 +45,10 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .badge-rejetee { background:#fee2e2; color:#991b1b; }
 .badge-annulee { background:#f3f4f6; color:#6b7280; }
 .badge-manque_info { background:#fef3c7; color:#92400e; }
-/* Filter */
 .filter-row { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px; }
-.filter-btn { flex:0 0 auto; padding:5px 10px; border-radius:20px; border:1.5px solid #e0e8f5; font-size:11px; font-weight:700; color:#888; background:#fff; cursor:pointer; transition:.15s; }
+.filter-btn { flex:0 0 auto; padding:5px 10px; border-radius:20px; border:1.5px solid #e0e8f5; font-size:11px; font-weight:700; color:#888; background:#fff; cursor:pointer; }
 .filter-btn.active { background:#1254a0; color:#fff; border-color:#1254a0; }
-/* Modal */
-.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); z-index:200; overflow-y:auto; }
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); z-index:200; }
 .modal-overlay.open { display:flex; align-items:flex-end; }
 .modal-box { background:#fff; border-radius:22px 22px 0 0; padding:20px 16px 30px; width:100%; max-height:90vh; overflow-y:auto; }
 .modal-title { font-size:16px; font-weight:800; color:#1254a0; margin-bottom:14px; }
@@ -60,8 +56,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .detail-label { color:#888; font-weight:600; flex-shrink:0; margin-right:8px; }
 .detail-val { color:#222; font-weight:700; text-align:right; word-break:break-all; }
 .action-btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-.btn { padding:10px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:.15s; }
-.btn:active { transform:scale(.97); }
+.btn { padding:10px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; }
 .btn-primary { background:#1254a0; color:#fff; }
 .btn-success { background:#10b981; color:#fff; }
 .btn-danger { background:#ef4444; color:#fff; }
@@ -70,14 +65,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .btn-close { background:#f3f4f6; color:#555; width:100%; margin-top:8px; }
 .proof-img { width:100%; border-radius:10px; margin-top:8px; border:1px solid #e0e8f5; cursor:pointer; }
 .proof-section { background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:12px; margin-top:12px; }
-.proof-section-title { font-size:12px; font-weight:800; color:#0369a1; margin-bottom:6px; }
-.upload-zone { border:2px dashed #bae6fd; border-radius:12px; padding:16px; text-align:center; cursor:pointer; background:#f0f9ff; transition:.15s; margin-top:8px; }
+.proof-title { font-size:12px; font-weight:800; color:#0369a1; margin-bottom:6px; }
+.upload-zone { border:2px dashed #bae6fd; border-radius:12px; padding:16px; text-align:center; cursor:pointer; background:#f0f9ff; margin-top:8px; }
 .upload-zone:hover { border-color:#1254a0; background:#e0f2fe; }
-.upload-zone-icon { font-size:28px; margin-bottom:6px; }
-.upload-zone-text { font-size:12px; color:#0369a1; font-weight:600; }
 .admin-proof-section { background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:12px; margin-top:12px; }
 .admin-proof-title { font-size:12px; font-weight:800; color:#166534; margin-bottom:6px; }
-/* Users */
 .user-item { background:#fff; border-radius:13px; padding:13px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:10px; display:flex; align-items:center; gap:12px; }
 .user-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#1254a0,#0097a7); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:800; flex-shrink:0; }
 .user-info { flex:1; }
@@ -85,22 +77,18 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .user-email { font-size:11px; color:#888; margin-top:2px; }
 .user-ccp { font-size:10px; color:#aaa; margin-top:2px; }
 .user-blocked { color:#ef4444; font-size:10px; font-weight:700; margin-top:2px; }
-.user-actions { display:flex; flex-direction:column; gap:6px; }
-/* Settings */
 .field { margin-bottom:14px; }
-.field label { font-size:11px; color:#666; font-weight:700; display:block; margin-bottom:5px; letter-spacing:.4px; }
+.field label { font-size:11px; color:#666; font-weight:700; display:block; margin-bottom:5px; }
 .field input { width:100%; padding:12px 13px; border:1.5px solid #e0e8f5; border-radius:11px; font-size:14px; color:#333; outline:none; background:#f8fafc; }
 .field input:focus { border-color:#1254a0; background:#fff; }
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:10px 20px; border-radius:12px; font-size:13px; font-weight:600; z-index:999; display:none; }
 .empty-msg { text-align:center; color:#aaa; font-size:13px; padding:30px 0; }
 .search-input { width:100%; padding:10px 13px; border:1.5px solid #e0e8f5; border-radius:11px; font-size:13px; outline:none; background:#f8fafc; margin-bottom:10px; }
-.loader-inline { text-align:center; padding:10px; font-size:13px; color:#1254a0; font-weight:600; }
 .motif-input { width:100%; padding:10px 13px; border:1.5px solid #e0e8f5; border-radius:11px; font-size:13px; outline:none; background:#fff; margin-top:8px; }
-
-/* ── DESKTOP ADMIN ── */
-@media (min-width: 769px) {
-  .header { position:sticky; top:0; padding:14px 5%; }
-  .stats-row { justify-content:flex-start; gap:12px; }
+.loader-inline { text-align:center; padding:10px; font-size:13px; color:#1254a0; font-weight:600; }
+@media (min-width:769px) {
+  .header { padding:14px 5%; }
+  .stats-row { gap:12px; }
   .stat-box { min-width:100px; padding:10px 18px; }
   .tabs { top:108px; padding:0 5%; }
   .tab { flex:none; padding:14px 28px; font-size:13px; }
@@ -116,32 +104,25 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-top">
-    <div>
-      <span class="header-logo">AppDz Exchange</span>
-      <span class="admin-badge">ADMIN</span>
-    </div>
+    <div><span class="header-logo">AppDz Exchange</span><span class="admin-badge">ADMIN</span></div>
     <button class="btn-logout" onclick="doLogout()">Deconnexion</button>
   </div>
   <div class="stats-row">
     <div class="stat-box"><div class="stat-num" id="statTotal">-</div><div class="stat-label">Transferts</div></div>
     <div class="stat-box"><div class="stat-num" id="statAttente">-</div><div class="stat-label">En attente</div></div>
-    <div class="stat-box"><div class="stat-num" id="statPreuve">-</div><div class="stat-label">Preuves recues</div></div>
+    <div class="stat-box"><div class="stat-num" id="statPreuve">-</div><div class="stat-label">Preuves</div></div>
     <div class="stat-box"><div class="stat-num" id="statValidee">-</div><div class="stat-label">A traiter</div></div>
     <div class="stat-box"><div class="stat-num" id="statUsers">-</div><div class="stat-label">Utilisateurs</div></div>
   </div>
 </div>
-
 <div class="tabs">
   <div class="tab active" onclick="showTab('transferts',0)">Transferts</div>
   <div class="tab" onclick="showTab('utilisateurs',1)">Utilisateurs</div>
   <div class="tab" onclick="showTab('parametres',2)">Parametres</div>
 </div>
-
 <div class="content">
-  <!-- TRANSFERTS -->
   <div id="tab-transferts" class="tab-panel active">
     <div class="filter-row">
       <button class="filter-btn active" onclick="filterTx('tous',this)">Tous</button>
@@ -153,93 +134,72 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
     </div>
     <div id="txList"><div class="empty-msg">Chargement...</div></div>
   </div>
-
-  <!-- UTILISATEURS -->
   <div id="tab-utilisateurs" class="tab-panel">
-    <input class="search-input" type="text" id="userSearch" placeholder="Rechercher un utilisateur..." oninput="renderUsers()">
+    <input class="search-input" type="text" id="userSearch" placeholder="Rechercher..." oninput="renderUsers()">
     <div id="userList"><div class="empty-msg">Chargement...</div></div>
   </div>
-
-  <!-- PARAMETRES -->
   <div id="tab-parametres" class="tab-panel">
     <div class="card">
       <div class="section-title">Taux de change</div>
-      <div class="field">
-        <label>1 EUR = ? DZD</label>
-        <input type="number" id="tauxInput" placeholder="Ex: 275" min="1">
-      </div>
+      <div class="field"><label>1 EUR = ? DZD</label><input type="number" id="tauxInput" placeholder="275" min="1"></div>
       <button class="btn btn-primary" style="width:100%" onclick="saveTaux()">Enregistrer le taux</button>
     </div>
     <div class="card">
-      <div class="section-title">Mon CCP BaridiMob (reçoit DZD)</div>
-      <div class="field">
-        <label>Numero CCP complet</label>
-        <input type="text" id="ccpInput" placeholder="00799999000XXXXXXXXX">
-      </div>
+      <div class="section-title">CCP BaridiMob (recoit DZD)</div>
+      <div class="field"><label>Numero CCP complet</label><input type="text" id="ccpInput" placeholder="00799999000XXXXXXXXX"></div>
       <button class="btn btn-primary" style="width:100%" onclick="saveCCP()">Enregistrer le CCP</button>
     </div>
     <div class="card">
-      <div class="section-title">Mon compte Paysera (envoie EUR)</div>
-      <div class="field">
-        <label>Email Paysera admin</label>
-        <input type="email" id="payseraInput" placeholder="admin@paysera.com">
-      </div>
+      <div class="section-title">Compte Paysera admin (envoie EUR)</div>
+      <div class="field"><label>Email Paysera</label><input type="email" id="payseraInput" placeholder="admin@paysera.com"></div>
       <button class="btn btn-primary" style="width:100%" onclick="savePaysera()">Enregistrer</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DETAIL TRANSFERT -->
+<!-- MODAL DETAIL -->
 <div class="modal-overlay" id="detailModal" onclick="closeModalBg(event)">
   <div class="modal-box">
     <div class="modal-title" id="detailTitle">Detail du transfert</div>
     <div id="detailContent"></div>
-    <!-- Zone preuve utilisateur -->
     <div id="userProofSection" style="display:none" class="proof-section">
-      <div class="proof-section-title">📎 PREUVE DE VIREMENT BARIDIMOB (utilisateur)</div>
-      <img id="userProofImg" class="proof-img" src="" alt="Preuve utilisateur" onclick="openImg(this.src)">
-      <div style="font-size:10px;color:#0369a1;margin-top:4px;text-align:center;">Cliquer pour agrandir</div>
+      <div class="proof-title">PREUVE VIREMENT BARIDIMOB (utilisateur)</div>
+      <img id="userProofImg" class="proof-img" src="" onclick="openImg(this.src)">
+      <div style="font-size:10px;color:#0369a1;text-align:center;margin-top:4px">Cliquer pour agrandir</div>
     </div>
-    <!-- Zone upload preuve admin (EUR Paysera) -->
     <div id="adminUploadSection" style="display:none" class="admin-proof-section">
-      <div class="admin-proof-title">💸 VOTRE PREUVE PAYSERA (EUR envoye)</div>
-      <div id="adminProofImgContainer" style="display:none">
-        <img id="adminProofImg" class="proof-img" src="" alt="Preuve admin" onclick="openImg(this.src)">
-        <div style="font-size:10px;color:#166534;margin-top:4px;text-align:center;">Cliquer pour agrandir</div>
+      <div class="admin-proof-title">VOTRE PREUVE PAYSERA (EUR envoye)</div>
+      <div id="adminProofImgWrap" style="display:none">
+        <img id="adminProofImg" class="proof-img" src="" onclick="openImg(this.src)">
       </div>
       <div class="upload-zone" onclick="document.getElementById('adminFileInput').click()">
-        <div class="upload-zone-icon">📷</div>
-        <div class="upload-zone-text">Cliquer pour uploader votre capture de virement Paysera</div>
+        <div style="font-size:24px;margin-bottom:4px">+</div>
+        <div style="font-size:12px;color:#0369a1;font-weight:600">Uploader votre capture Paysera</div>
       </div>
       <div id="adminUploadLoader" class="loader-inline" style="display:none">Upload en cours...</div>
     </div>
-    <!-- Motif (pour rejet / info manquante) -->
     <div id="motifSection" style="display:none">
       <input type="text" class="motif-input" id="motifInput" placeholder="Raison (optionnel)...">
     </div>
-    <!-- Boutons d'action -->
     <div class="action-btns" id="detailActions"></div>
     <button class="btn btn-close" onclick="closeModalDirect()">Fermer</button>
   </div>
 </div>
 
-<!-- Input fichier admin caché -->
 <input type="file" id="adminFileInput" accept="image/*" style="display:none" onchange="handleAdminProof(this)">
 
-<!-- Viewer image plein ecran -->
-<div id="imgViewer" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
-  <img id="imgViewerSrc" style="max-width:95%;max-height:95%;border-radius:10px;object-fit:contain;" src="" alt="">
+<div id="imgViewer" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;cursor:zoom-out" onclick="this.style.display='none'">
+  <img id="imgViewerSrc" style="max-width:95%;max-height:95%;border-radius:10px;object-fit:contain" src="" alt="">
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase v9 compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script>
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
   authDomain: "appdzexchange.firebaseapp.com",
   projectId: "appdzexchange",
@@ -248,17 +208,15 @@ const firebaseConfig = {
   appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
 };
 firebase.initializeApp(firebaseConfig);
-const auth    = firebase.auth();
-const db      = firebase.firestore();
-const storage = firebase.storage();
-const ADMIN_EMAIL = "giftformenow@gmail.com";
-
-var allTx      = [];
-var allUsers   = [];
+var auth    = firebase.auth();
+var db      = firebase.firestore();
+var storage = firebase.storage();
+var ADMIN_EMAIL = "giftformenow@gmail.com";
+var allTx    = [];
+var allUsers = [];
 var currentFilter = 'tous';
 var currentTxId   = null;
 
-// ── Auth guard ──
 auth.onAuthStateChanged(function(user) {
   if (!user || user.email !== ADMIN_EMAIL) {
     window.location.href = 'auth.html';
@@ -273,24 +231,19 @@ function loadAll() {
   loadSettings();
 }
 
-// ══════════════════════════════════════════
-// TRANSFERTS
-// ══════════════════════════════════════════
+// ===== TRANSFERTS =====
 function loadTransferts() {
-  db.collection('transferts')
-    .orderBy('createdAt', 'desc')
-    .onSnapshot(function(snap) {
-      allTx = snap.docs.map(function(doc) {
-        var d = doc.data();
-        d.id = doc.id;
-        return d;
-      });
-      updateStats();
-      renderTx();
-    }, function(err) {
-      console.error('Erreur chargement transferts :', err);
-      document.getElementById('txList').innerHTML = '<div class="empty-msg">Erreur : ' + err.message + '</div>';
+  db.collection('transferts').orderBy('createdAt','desc').onSnapshot(function(snap) {
+    allTx = snap.docs.map(function(doc) {
+      var d = doc.data();
+      d.id = doc.id;
+      return d;
     });
+    updateStats();
+    renderTx();
+  }, function(err) {
+    document.getElementById('txList').innerHTML = '<div class="empty-msg">Erreur: ' + err.message + '</div>';
+  });
 }
 
 function updateStats() {
@@ -309,29 +262,23 @@ function filterTx(f, btn) {
 }
 
 function renderTx() {
-  var list = currentFilter === 'tous'
-    ? allTx
-    : allTx.filter(function(t){ return t.statut === currentFilter; });
+  var list = currentFilter === 'tous' ? allTx : allTx.filter(function(t){ return t.statut === currentFilter; });
   var el = document.getElementById('txList');
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-msg">Aucun transfert</div>';
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">Aucun transfert</div>'; return; }
   el.innerHTML = list.map(function(tx) {
-    var dateStr = formatDate(tx.createdAt);
-    // Champs corrects : montantEur, montantDzd, nomUser, email
-    var montantEur = tx.montantEur || tx.montantEUR || 0;
-    var montantDzd = tx.montantDzd || tx.montantDZD || 0;
-    var nomUser    = tx.nomUser || tx.userNom || tx.email || tx.userEmail || 'Utilisateur';
-    var hasProof   = tx.preuveUserUrl ? ' 📎' : '';
+    var eur  = tx.montantEur  || tx.montantEUR  || 0;
+    var dzd  = tx.montantDzd  || tx.montantDZD  || 0;
+    var nom  = tx.nomUser || tx.userNom || tx.email || 'Utilisateur';
+    var date = formatDate(tx.createdAt);
+    var hasP = tx.preuveUserUrl ? ' [P]' : '';
     return '<div class="tx-item st-' + (tx.statut||'') + '" onclick="openDetail(\'' + tx.id + '\')">' +
       '<div class="tx-row">' +
-        '<span class="tx-ref">#' + tx.id.substring(0,8).toUpperCase() + hasProof + '</span>' +
+        '<span class="tx-ref">#' + tx.id.substring(0,8).toUpperCase() + hasP + '</span>' +
         '<span class="badge badge-' + (tx.statut||'') + '">' + labelStatut(tx.statut) + '</span>' +
       '</div>' +
-      '<div class="tx-amount">' + montantEur + ' EUR &rarr; ' + Number(montantDzd).toLocaleString('fr-DZ') + ' DZD</div>' +
-      '<div class="tx-user">👤 ' + escHtml(nomUser) + '</div>' +
-      '<div class="tx-date">' + dateStr + '</div>' +
+      '<div class="tx-amount">' + eur + ' EUR ' + Number(dzd).toLocaleString('fr-DZ') + ' DZD</div>' +
+      '<div class="tx-user">' + escHtml(nom) + '</div>' +
+      '<div class="tx-date">' + date + '</div>' +
     '</div>';
   }).join('');
 }
@@ -342,81 +289,257 @@ function labelStatut(s) {
 
 function formatDate(ts) {
   if (!ts) return '-';
-  var d;
-  if (ts.toDate) d = ts.toDate();
-  else if (ts.seconds) d = new Date(ts.seconds * 1000);
-  else d = new Date(ts);
+  var d = ts.toDate ? ts.toDate() : (ts.seconds ? new Date(ts.seconds*1000) : new Date(ts));
   return d.toLocaleDateString('fr-DZ') + ' ' + d.toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
 }
 
-// ── Ouvrir detail ──
+// ===== DETAIL MODAL =====
 function openDetail(id) {
   var tx = allTx.find(function(t){ return t.id === id; });
   if (!tx) return;
   currentTxId = id;
 
-  // Champs unifiés (supporte anciens et nouveaux noms)
-  var montantEur  = tx.montantEur  || tx.montantEUR  || 0;
-  var montantDzd  = tx.montantDzd  || tx.montantDZD  || 0;
-  var nomUser     = tx.nomUser     || tx.userNom     || '-';
-  var emailUser   = tx.email       || tx.userEmail   || '-';
-  var emailPaysera= tx.emailPaysera|| tx.emailPayseraUser || '-';
-  var ccpUser     = tx.ccpUser     || '-';
-  var tauxApplique= tx.taux        || '-';
+  var eur   = tx.montantEur  || tx.montantEUR  || 0;
+  var dzd   = tx.montantDzd  || tx.montantDZD  || 0;
+  var nom   = tx.nomUser || tx.userNom || '-';
+  var email = tx.email   || tx.userEmail || '-';
+  var paysera = tx.emailPaysera || tx.emailPayseraUser || '-';
+  var ccp   = tx.ccpUser || '-';
+  var taux  = tx.taux || '-';
 
-  document.getElementById('detailTitle').textContent = 'Transfert ' + montantEur + ' EUR';
-
-  // Infos du transfert
+  document.getElementById('detailTitle').textContent = 'Transfert ' + eur + ' EUR';
   var rows = [
-    ['Reference',    '#' + id.substring(0,8).toUpperCase()],
-    ['Statut',       labelStatut(tx.statut)],
-    ['Montant',      montantEur + ' EUR &rarr; ' + Number(montantDzd).toLocaleString('fr-DZ') + ' DZD'],
-    ['Taux applique',tauxApplique + ' DZD/EUR'],
-    ['Utilisateur',  escHtml(nomUser)],
-    ['Email',        escHtml(emailUser)],
-    ['Paysera user', escHtml(emailPaysera)],
-    ['CCP user',     escHtml(ccpUser)],
-    ['Date',         formatDate(tx.createdAt)],
+    ['Reference',   '#' + id.substring(0,8).toUpperCase()],
+    ['Statut',      labelStatut(tx.statut)],
+    ['Montant',     eur + ' EUR - ' + Number(dzd).toLocaleString('fr-DZ') + ' DZD'],
+    ['Taux',        taux + ' DZD/EUR'],
+    ['Utilisateur', escHtml(nom)],
+    ['Email',       escHtml(email)],
+    ['Paysera user',escHtml(paysera)],
+    ['CCP user',    escHtml(ccp)],
+    ['Date',        formatDate(tx.createdAt)]
   ];
-  document.getElementById('detailContent').innerHTML =
-    rows.map(function(r){
-      return '<div class="detail-row"><span class="detail-label">' + r[0] + '</span><span class="detail-val">' + r[1] + '</span></div>';
-    }).join('');
+  document.getElementById('detailContent').innerHTML = rows.map(function(r){
+    return '<div class="detail-row"><span class="detail-label">' + r[0] + '</span><span class="detail-val">' + r[1] + '</span></div>';
+  }).join('');
 
   // Preuve utilisateur
-  var userProofSec = document.getElementById('userProofSection');
-  var userProofImg = document.getElementById('userProofImg');
+  var uProof = document.getElementById('userProofSection');
   if (tx.preuveUserUrl) {
-    userProofImg.src = tx.preuveUserUrl;
-    userProofSec.style.display = 'block';
+    document.getElementById('userProofImg').src = tx.preuveUserUrl;
+    uProof.style.display = 'block';
   } else {
-    userProofSec.style.display = 'none';
+    uProof.style.display = 'none';
   }
 
-  // Section upload preuve admin (visible quand statut = validee)
-  var adminUploadSec = document.getElementById('adminUploadSection');
-  var adminProofImgContainer = document.getElementById('adminProofImgContainer');
-  var adminProofImg = document.getElementById('adminProofImg');
+  // Section preuve admin
+  var aUpload = document.getElementById('adminUploadSection');
+  var aImgWrap = document.getElementById('adminProofImgWrap');
   if (tx.statut === 'validee' || tx.preuveAdminUrl) {
-    adminUploadSec.style.display = 'block';
+    aUpload.style.display = 'block';
     if (tx.preuveAdminUrl) {
-      adminProofImg.src = tx.preuveAdminUrl;
-      adminProofImgContainer.style.display = 'block';
+      document.getElementById('adminProofImg').src = tx.preuveAdminUrl;
+      aImgWrap.style.display = 'block';
     } else {
-      adminProofImgContainer.style.display = 'none';
+      aImgWrap.style.display = 'none';
     }
   } else {
-    adminUploadSec.style.display = 'none';
+    aUpload.style.display = 'none';
   }
 
   // Motif
   document.getElementById('motifSection').style.display = 'none';
   document.getElementById('motifInput').value = '';
 
-  // Boutons selon statut
+  // Boutons
   var actions = '';
   if (tx.statut === 'en_attente' || tx.statut === 'preuve_envoyee') {
-    actions +=
-      '<button class="btn btn-success" onclick="actionStatut(\'' + id + '\',\'validee\')">✅ Valider la preuve</button>' +
-      '<button class="btn btn-warning" onclick="showMotif(\'' + id + '\',\'manque_info\')">⚠️ Info manquante</button>' +
-      '<button class="btn btn-dange
+    actions += '<button class="btn btn-success" onclick="actionStatut(\'' + id + '\',\'validee\')">Valider la preuve</button>';
+    actions += '<button class="btn btn-warning" onclick="showMotif(\'' + id + '\',\'manque_info\')">Info manquante</button>';
+    actions += '<button class="btn btn-danger"  onclick="showMotif(\'' + id + '\',\'rejetee\')">Rejeter</button>';
+  }
+  if (tx.statut === 'validee') {
+    actions += '<button class="btn btn-primary" onclick="terminerTransfert(\'' + id + '\')">Marquer termine (apres envoi Paysera)</button>';
+  }
+  document.getElementById('detailActions').innerHTML = actions;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function showMotif(id, statut) {
+  var sec = document.getElementById('motifSection');
+  sec.style.display = 'block';
+  sec.dataset.id     = id;
+  sec.dataset.statut = statut;
+  document.getElementById('detailActions').innerHTML =
+    '<button class="btn btn-danger" onclick="confirmMotif()">Confirmer</button>' +
+    '<button class="btn btn-gray" onclick="cancelMotif()">Annuler</button>';
+}
+function confirmMotif() {
+  var sec    = document.getElementById('motifSection');
+  var id     = sec.dataset.id;
+  var statut = sec.dataset.statut;
+  var motif  = document.getElementById('motifInput').value.trim();
+  var upd = { statut:statut, updatedAt:firebase.firestore.FieldValue.serverTimestamp() };
+  if (statut === 'rejetee') upd.motifRejet = motif || 'Rejete';
+  if (statut === 'manque_info') upd.infoManquante = motif || 'Information manquante';
+  db.collection('transferts').doc(id).update(upd)
+    .then(function(){ showToast('Statut mis a jour'); closeModalDirect(); })
+    .catch(function(e){ showToast('Erreur: ' + e.message); });
+}
+function cancelMotif() {
+  document.getElementById('motifSection').style.display = 'none';
+  openDetail(currentTxId);
+}
+
+function actionStatut(id, statut) {
+  db.collection('transferts').doc(id).update({
+    statut: statut,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){ showToast('Statut: ' + labelStatut(statut)); closeModalDirect(); })
+    .catch(function(e){ showToast('Erreur: ' + e.message); });
+}
+
+function terminerTransfert(id) {
+  var tx = allTx.find(function(t){ return t.id === id; });
+  if (tx && tx.preuveAdminUrl) {
+    actionStatut(id, 'terminee');
+  } else {
+    showToast('Uploadez votre preuve Paysera ci-dessus avant de terminer');
+    document.getElementById('adminFileInput').click();
+  }
+}
+
+function handleAdminProof(input) {
+  var file = input.files[0];
+  if (!file || !currentTxId) return;
+  var loader = document.getElementById('adminUploadLoader');
+  loader.style.display = 'block';
+  var ext = file.name.split('.').pop();
+  var ref = storage.ref('preuves/' + currentTxId + '/admin_' + Date.now() + '.' + ext);
+  ref.put(file).then(function(snap){ return snap.ref.getDownloadURL(); })
+    .then(function(url){
+      return db.collection('transferts').doc(currentTxId).update({
+        preuveAdminUrl: url,
+        statut: 'terminee',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }).then(function(){
+      loader.style.display = 'none';
+      showToast('Preuve uploadee - Transfert TERMINE !');
+      closeModalDirect();
+    }).catch(function(err){
+      loader.style.display = 'none';
+      showToast('Erreur upload: ' + err.message);
+    });
+  input.value = '';
+}
+
+function openImg(url) {
+  document.getElementById('imgViewerSrc').src = url;
+  document.getElementById('imgViewer').style.display = 'flex';
+}
+function closeModalBg(e) {
+  if (e.target === document.getElementById('detailModal')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('detailModal').classList.remove('open');
+  currentTxId = null;
+}
+
+// ===== UTILISATEURS =====
+function loadUsers() {
+  db.collection('users').onSnapshot(function(snap) {
+    allUsers = snap.docs.map(function(doc) {
+      var d = doc.data();
+      d.id = doc.id;
+      return d;
+    });
+    updateStats();
+    renderUsers();
+  });
+}
+
+function renderUsers() {
+  var q = (document.getElementById('userSearch').value || '').toLowerCase();
+  var list = q ? allUsers.filter(function(u){
+    return (u.nom||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+  }) : allUsers;
+  var el = document.getElementById('userList');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">Aucun utilisateur</div>'; return; }
+  el.innerHTML = list.map(function(u) {
+    var init = (u.nom||'?')[0].toUpperCase();
+    var blocked = u.blocked ? '<div class="user-blocked">BLOQUE</div>' : '';
+    var paysera = u.emailPaysera ? '<div class="user-ccp">Paysera: ' + escHtml(u.emailPaysera) + '</div>' : '';
+    var btnL = u.blocked ? 'Debloquer' : 'Bloquer';
+    var btnC = u.blocked ? 'btn-success' : 'btn-danger';
+    return '<div class="user-item">' +
+      '<div class="user-avatar">' + init + '</div>' +
+      '<div class="user-info">' +
+        '<div class="user-name">' + escHtml(u.nom||'-') + '</div>' +
+        '<div class="user-email">' + escHtml(u.email||'-') + '</div>' +
+        '<div class="user-ccp">CCP: ' + escHtml(u.ccp||'Non renseigne') + '</div>' +
+        paysera + blocked +
+      '</div>' +
+      '<div><button class="btn ' + btnC + '" style="font-size:11px;padding:6px 10px" onclick="toggleBlock(\'' + u.id + '\',' + (u.blocked?'true':'false') + ')">' + btnL + '</button></div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleBlock(uid, current) {
+  db.collection('users').doc(uid).update({ blocked: !current })
+    .then(function(){ showToast(!current ? 'Utilisateur bloque' : 'Debloque'); });
+}
+
+// ===== PARAMETRES =====
+function loadSettings() {
+  db.collection('config').doc('settings').get().then(function(doc) {
+    if (doc.exists) {
+      var d = doc.data();
+      if (d.taux)         document.getElementById('tauxInput').value    = d.taux;
+      if (d.ccpAdmin)     document.getElementById('ccpInput').value     = d.ccpAdmin;
+      if (d.payseraAdmin) document.getElementById('payseraInput').value = d.payseraAdmin;
+    }
+  });
+}
+function saveTaux() {
+  var v = parseFloat(document.getElementById('tauxInput').value);
+  if (!v || v <= 0) { showToast('Taux invalide'); return; }
+  db.collection('config').doc('settings').set({ taux:v }, { merge:true })
+    .then(function(){ showToast('Taux enregistre: ' + v + ' DZD'); });
+}
+function saveCCP() {
+  var v = document.getElementById('ccpInput').value.trim();
+  if (!v) { showToast('CCP invalide'); return; }
+  db.collection('config').doc('settings').set({ ccpAdmin:v }, { merge:true })
+    .then(function(){ showToast('CCP enregistre !'); });
+}
+function savePaysera() {
+  var v = document.getElementById('payseraInput').value.trim();
+  if (!v) { showToast('Email invalide'); return; }
+  db.collection('config').doc('settings').set({ payseraAdmin:v }, { merge:true })
+    .then(function(){ showToast('Paysera enregistre !'); });
+}
+
+// ===== UI =====
+function showTab(name, idx) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 3000);
+}
+function doLogout() {
+  if (!confirm('Se deconnecter ?')) return;
+  auth.signOut().then(function(){ window.location.href = 'auth.html'; });
+}
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
