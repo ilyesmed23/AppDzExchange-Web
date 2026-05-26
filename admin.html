@@ -185,6 +185,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <button class="fbtn" id="f-terminee" onclick="setF('terminee')">🏁 Terminés</button>
         <button class="fbtn" id="f-rejetee" onclick="setF('rejetee')">❌ Rejetés</button>
         <button class="fbtn" id="f-annulee" onclick="setF('annulee')">🚫 Annulés</button>
+        <button class="fbtn" onclick="exportFiltered()" style="background:#065f46;border-color:#065f46;color:#fff;">📥 Exporter Excel</button>
+        <button class="fbtn" onclick="exportAll()" style="background:#1254a0;border-color:#1254a0;color:#fff;">📥 Tout exporter</button>
       </div>
       <div id="txList"></div>
     </div>
@@ -265,6 +267,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 <!-- FILE INPUT -->
 <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleProofUpload(this)">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -426,6 +429,7 @@ function fillDrawer(t){
   }else if(t.statut==='terminee'){
     acts='<button class="dbtn d-gray" style="opacity:.6;cursor:default;">✓ Transfert terminé</button>';
   }
+  acts+='<button class="dbtn d-green" onclick="exportSingle(\''+t.id+'\')">📥 Exporter</button>';
   acts+='<button class="dbtn d-red" onclick="delTx(\''+t.id+'\')" style="margin-left:auto;">🗑 Supprimer</button>';
 
   var statBtns=['en_attente','preuve_envoyee','validee','terminee','rejetee','annulee','manque_info'].map(function(s){
@@ -472,7 +476,81 @@ function quickInfo(id){var i=prompt('Information manquante :');if(!i)return;db.c
 function promptRej(id){var m=prompt('Motif du rejet (optionnel):');if(m===null)return;db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});}
 function promptInfo(id){var i=prompt('Quelle information est manquante ?');if(!i)return;db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});}
 function chgSt(id,s){db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Statut → '+slbl(s),'ok');}).catch(function(e){toast(e.message,'err');});}
-function delTx(id){if(!confirm('Supprimer définitivement ce transfert ?'))return;db.collection('transferts').doc(id).delete().then(function(){toast('Supprimé','ok');closeDrawer();curTxId=null;}).catch(function(e){toast(e.message,'err');});}
+function delTx(id){
+  var t=allTx.find(function(x){return x.id===id;});
+  var msg='⚠️ SUPPRIMER ce transfert ?\n\n'+(t?'• '+(t.nomUser||t.email||'—')+'\n• '+t.montantEur+' EUR — '+slbl(t.statut)+'\n• '+t.dateStr+'\n\n':'')+
+    'Les images (preuves) seront aussi supprimées.\n\n✅ Assurez-vous d\'avoir exporté ce transfert avant de continuer.';
+  if(!confirm(msg))return;
+  // Supprimer les fichiers Storage puis le document Firestore
+  toast('Suppression en cours...','info');
+  storage.ref('preuves/'+id).listAll().then(function(res){
+    return Promise.all(res.items.map(function(f){return f.delete();}));
+  }).catch(function(){/* pas de fichiers = ok */}).finally(function(){
+    db.collection('transferts').doc(id).delete()
+      .then(function(){toast('Transfert + preuves supprimés ✓','ok');closeDrawer();curTxId=null;})
+      .catch(function(e){toast('Erreur: '+e.message,'err');});
+  });
+}
+
+// ── EXPORT EXCEL ──
+function buildExcelData(txArray){
+  var rows=[['ID','Date','Utilisateur','Email','Email Paysera','CCP Baridimob','Montant EUR','Montant DZD','Taux','Statut','Motif rejet','Info manquante','URL Preuve Utilisateur','URL Preuve Admin']];
+  txArray.forEach(function(t){
+    rows.push([
+      t.id||'',
+      t.dateStr||'',
+      t.nomUser||'',
+      t.email||'',
+      t.emailPaysera||'',
+      t.ccpUser||'',
+      Number(t.montantEur)||0,
+      Number(t.montantDzd)||0,
+      Number(t.taux)||275,
+      slbl(t.statut),
+      t.motifRejet||'',
+      t.infoManquante||'',
+      t.preuveUserUrl||'',
+      t.preuveAdminUrl||''
+    ]);
+  });
+  return rows;
+}
+
+function doExport(txArray, filename){
+  if(!txArray.length){toast('Aucun transfert à exporter','info');return;}
+  var rows=buildExcelData(txArray);
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  // Largeur colonnes auto
+  var cols=rows[0].map(function(_,i){return{wch:Math.max.apply(null,rows.map(function(r){return String(r[i]||'').length;}))+2};});
+  ws['!cols']=cols;
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Transferts');
+  XLSX.writeFile(wb,filename);
+  toast('Excel téléchargé : '+filename,'ok');
+}
+
+function exportAll(){
+  var date=new Date().toISOString().split('T')[0];
+  doExport(allTx,'AppDzExchange_TOUT_'+date+'.xlsx');
+}
+
+function exportFiltered(){
+  var filtered=allTx.filter(function(t){
+    if(curFilter!=='tous'&&t.statut!==curFilter)return false;
+    if(curSearch){var h=((t.nomUser||'')+(t.email||'')+(t.montantEur||'')).toLowerCase();if(!h.includes(curSearch))return false;}
+    return true;
+  });
+  var date=new Date().toISOString().split('T')[0];
+  var label=curFilter==='tous'?'TOUS':curFilter.toUpperCase();
+  doExport(filtered,'AppDzExchange_'+label+'_'+date+'.xlsx');
+}
+
+function exportSingle(id){
+  var t=allTx.find(function(x){return x.id===id;});
+  if(!t)return;
+  var date=new Date().toISOString().split('T')[0];
+  doExport([t],'Transfert_'+(t.nomUser||t.email||id)+'_'+date+'.xlsx');
+}
 
 // ── UPLOAD ──
 function startUpload(id){curTxId=id;var el=document.getElementById('drawerUpload');if(el)el.style.display='block';document.getElementById('fileInput').click();}
