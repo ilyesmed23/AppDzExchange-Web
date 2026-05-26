@@ -1,8 +1,387 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<meta http-equiv="refresh" content="0;url=auth.html">
-<script>window.location.href='auth.html';</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppDz Exchange — Transfert EUR ↔ DZD en toute confiance</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --blue:#1254a0;--teal:#0097a7;--grad:linear-gradient(135deg,#1254a0,#0097a7);
+  --bg:#f0f4fa;--card:#fff;--text:#1a1a2e;--muted:#666;--border:#e0e8f5;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);}
+
+/* NAV */
+nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
+  justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 16px rgba(0,0,0,.2);}
+.nav-logo{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;}
+.nav-logo-icons{font-size:20px;}
+.nav-logo-text{font-size:18px;font-weight:800;}
+.nav-links{display:flex;align-items:center;gap:12px;}
+.btn-nav-login{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);
+  color:#fff;padding:8px 20px;border-radius:22px;font-weight:700;font-size:14px;
+  cursor:pointer;text-decoration:none;transition:.2s;}
+.btn-nav-login:hover{background:rgba(255,255,255,.28);}
+.btn-nav-register{background:#fff;color:var(--blue);padding:8px 20px;border-radius:22px;
+  font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;border:none;display:inline-block;}
+.btn-nav-register:hover{background:#e8f0fd;}
+
+/* HERO */
+.hero{background:var(--grad);color:#fff;padding:70px 5% 60px;text-align:center;}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+  padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.8px;margin-bottom:20px;}
+.hero h1{font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.15;margin-bottom:16px;}
+.hero h1 span{color:#ffd700;}
+.hero p{font-size:clamp(14px,2vw,18px);opacity:.88;max-width:560px;margin:0 auto 32px;line-height:1.6;}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-hero-primary{background:#fff;color:var(--blue);padding:14px 32px;border-radius:28px;
+  font-weight:800;font-size:16px;text-decoration:none;display:inline-block;transition:.2s;}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.btn-hero-secondary{background:transparent;border:2px solid rgba(255,255,255,.6);color:#fff;
+  padding:14px 32px;border-radius:28px;font-weight:700;font-size:16px;text-decoration:none;
+  display:inline-block;transition:.2s;}
+.btn-hero-secondary:hover{background:rgba(255,255,255,.12);}
+
+/* TAUX BAR */
+.taux-bar{background:rgba(0,0,0,.18);}
+.taux-inner{max-width:900px;margin:0 auto;padding:16px 5%;display:flex;align-items:center;
+  justify-content:center;gap:24px;flex-wrap:wrap;}
+.taux-item{display:flex;align-items:center;gap:8px;color:#fff;}
+.taux-label{font-size:12px;opacity:.75;font-weight:600;letter-spacing:.4px;}
+.taux-value{font-size:20px;font-weight:900;}
+.taux-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.taux-sep{width:1px;height:28px;background:rgba(255,255,255,.2);}
+
+/* SECTION */
+.section{padding:64px 5%;}
+.section-center{text-align:center;margin-bottom:40px;}
+.section-title{font-size:clamp(22px,3vw,34px);font-weight:900;color:var(--text);margin-bottom:8px;}
+.section-sub{font-size:15px;color:var(--muted);line-height:1.6;}
+
+/* CALCULATEUR */
+.calc-card{background:var(--card);border-radius:24px;padding:36px;max-width:560px;
+  margin:0 auto;box-shadow:0 8px 40px rgba(18,84,160,.12);border:1px solid var(--border);}
+.calc-fields{display:flex;align-items:flex-end;gap:14px;margin-bottom:16px;}
+.calc-field{flex:1;}
+.calc-field label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;
+  display:block;margin-bottom:6px;}
+.calc-input-wrap{position:relative;}
+.calc-input{width:100%;padding:13px 50px 13px 14px;border:2px solid var(--border);border-radius:13px;
+  font-size:20px;font-weight:800;color:var(--blue);outline:none;background:#f8fafc;transition:.2s;}
+.calc-input:focus{border-color:var(--blue);background:#fff;}
+.calc-cur{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:13px;font-weight:800;color:var(--muted);}
+.calc-arrow-btn{width:44px;height:44px;background:linear-gradient(135deg,var(--blue),var(--teal));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;flex-shrink:0;margin-bottom:2px;}
+.calc-result-box{background:linear-gradient(135deg,#e8f4ff,#f0fdf9);border:2px solid var(--blue);
+  border-radius:13px;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;}
+.calc-result-amount{font-size:24px;font-weight:900;color:var(--blue);}
+.calc-result-cur{font-size:13px;font-weight:800;color:var(--muted);}
+.calc-note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;}
+.calc-note strong{color:var(--blue);}
+.btn-calc-go{display:block;width:100%;padding:15px;margin-top:18px;
+  background:var(--grad);color:#fff;border:none;border-radius:13px;
+  font-size:16px;font-weight:800;cursor:pointer;text-decoration:none;
+  text-align:center;transition:.2s;}
+.btn-calc-go:hover{opacity:.9;transform:translateY(-1px);}
+
+/* STATS */
+.stats-section{background:var(--grad);padding:50px 5%;text-align:center;}
+.stats-grid{max-width:900px;margin:0 auto;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:24px;}
+.stat-item{color:#fff;}
+.stat-num{font-size:40px;font-weight:900;display:block;}
+.stat-label{font-size:13px;opacity:.75;font-weight:600;margin-top:4px;}
+
+/* STEPS */
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:22px;max-width:1000px;margin:0 auto;}
+.step-card{background:var(--card);border-radius:20px;padding:26px 22px;
+  box-shadow:0 4px 20px rgba(0,0,0,.07);text-align:center;border:1px solid var(--border);
+  transition:.2s;}
+.step-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(18,84,160,.12);}
+.step-icon{width:60px;height:60px;background:linear-gradient(135deg,#e8f4ff,#f0fdf9);
+  border-radius:18px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 14px;}
+.step-num{font-size:11px;font-weight:800;color:var(--teal);letter-spacing:.8px;margin-bottom:6px;}
+.step-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* FEATURES */
+.why-bg{background:linear-gradient(135deg,#f8fafc,#f0f4fa);}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px;max-width:1000px;margin:0 auto;}
+.feature-card{background:var(--card);border-radius:16px;padding:20px;
+  display:flex;gap:14px;align-items:flex-start;box-shadow:0 2px 12px rgba(0,0,0,.06);
+  border:1px solid var(--border);}
+.feature-icon{width:46px;height:46px;border-radius:13px;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.feature-text h4{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.feature-text p{font-size:13px;color:var(--muted);line-height:1.5;}
+
+/* CTA */
+.cta-section{background:var(--grad);padding:64px 5%;text-align:center;color:#fff;}
+.cta-section h2{font-size:clamp(22px,4vw,38px);font-weight:900;margin-bottom:12px;}
+.cta-section p{font-size:16px;opacity:.85;margin-bottom:30px;}
+
+/* FOOTER */
+footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
+.footer-logo{font-size:17px;font-weight:800;margin-bottom:6px;}
+.footer-links{display:flex;gap:20px;justify-content:center;margin-top:10px;}
+.footer-links a{color:rgba(255,255,255,.5);font-size:12px;text-decoration:none;}
+.footer-links a:hover{color:#0097a7;}
+
+@media(max-width:600px){
+  .calc-fields{flex-direction:column;}
+  .calc-arrow-btn{transform:rotate(90deg);align-self:center;}
+  .taux-sep{display:none;}
+  .btn-nav-login{display:none;}
+}
+</style>
 </head>
-<body></body>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <span class="nav-logo-icons">🏠⇄💳</span>
+    <span class="nav-logo-text">AppDz Exchange</span>
+  </a>
+  <div class="nav-links">
+    <a href="auth.html" class="btn-nav-login">Connexion</a>
+    <a href="auth.html" class="btn-nav-register">S'inscrire</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🇩🇿 SERVICE ALGÉRIE · EUR ↔ DZD</div>
+  <h1>Échangez vos <span>Euros</span><br>en Dinars simplement</h1>
+  <p>Transférez de Paysera vers BaridiMob en toute sécurité. Taux transparent, suivi en temps réel, service rapide et fiable.</p>
+  <div class="hero-cta">
+    <a href="auth.html" class="btn-hero-primary">🚀 Commencer gratuitement</a>
+    <a href="#comment" class="btn-hero-secondary">Comment ça marche ↓</a>
+  </div>
+</div>
+
+<!-- TAUX BAR -->
+<div class="taux-bar" style="background:rgba(10,30,60,.85);">
+  <div class="taux-inner">
+    <div class="taux-item">
+      <div class="taux-dot"></div>
+      <span class="taux-label">TAUX EN DIRECT</span>
+      <span class="taux-value" id="tauxLive">--</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13px;">DZD / EUR</span>
+    </div>
+    <div class="taux-sep"></div>
+    <div class="taux-item"><span style="opacity:.65;font-size:13px;">🏦 Paysera → BaridiMob</span></div>
+    <div class="taux-sep"></div>
+    <div class="taux-item"><span style="opacity:.65;font-size:13px;">⚡ Traitement 24–48h</span></div>
+  </div>
+</div>
+
+<!-- CALCULATEUR -->
+<section class="section" style="text-align:center;">
+  <div class="section-center">
+    <h2 class="section-title">💱 Simulez votre transfert</h2>
+    <p class="section-sub">Calculez combien vous recevrez — aucune inscription requise</p>
+  </div>
+  <div class="calc-card">
+    <div class="calc-fields">
+      <div class="calc-field">
+        <label>VOUS ENVOYEZ (Paysera)</label>
+        <div class="calc-input-wrap">
+          <input class="calc-input" type="number" id="eurInput" value="100" min="1" placeholder="0">
+          <span class="calc-cur">EUR</span>
+        </div>
+      </div>
+      <div class="calc-arrow-btn">⇄</div>
+      <div class="calc-field">
+        <label>VOUS RECEVEZ (BaridiMob)</label>
+        <div class="calc-result-box">
+          <span class="calc-result-amount" id="dzdResult">--</span>
+          <span class="calc-result-cur">DZD</span>
+        </div>
+      </div>
+    </div>
+    <p class="calc-note">Taux actuel : <strong id="tauxNote">chargement...</strong> · Mis à jour par l'administrateur</p>
+    <a href="auth.html" class="btn-calc-go">Faire ce transfert maintenant →</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <span class="stat-num" id="statEchanges">--</span>
+      <span class="stat-label">Échanges réalisés</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num" id="statUsers">--</span>
+      <span class="stat-label">Utilisateurs actifs</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">24h</span>
+      <span class="stat-label">Délai moyen</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">Taux de succès</span>
+    </div>
+  </div>
+</div>
+
+<!-- COMMENT CA MARCHE -->
+<section class="section" id="comment">
+  <div class="section-center">
+    <h2 class="section-title">Comment ça marche ?</h2>
+    <p class="section-sub">4 étapes simples pour recevoir vos dinars</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-icon">👤</div>
+      <div class="step-num">ÉTAPE 1</div>
+      <h3 class="step-title">Créez votre compte</h3>
+      <p class="step-desc">Inscription gratuite avec votre email, numéro CCP BaridiMob et email Paysera.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">📋</div>
+      <div class="step-num">ÉTAPE 2</div>
+      <h3 class="step-title">Faites une demande</h3>
+      <p class="step-desc">Indiquez le montant en euros. Nous vous donnons le CCP admin pour le virement DZD.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">📸</div>
+      <div class="step-num">ÉTAPE 3</div>
+      <h3 class="step-title">Envoyez les preuves</h3>
+      <p class="step-desc">Virement Paysera + virement BaridiMob → CCP admin. Uploadez les captures d'écran.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">✅</div>
+      <div class="step-num">ÉTAPE 4</div>
+      <h3 class="step-title">Transfert confirmé</h3>
+      <p class="step-desc">Après vérification, le transfert est validé. Suivi en temps réel dans votre espace.</p>
+    </div>
+  </div>
+</section>
+
+<!-- POURQUOI NOUS -->
+<section class="section why-bg">
+  <div class="section-center">
+    <h2 class="section-title">Pourquoi AppDz Exchange ?</h2>
+    <p class="section-sub">Une plateforme pensée pour la diaspora algérienne</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-text"><h4>Sécurisé & Fiable</h4><p>Authentification Firebase, vérification email et suivi complet de chaque transfert.</p></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-text"><h4>Taux transparent</h4><p>Le taux EUR/DZD est affiché en temps réel. Aucune surprise, aucun frais caché.</p></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <div class="feature-text"><h4>Chat avec l'admin</h4><p>Contactez directement l'administrateur dans l'application pour toute question.</p></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <div class="feature-text"><h4>Mobile & Desktop</h4><p>Interface optimisée pour téléphone et ordinateur. Accédez depuis partout.</p></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-text"><h4>Traitement rapide</h4><p>Les demandes sont traitées en 24 à 48 heures après réception des preuves.</p></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-text"><h4>Suivi en temps réel</h4><p>Suivez le statut de votre demande à chaque étape dans votre espace personnel.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <h2>Prêt à faire votre premier échange ?</h2>
+  <p>Rejoignez des utilisateurs qui nous font confiance chaque jour</p>
+  <a href="auth.html" class="btn-hero-primary">🚀 Créer mon compte gratuitement</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🏠 ⇄ 💳 AppDz Exchange</div>
+  <p style="font-size:12px;opacity:.5;margin-top:4px;">Plateforme de change EUR ↔ DZD · Paysera ↔ BaridiMob</p>
+  <div class="footer-links">
+    <a href="auth.html">Connexion</a>
+    <a href="auth.html">S'inscrire</a>
+    <a href="#comment">Comment ça marche</a>
+  </div>
+  <p style="font-size:11px;opacity:.35;margin-top:14px;">© 2025 AppDz Exchange · Tous droits réservés</p>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
+  authDomain: "appdzexchange.firebaseapp.com",
+  projectId: "appdzexchange",
+  storageBucket: "appdzexchange.firebasestorage.app",
+  messagingSenderId: "217882852483",
+  appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let tauxActuel = 0;
+
+// Taux depuis Firebase
+db.collection('config').doc('settings').get().then(function(doc){
+  if(doc.exists){
+    var d = doc.data();
+    tauxActuel = parseFloat(d.taux) || 0;
+    if(tauxActuel > 0){
+      document.getElementById('tauxLive').textContent = tauxActuel.toLocaleString('fr-FR');
+      document.getElementById('tauxNote').textContent = '1 EUR = ' + tauxActuel + ' DZD';
+      calculer();
+    }
+  }
+}).catch(function(){
+  document.getElementById('tauxNote').textContent = 'Connectez-vous pour voir le taux';
+});
+
+// Stats
+Promise.all([
+  db.collection('transfers').get(),
+  db.collection('users').get()
+]).then(function(results){
+  var tx = results[0].docs.filter(function(d){ return d.data().statut === 'terminee'; }).length;
+  document.getElementById('statEchanges').textContent = tx;
+  document.getElementById('statUsers').textContent = results[1].size;
+}).catch(function(){});
+
+// Calculateur
+function calculer(){
+  var eur = parseFloat(document.getElementById('eurInput').value) || 0;
+  if(tauxActuel > 0 && eur > 0){
+    var dzd = Math.round(eur * tauxActuel).toLocaleString('fr-FR');
+    document.getElementById('dzdResult').textContent = dzd;
+  } else {
+    document.getElementById('dzdResult').textContent = '--';
+  }
+}
+document.getElementById('eurInput').addEventListener('input', calculer);
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    var t = document.querySelector(this.getAttribute('href'));
+    if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
 </html>
