@@ -27,7 +27,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .section-title { font-size:13px; font-weight:800; color:#1254a0; margin-bottom:10px; }
 /* Transfers */
 .tx-item { background:#fff; border-radius:13px; padding:13px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:10px; border-left:4px solid #e0e8f5; cursor:pointer; transition:.15s; }
-.tx-item:hover { box-shadow:0 4px 16px rgba(0,0,0,.12); }
+.tx-item:hover { box-shadow:0 4px 16px rgba(0,0,0,.12); transform:translateY(-1px); }
 .tx-item.st-en_attente { border-color:#f59e0b; }
 .tx-item.st-preuve_envoyee { border-color:#3b82f6; }
 .tx-item.st-validee { border-color:#10b981; }
@@ -36,8 +36,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .tx-item.st-annulee { border-color:#9ca3af; }
 .tx-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
 .tx-ref { font-size:11px; color:#999; font-weight:600; }
-.tx-amount { font-size:16px; font-weight:800; color:#1254a0; }
-.tx-user { font-size:12px; color:#555; margin-bottom:4px; }
+.tx-amount { font-size:16px; font-weight:800; color:#1254a0; margin-bottom:3px; }
+.tx-user { font-size:12px; color:#555; margin-bottom:3px; }
 .tx-date { font-size:10px; color:#aaa; }
 .badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:800; }
 .badge-en_attente { background:#fef3c7; color:#b45309; }
@@ -51,16 +51,16 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .filter-row { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px; }
 .filter-btn { flex:0 0 auto; padding:5px 10px; border-radius:20px; border:1.5px solid #e0e8f5; font-size:11px; font-weight:700; color:#888; background:#fff; cursor:pointer; transition:.15s; }
 .filter-btn.active { background:#1254a0; color:#fff; border-color:#1254a0; }
-/* Detail modal */
-.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:200; }
+/* Modal */
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); z-index:200; overflow-y:auto; }
 .modal-overlay.open { display:flex; align-items:flex-end; }
-.modal-box { background:#fff; border-radius:22px 22px 0 0; padding:20px; width:100%; max-height:85vh; overflow-y:auto; }
+.modal-box { background:#fff; border-radius:22px 22px 0 0; padding:20px 16px 30px; width:100%; max-height:90vh; overflow-y:auto; }
 .modal-title { font-size:16px; font-weight:800; color:#1254a0; margin-bottom:14px; }
 .detail-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f4fa; font-size:13px; }
-.detail-label { color:#888; font-weight:600; }
-.detail-val { color:#222; font-weight:700; max-width:60%; text-align:right; word-break:break-all; }
+.detail-label { color:#888; font-weight:600; flex-shrink:0; margin-right:8px; }
+.detail-val { color:#222; font-weight:700; text-align:right; word-break:break-all; }
 .action-btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-.btn { padding:10px 14px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:.15s; }
+.btn { padding:10px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:.15s; }
 .btn:active { transform:scale(.97); }
 .btn-primary { background:#1254a0; color:#fff; }
 .btn-success { background:#10b981; color:#fff; }
@@ -68,7 +68,15 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .btn-warning { background:#f59e0b; color:#fff; }
 .btn-gray { background:#e5e7eb; color:#374151; }
 .btn-close { background:#f3f4f6; color:#555; width:100%; margin-top:8px; }
-.proof-img { width:100%; border-radius:10px; margin-top:10px; border:1px solid #e0e8f5; }
+.proof-img { width:100%; border-radius:10px; margin-top:8px; border:1px solid #e0e8f5; cursor:pointer; }
+.proof-section { background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:12px; margin-top:12px; }
+.proof-section-title { font-size:12px; font-weight:800; color:#0369a1; margin-bottom:6px; }
+.upload-zone { border:2px dashed #bae6fd; border-radius:12px; padding:16px; text-align:center; cursor:pointer; background:#f0f9ff; transition:.15s; margin-top:8px; }
+.upload-zone:hover { border-color:#1254a0; background:#e0f2fe; }
+.upload-zone-icon { font-size:28px; margin-bottom:6px; }
+.upload-zone-text { font-size:12px; color:#0369a1; font-weight:600; }
+.admin-proof-section { background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:12px; margin-top:12px; }
+.admin-proof-title { font-size:12px; font-weight:800; color:#166534; margin-bottom:6px; }
 /* Users */
 .user-item { background:#fff; border-radius:13px; padding:13px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:10px; display:flex; align-items:center; gap:12px; }
 .user-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#1254a0,#0097a7); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:800; flex-shrink:0; }
@@ -86,37 +94,24 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:10px 20px; border-radius:12px; font-size:13px; font-weight:600; z-index:999; display:none; }
 .empty-msg { text-align:center; color:#aaa; font-size:13px; padding:30px 0; }
 .search-input { width:100%; padding:10px 13px; border:1.5px solid #e0e8f5; border-radius:11px; font-size:13px; outline:none; background:#f8fafc; margin-bottom:10px; }
+.loader-inline { text-align:center; padding:10px; font-size:13px; color:#1254a0; font-weight:600; }
+.motif-input { width:100%; padding:10px 13px; border:1.5px solid #e0e8f5; border-radius:11px; font-size:13px; outline:none; background:#fff; margin-top:8px; }
 
 /* ── DESKTOP ADMIN ── */
 @media (min-width: 769px) {
-  body { flex-direction: row; }
-
-  /* Header pleine largeur */
-  .header { position: sticky; top: 0; padding: 14px 5%; }
-  .stats-row { justify-content: flex-start; gap: 12px; }
-  .stat-box { min-width: 100px; padding: 10px 18px; }
-
-  /* Onglets centrés */
-  .tabs { top: 108px; padding: 0 5%; }
-  .tab { flex: none; padding: 14px 28px; font-size: 13px; }
-
-  /* Contenu plus large */
-  .content { padding: 16px 5%; }
-
-  /* Grille 2 colonnes pour les transferts */
-  #txList { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px,1fr)); gap: 12px; }
-  #txList .tx-item { margin-bottom: 0; }
-
-  /* Liste utilisateurs en grille */
-  #userList { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 10px; }
-  #userList .user-item { margin-bottom: 0; }
-
-  /* Parametres plus larges */
-  #tab-parametres .card { max-width: 500px; }
-
-  /* Modal overlay centré */
-  .modal-overlay { align-items: center; }
-  .modal-box { border-radius: 18px; max-height: 80vh; max-width: 560px; margin: auto; }
+  .header { position:sticky; top:0; padding:14px 5%; }
+  .stats-row { justify-content:flex-start; gap:12px; }
+  .stat-box { min-width:100px; padding:10px 18px; }
+  .tabs { top:108px; padding:0 5%; }
+  .tab { flex:none; padding:14px 28px; font-size:13px; }
+  .content { padding:16px 5%; }
+  #txList { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:12px; }
+  #txList .tx-item { margin-bottom:0; }
+  #userList { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:10px; }
+  #userList .user-item { margin-bottom:0; }
+  #tab-parametres .card { max-width:500px; }
+  .modal-overlay { align-items:center; }
+  .modal-box { border-radius:18px; max-height:85vh; max-width:600px; margin:auto; }
 }
 </style>
 </head>
@@ -133,27 +128,28 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   <div class="stats-row">
     <div class="stat-box"><div class="stat-num" id="statTotal">-</div><div class="stat-label">Transferts</div></div>
     <div class="stat-box"><div class="stat-num" id="statAttente">-</div><div class="stat-label">En attente</div></div>
-    <div class="stat-box"><div class="stat-num" id="statPreuve">-</div><div class="stat-label">Preuves</div></div>
+    <div class="stat-box"><div class="stat-num" id="statPreuve">-</div><div class="stat-label">Preuves recues</div></div>
+    <div class="stat-box"><div class="stat-num" id="statValidee">-</div><div class="stat-label">A traiter</div></div>
     <div class="stat-box"><div class="stat-num" id="statUsers">-</div><div class="stat-label">Utilisateurs</div></div>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('transferts')">Transferts</div>
-  <div class="tab" onclick="showTab('utilisateurs')">Utilisateurs</div>
-  <div class="tab" onclick="showTab('parametres')">Parametres</div>
+  <div class="tab active" onclick="showTab('transferts',0)">Transferts</div>
+  <div class="tab" onclick="showTab('utilisateurs',1)">Utilisateurs</div>
+  <div class="tab" onclick="showTab('parametres',2)">Parametres</div>
 </div>
 
 <div class="content">
   <!-- TRANSFERTS -->
   <div id="tab-transferts" class="tab-panel active">
     <div class="filter-row">
-      <button class="filter-btn active" onclick="filterTx('tous')">Tous</button>
-      <button class="filter-btn" onclick="filterTx('en_attente')">En attente</button>
-      <button class="filter-btn" onclick="filterTx('preuve_envoyee')">Preuves</button>
-      <button class="filter-btn" onclick="filterTx('validee')">Validees</button>
-      <button class="filter-btn" onclick="filterTx('terminee')">Terminees</button>
-      <button class="filter-btn" onclick="filterTx('rejetee')">Rejetees</button>
+      <button class="filter-btn active" onclick="filterTx('tous',this)">Tous</button>
+      <button class="filter-btn" onclick="filterTx('en_attente',this)">En attente</button>
+      <button class="filter-btn" onclick="filterTx('preuve_envoyee',this)">Preuves</button>
+      <button class="filter-btn" onclick="filterTx('validee',this)">A envoyer</button>
+      <button class="filter-btn" onclick="filterTx('terminee',this)">Terminees</button>
+      <button class="filter-btn" onclick="filterTx('rejetee',this)">Rejetees</button>
     </div>
     <div id="txList"><div class="empty-msg">Chargement...</div></div>
   </div>
@@ -170,12 +166,12 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div class="section-title">Taux de change</div>
       <div class="field">
         <label>1 EUR = ? DZD</label>
-        <input type="number" id="tauxInput" placeholder="Ex: 245" min="1">
+        <input type="number" id="tauxInput" placeholder="Ex: 275" min="1">
       </div>
       <button class="btn btn-primary" style="width:100%" onclick="saveTaux()">Enregistrer le taux</button>
     </div>
     <div class="card">
-      <div class="section-title">Mon CCP (BaridiMob)</div>
+      <div class="section-title">Mon CCP BaridiMob (reçoit DZD)</div>
       <div class="field">
         <label>Numero CCP complet</label>
         <input type="text" id="ccpInput" placeholder="00799999000XXXXXXXXX">
@@ -183,9 +179,9 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <button class="btn btn-primary" style="width:100%" onclick="saveCCP()">Enregistrer le CCP</button>
     </div>
     <div class="card">
-      <div class="section-title">Compte Paysera admin</div>
+      <div class="section-title">Mon compte Paysera (envoie EUR)</div>
       <div class="field">
-        <label>Email Paysera pour recevoir les EUR</label>
+        <label>Email Paysera admin</label>
         <input type="email" id="payseraInput" placeholder="admin@paysera.com">
       </div>
       <button class="btn btn-primary" style="width:100%" onclick="savePaysera()">Enregistrer</button>
@@ -194,13 +190,45 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 </div>
 
 <!-- MODAL DETAIL TRANSFERT -->
-<div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
-  <div class="modal-box" id="detailBox">
+<div class="modal-overlay" id="detailModal" onclick="closeModalBg(event)">
+  <div class="modal-box">
     <div class="modal-title" id="detailTitle">Detail du transfert</div>
     <div id="detailContent"></div>
+    <!-- Zone preuve utilisateur -->
+    <div id="userProofSection" style="display:none" class="proof-section">
+      <div class="proof-section-title">📎 PREUVE DE VIREMENT BARIDIMOB (utilisateur)</div>
+      <img id="userProofImg" class="proof-img" src="" alt="Preuve utilisateur" onclick="openImg(this.src)">
+      <div style="font-size:10px;color:#0369a1;margin-top:4px;text-align:center;">Cliquer pour agrandir</div>
+    </div>
+    <!-- Zone upload preuve admin (EUR Paysera) -->
+    <div id="adminUploadSection" style="display:none" class="admin-proof-section">
+      <div class="admin-proof-title">💸 VOTRE PREUVE PAYSERA (EUR envoye)</div>
+      <div id="adminProofImgContainer" style="display:none">
+        <img id="adminProofImg" class="proof-img" src="" alt="Preuve admin" onclick="openImg(this.src)">
+        <div style="font-size:10px;color:#166534;margin-top:4px;text-align:center;">Cliquer pour agrandir</div>
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('adminFileInput').click()">
+        <div class="upload-zone-icon">📷</div>
+        <div class="upload-zone-text">Cliquer pour uploader votre capture de virement Paysera</div>
+      </div>
+      <div id="adminUploadLoader" class="loader-inline" style="display:none">Upload en cours...</div>
+    </div>
+    <!-- Motif (pour rejet / info manquante) -->
+    <div id="motifSection" style="display:none">
+      <input type="text" class="motif-input" id="motifInput" placeholder="Raison (optionnel)...">
+    </div>
+    <!-- Boutons d'action -->
     <div class="action-btns" id="detailActions"></div>
     <button class="btn btn-close" onclick="closeModalDirect()">Fermer</button>
   </div>
+</div>
+
+<!-- Input fichier admin caché -->
+<input type="file" id="adminFileInput" accept="image/*" style="display:none" onchange="handleAdminProof(this)">
+
+<!-- Viewer image plein ecran -->
+<div id="imgViewer" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
+  <img id="imgViewerSrc" style="max-width:95%;max-height:95%;border-radius:10px;object-fit:contain;" src="" alt="">
 </div>
 
 <div class="toast" id="toast"></div>
@@ -220,17 +248,17 @@ const firebaseConfig = {
   appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth    = firebase.auth();
+const db      = firebase.firestore();
 const storage = firebase.storage();
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 
-var allTx = [];
-var allUsers = [];
+var allTx      = [];
+var allUsers   = [];
 var currentFilter = 'tous';
-var currentTxId = null;
+var currentTxId   = null;
 
-// Auth guard
+// ── Auth guard ──
 auth.onAuthStateChanged(function(user) {
   if (!user || user.email !== ADMIN_EMAIL) {
     window.location.href = 'auth.html';
@@ -245,202 +273,150 @@ function loadAll() {
   loadSettings();
 }
 
-// ===== TRANSFERTS =====
+// ══════════════════════════════════════════
+// TRANSFERTS
+// ══════════════════════════════════════════
 function loadTransferts() {
-  db.collection('transferts').orderBy('createdAt', 'desc').onSnapshot(function(snap) {
-    allTx = [];
-    snap.forEach(function(doc) { allTx.push({ id: doc.id, ...doc.data() }); });
-    updateStats();
-    renderTx();
-  }, function(err) { console.error('TX ERROR:', err); });
+  db.collection('transferts')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(function(snap) {
+      allTx = snap.docs.map(function(doc) {
+        var d = doc.data();
+        d.id = doc.id;
+        return d;
+      });
+      updateStats();
+      renderTx();
+    }, function(err) {
+      console.error('Erreur chargement transferts :', err);
+      document.getElementById('txList').innerHTML = '<div class="empty-msg">Erreur : ' + err.message + '</div>';
+    });
 }
 
 function updateStats() {
-  document.getElementById('statTotal').textContent = allTx.length;
+  document.getElementById('statTotal').textContent   = allTx.length;
   document.getElementById('statAttente').textContent = allTx.filter(function(t){ return t.statut === 'en_attente'; }).length;
-  document.getElementById('statPreuve').textContent = allTx.filter(function(t){ return t.statut === 'preuve_envoyee'; }).length;
-  document.getElementById('statUsers').textContent = allUsers.length;
+  document.getElementById('statPreuve').textContent  = allTx.filter(function(t){ return t.statut === 'preuve_envoyee'; }).length;
+  document.getElementById('statValidee').textContent = allTx.filter(function(t){ return t.statut === 'validee'; }).length;
+  document.getElementById('statUsers').textContent   = allUsers.length;
 }
 
-function filterTx(f) {
+function filterTx(f, btn) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   renderTx();
 }
 
 function renderTx() {
-  var list = currentFilter === 'tous' ? allTx : allTx.filter(function(t){ return t.statut === currentFilter; });
+  var list = currentFilter === 'tous'
+    ? allTx
+    : allTx.filter(function(t){ return t.statut === currentFilter; });
   var el = document.getElementById('txList');
-  if (!list.length) { el.innerHTML = '<div class="empty-msg">Aucun transfert</div>'; return; }
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-msg">Aucun transfert</div>';
+    return;
+  }
   el.innerHTML = list.map(function(tx) {
-    var d = tx.createdAt ? new Date(tx.createdAt.seconds * 1000).toLocaleDateString('fr-FR') : '-';
+    var dateStr = formatDate(tx.createdAt);
+    // Champs corrects : montantEur, montantDzd, nomUser, email
+    var montantEur = tx.montantEur || tx.montantEUR || 0;
+    var montantDzd = tx.montantDzd || tx.montantDZD || 0;
+    var nomUser    = tx.nomUser || tx.userNom || tx.email || tx.userEmail || 'Utilisateur';
+    var hasProof   = tx.preuveUserUrl ? ' 📎' : '';
     return '<div class="tx-item st-' + (tx.statut||'') + '" onclick="openDetail(\'' + tx.id + '\')">' +
       '<div class="tx-row">' +
-        '<span class="tx-ref">#' + tx.id.substring(0,8).toUpperCase() + '</span>' +
+        '<span class="tx-ref">#' + tx.id.substring(0,8).toUpperCase() + hasProof + '</span>' +
         '<span class="badge badge-' + (tx.statut||'') + '">' + labelStatut(tx.statut) + '</span>' +
       '</div>' +
-      '<div class="tx-amount">' + (tx.montantEUR||0) + ' EUR &rarr; ' + (tx.montantDZD||0) + ' DZD</div>' +
-      '<div class="tx-user">' + (tx.userNom||tx.userEmail||'Utilisateur') + '</div>' +
-      '<div class="tx-date">' + d + '</div>' +
+      '<div class="tx-amount">' + montantEur + ' EUR &rarr; ' + Number(montantDzd).toLocaleString('fr-DZ') + ' DZD</div>' +
+      '<div class="tx-user">👤 ' + escHtml(nomUser) + '</div>' +
+      '<div class="tx-date">' + dateStr + '</div>' +
     '</div>';
   }).join('');
 }
 
 function labelStatut(s) {
-  var labels = { en_attente:'En attente', preuve_envoyee:'Preuve envoyee', validee:'Validee', terminee:'Terminee', rejetee:'Rejetee', annulee:'Annulee', manque_info:'Info manquante' };
-  return labels[s] || s || '-';
+  return { en_attente:'En attente', preuve_envoyee:'Preuve envoyee', validee:'A traiter', terminee:'Termine', rejetee:'Rejete', annulee:'Annule', manque_info:'Info manquante' }[s] || s || '-';
 }
 
+function formatDate(ts) {
+  if (!ts) return '-';
+  var d;
+  if (ts.toDate) d = ts.toDate();
+  else if (ts.seconds) d = new Date(ts.seconds * 1000);
+  else d = new Date(ts);
+  return d.toLocaleDateString('fr-DZ') + ' ' + d.toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── Ouvrir detail ──
 function openDetail(id) {
   var tx = allTx.find(function(t){ return t.id === id; });
   if (!tx) return;
   currentTxId = id;
-  var d = tx.createdAt ? new Date(tx.createdAt.seconds * 1000).toLocaleString('fr-FR') : '-';
+
+  // Champs unifiés (supporte anciens et nouveaux noms)
+  var montantEur  = tx.montantEur  || tx.montantEUR  || 0;
+  var montantDzd  = tx.montantDzd  || tx.montantDZD  || 0;
+  var nomUser     = tx.nomUser     || tx.userNom     || '-';
+  var emailUser   = tx.email       || tx.userEmail   || '-';
+  var emailPaysera= tx.emailPaysera|| tx.emailPayseraUser || '-';
+  var ccpUser     = tx.ccpUser     || '-';
+  var tauxApplique= tx.taux        || '-';
+
+  document.getElementById('detailTitle').textContent = 'Transfert ' + montantEur + ' EUR';
+
+  // Infos du transfert
   var rows = [
-    ['Reference', '#' + id.substring(0,8).toUpperCase()],
-    ['Statut', labelStatut(tx.statut)],
-    ['Montant EUR', (tx.montantEUR||0) + ' EUR'],
-    ['Montant DZD', (tx.montantDZD||0) + ' DZD'],
-    ['Taux utilise', (tx.taux||'-') + ' DZD/EUR'],
-    ['Utilisateur', tx.userNom || '-'],
-    ['Email', tx.userEmail || '-'],
-    ['Email Paysera', tx.emailPayseraUser || '-'],
-    ['CCP utilisateur', tx.ccpUser || '-'],
-    ['Date', d],
-    ['Paysera admin', tx.payseraAdmin || '-'],
-    ['CCP admin', tx.ccpAdmin || '-'],
+    ['Reference',    '#' + id.substring(0,8).toUpperCase()],
+    ['Statut',       labelStatut(tx.statut)],
+    ['Montant',      montantEur + ' EUR &rarr; ' + Number(montantDzd).toLocaleString('fr-DZ') + ' DZD'],
+    ['Taux applique',tauxApplique + ' DZD/EUR'],
+    ['Utilisateur',  escHtml(nomUser)],
+    ['Email',        escHtml(emailUser)],
+    ['Paysera user', escHtml(emailPaysera)],
+    ['CCP user',     escHtml(ccpUser)],
+    ['Date',         formatDate(tx.createdAt)],
   ];
-  document.getElementById('detailTitle').textContent = 'Transfert ' + (tx.montantEUR||0) + ' EUR';
   document.getElementById('detailContent').innerHTML =
-    rows.map(function(r){ return '<div class="detail-row"><span class="detail-label">' + r[0] + '</span><span class="detail-val">' + r[1] + '</span></div>'; }).join('') +
-    (tx.preuveURL ? '<img class="proof-img" src="' + tx.preuveURL + '" onclick="window.open(\'' + tx.preuveURL + '\')"><br><small style="color:#888;font-size:10px">Cliquer pour agrandir</small>' : '') +
-    (tx.noteAdmin ? '<div style="margin-top:10px;background:#fef3c7;padding:10px;border-radius:8px;font-size:12px"><b>Note admin:</b> ' + tx.noteAdmin + '</div>' : '');
+    rows.map(function(r){
+      return '<div class="detail-row"><span class="detail-label">' + r[0] + '</span><span class="detail-val">' + r[1] + '</span></div>';
+    }).join('');
 
-  var actions = '';
-  if (tx.statut === 'preuve_envoyee' || tx.statut === 'en_attente') {
-    actions += '<button class="btn btn-success" onclick="actionStatut(\'' + id + '\',\'validee\')">Valider</button>';
-    actions += '<button class="btn btn-warning" onclick="actionStatut(\'' + id + '\',\'manque_info\')">Info manquante</button>';
-    actions += '<button class="btn btn-danger" onclick="actionStatut(\'' + id + '\',\'rejetee\')">Rejeter</button>';
+  // Preuve utilisateur
+  var userProofSec = document.getElementById('userProofSection');
+  var userProofImg = document.getElementById('userProofImg');
+  if (tx.preuveUserUrl) {
+    userProofImg.src = tx.preuveUserUrl;
+    userProofSec.style.display = 'block';
+  } else {
+    userProofSec.style.display = 'none';
   }
-  if (tx.statut === 'validee') {
-    actions += '<button class="btn btn-success" onclick="actionStatut(\'' + id + '\',\'terminee\')">Marquer termine</button>';
-  }
-  document.getElementById('detailActions').innerHTML = actions;
-  document.getElementById('detailModal').classList.add('open');
-}
 
-function actionStatut(id, statut) {
-  var note = '';
-  if (statut === 'rejetee' || statut === 'manque_info') {
-    note = prompt('Raison (optionnel):') || '';
-  }
-  var update = { statut: statut, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-  if (note) update.noteAdmin = note;
-  db.collection('transferts').doc(id).update(update).then(function() {
-    showToast('Statut mis a jour !');
-    closeModalDirect();
-  }).catch(function(e){ showToast('Erreur: ' + e.message); });
-}
-
-function closeModal(e) {
-  if (e.target === document.getElementById('detailModal')) closeModalDirect();
-}
-function closeModalDirect() {
-  document.getElementById('detailModal').classList.remove('open');
-}
-
-// ===== UTILISATEURS =====
-function loadUsers() {
-  db.collection('users').onSnapshot(function(snap) {
-    allUsers = [];
-    snap.forEach(function(doc) { allUsers.push({ id: doc.id, ...doc.data() }); });
-    updateStats();
-    renderUsers();
-  });
-}
-
-function renderUsers() {
-  var q = (document.getElementById('userSearch').value || '').toLowerCase();
-  var list = q ? allUsers.filter(function(u){ return (u.nom||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q); }) : allUsers;
-  var el = document.getElementById('userList');
-  if (!list.length) { el.innerHTML = '<div class="empty-msg">Aucun utilisateur</div>'; return; }
-  el.innerHTML = list.map(function(u) {
-    var init = (u.nom||'?')[0].toUpperCase();
-    var blocked = u.blocked ? '<div class="user-blocked">BLOQUE</div>' : '';
-    var btnLabel = u.blocked ? 'Debloquer' : 'Bloquer';
-    var btnClass = u.blocked ? 'btn-success' : 'btn-danger';
-    return '<div class="user-item">' +
-      '<div class="user-avatar">' + init + '</div>' +
-      '<div class="user-info">' +
-        '<div class="user-name">' + (u.nom||'-') + '</div>' +
-        '<div class="user-email">' + (u.email||'-') + '</div>' +
-        '<div class="user-ccp">' + (u.ccp||'Pas de CCP') + '</div>' +
-        blocked +
-      '</div>' +
-      '<div class="user-actions"><button class="btn ' + btnClass + '" style="font-size:11px;padding:6px 10px" onclick="toggleBlock(\'' + u.id + '\',' + (u.blocked?'true':'false') + ')">' + btnLabel + '</button></div>' +
-    '</div>';
-  }).join('');
-}
-
-function toggleBlock(uid, currentBlocked) {
-  var newVal = !currentBlocked;
-  db.collection('users').doc(uid).update({ blocked: newVal }).then(function() {
-    showToast(newVal ? 'Utilisateur bloque' : 'Utilisateur debloque');
-  });
-}
-
-// ===== PARAMETRES =====
-function loadSettings() {
-  db.collection('config').doc('settings').get().then(function(doc) {
-    if (doc.exists) {
-      var d = doc.data();
-      if (d.taux) document.getElementById('tauxInput').value = d.taux;
-      if (d.ccpAdmin) document.getElementById('ccpInput').value = d.ccpAdmin;
-      if (d.payseraAdmin) document.getElementById('payseraInput').value = d.payseraAdmin;
+  // Section upload preuve admin (visible quand statut = validee)
+  var adminUploadSec = document.getElementById('adminUploadSection');
+  var adminProofImgContainer = document.getElementById('adminProofImgContainer');
+  var adminProofImg = document.getElementById('adminProofImg');
+  if (tx.statut === 'validee' || tx.preuveAdminUrl) {
+    adminUploadSec.style.display = 'block';
+    if (tx.preuveAdminUrl) {
+      adminProofImg.src = tx.preuveAdminUrl;
+      adminProofImgContainer.style.display = 'block';
+    } else {
+      adminProofImgContainer.style.display = 'none';
     }
-  });
-}
+  } else {
+    adminUploadSec.style.display = 'none';
+  }
 
-function saveTaux() {
-  var v = parseFloat(document.getElementById('tauxInput').value);
-  if (!v || v <= 0) { showToast('Taux invalide'); return; }
-  db.collection('config').doc('settings').set({ taux: v }, { merge: true }).then(function() { showToast('Taux enregistre !'); });
-}
+  // Motif
+  document.getElementById('motifSection').style.display = 'none';
+  document.getElementById('motifInput').value = '';
 
-function saveCCP() {
-  var v = document.getElementById('ccpInput').value.trim();
-  if (!v) { showToast('CCP invalide'); return; }
-  db.collection('config').doc('settings').set({ ccpAdmin: v }, { merge: true }).then(function() { showToast('CCP enregistre !'); });
-}
-
-function savePaysera() {
-  var v = document.getElementById('payseraInput').value.trim();
-  if (!v) { showToast('Email invalide'); return; }
-  db.collection('config').doc('settings').set({ payseraAdmin: v }, { merge: true }).then(function() { showToast('Paysera enregistre !'); });
-}
-
-// ===== UI =====
-function showTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-  document.getElementById('tab-' + name).classList.add('active');
-  var tabs = ['transferts','utilisateurs','parametres'];
-  var idx = tabs.indexOf(name);
-  document.querySelectorAll('.tab')[idx].classList.add('active');
-}
-
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.display = 'block';
-  setTimeout(function(){ t.style.display = 'none'; }, 3000);
-}
-
-function doLogout() {
-  if (!confirm('Se deconnecter ?')) return;
-  auth.signOut().then(function() { window.location.href = 'auth.html'; });
-}
-</script>
-</body>
-</html>
+  // Boutons selon statut
+  var actions = '';
+  if (tx.statut === 'en_attente' || tx.statut === 'preuve_envoyee') {
+    actions +=
+      '<button class="btn btn-success" onclick="actionStatut(\'' + id + '\',\'validee\')">✅ Valider la preuve</button>' +
+      '<button class="btn btn-warning" onclick="showMotif(\'' + id + '\',\'manque_info\')">⚠️ Info manquante</button>' +
+      '<button class="btn btn-dange
