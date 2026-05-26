@@ -556,23 +556,33 @@ function renderProfile() {
 // ── TAUX ──
 function loadTaux() {
   db.collection('config').doc('settings').get().then(function(snap) {
-    if (snap.exists) {
-      var d = snap.data();
-      currentTaux = parseFloat(d.taux) || 0;
-      document.getElementById('tauxValue').textContent = currentTaux.toLocaleString('fr-DZ') + ' DZD';
-      calcDzd();
+    if (snap.exists && snap.data().taux) {
+      currentTaux = parseFloat(snap.data().taux) || 275;
+    } else {
+      currentTaux = 275; // Taux par défaut si non défini
     }
+    document.getElementById('tauxValue').textContent = currentTaux.toLocaleString('fr-DZ') + ' DZD';
+    calcDzd();
+  }).catch(function() {
+    currentTaux = 275;
+    document.getElementById('tauxValue').textContent = '275 DZD';
+    calcDzd();
   });
 }
 
 // ── ADMIN CCP ──
 function loadAdminCCP() {
   db.collection('config').doc('settings').get().then(function(snap) {
-    if (snap.exists && snap.data().adminCCP) {
-      adminCCP = snap.data().adminCCP;
+    // Admin sauvegarde sous 'ccpAdmin' (et fallback sur 'adminCCP' pour compatibilité)
+    if (snap.exists) {
+      var d = snap.data();
+      adminCCP = d.ccpAdmin || d.adminCCP || ADMIN_CCP_DEFAULT;
     } else {
       adminCCP = ADMIN_CCP_DEFAULT;
     }
+    document.getElementById('adminCCPDisplay').textContent = adminCCP;
+  }).catch(function() {
+    adminCCP = ADMIN_CCP_DEFAULT;
     document.getElementById('adminCCPDisplay').textContent = adminCCP;
   });
 }
