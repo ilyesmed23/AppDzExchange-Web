@@ -592,8 +592,7 @@ function loadAdminCCP() {
 function loadPublicFeed() {
   db.collection('transferts')
     .where('statut', '==', 'terminee')
-    .orderBy('createdAt', 'desc')
-    .limit(5)
+    .limit(10)
     .get().then(function(snap) {
       if (snap.empty) return;
       var section = document.getElementById('publicFeedSection');
@@ -613,32 +612,37 @@ function loadPublicFeed() {
     });
 }
 
-// ── TRANSFERTS LIST (onSnapshot = temps réel) ──
+// ── TRANSFERTS LIST (onSnapshot temps réel, tri client-side) ──
 function loadTransferts() {
-  if (transfertsListener) return; // listener déjà actif
+  if (transfertsListener) return;
   document.getElementById('loaderAccueil').style.display = 'block';
+  // Pas de orderBy → pas besoin d'index composite Firestore
   transfertsListener = db.collection('transferts')
     .where('userId', '==', currentUid)
-    .orderBy('createdAt', 'desc')
     .onSnapshot(function(snap) {
       document.getElementById('loaderAccueil').style.display = 'none';
       transferts = snap.docs.map(function(doc) {
         var d = doc.data();
         d.id = doc.id;
-        var ts = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().getTime() : Date.now();
-        d.createdAt = ts;
+        // serverTimestamp peut être null sur écriture locale (pending) → on prend Date.now()
+        var ts = (d.createdAt && d.createdAt.toDate) ? d.createdAt.toDate().getTime() : Date.now();
+        d._ts = ts;
         d.dateStr = new Date(ts).toLocaleDateString('fr-DZ') + ' ' +
-          new Date(ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
+          new Date(ts).toLocaleTimeString('fr-DZ', {hour:'2-digit', minute:'2-digit'});
         return d;
       });
+      // Tri décroissant côté client
+      transferts.sort(function(a, b) { return b._ts - a._ts; });
       renderTxList();
-      // Si le détail est ouvert, le rafraîchir aussi
+      // Rafraîchir le détail si ouvert
       if (currentTxId) {
-        var tx = transferts.find(function(t){ return t.id === currentTxId; });
+        var tx = transferts.find(function(t) { return t.id === currentTxId; });
         if (tx) renderDetail(tx);
       }
     }, function(err) {
       document.getElementById('loaderAccueil').style.display = 'none';
+      document.getElementById('txList').innerHTML =
+        '<div class="error-box" style="display:block;">Erreur chargement : ' + err.message + '</div>';
       console.error('Erreur transferts:', err);
     });
 }
