@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AppDz Exchange — Transfert EUR ↔ DZD en toute confiance</title>
+<title>AppDz Exchange — Convertissez vos Dinars en Euros</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -159,9 +159,9 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-badge">🇩🇿 SERVICE ALGÉRIE · EUR ↔ DZD</div>
-  <h1>Échangez vos <span>Euros</span><br>en Dinars simplement</h1>
-  <p>Transférez de Paysera vers BaridiMob en toute sécurité. Taux transparent, suivi en temps réel, service rapide et fiable.</p>
+  <div class="hero-badge">🇩🇿 SERVICE ALGÉRIE · DZD → EUR</div>
+  <h1>Convertissez vos <span>Dinars</span><br>en Euros facilement</h1>
+  <p>Transférez depuis BaridiMob vers Paysera en toute sécurité. Taux transparent, suivi en temps réel, service rapide et fiable.</p>
   <div class="hero-cta">
     <a href="auth.html" class="btn-hero-primary">🚀 Commencer gratuitement</a>
     <a href="#comment" class="btn-hero-secondary">Comment ça marche ↓</a>
@@ -175,10 +175,10 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
       <div class="taux-dot"></div>
       <span class="taux-label">TAUX EN DIRECT</span>
       <span class="taux-value" id="tauxLive">--</span>
-      <span style="color:rgba(255,255,255,.7);font-size:13px;">DZD / EUR</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13px;">DZD = 1 EUR</span>
     </div>
     <div class="taux-sep"></div>
-    <div class="taux-item"><span style="opacity:.65;font-size:13px;">🏦 Paysera → BaridiMob</span></div>
+    <div class="taux-item"><span style="opacity:.65;font-size:13px;">🏦 BaridiMob → Paysera</span></div>
     <div class="taux-sep"></div>
     <div class="taux-item"><span style="opacity:.65;font-size:13px;">⚡ Traitement 24–48h</span></div>
   </div>
@@ -188,23 +188,23 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <section class="section" style="text-align:center;">
   <div class="section-center">
     <h2 class="section-title">💱 Simulez votre transfert</h2>
-    <p class="section-sub">Calculez combien vous recevrez — aucune inscription requise</p>
+    <p class="section-sub">Calculez combien vous recevrez en euros — aucune inscription requise</p>
   </div>
   <div class="calc-card">
     <div class="calc-fields">
       <div class="calc-field">
-        <label>VOUS ENVOYEZ (Paysera)</label>
+        <label>VOUS ENVOYEZ (BaridiMob)</label>
         <div class="calc-input-wrap">
-          <input class="calc-input" type="number" id="eurInput" value="100" min="1" placeholder="0">
-          <span class="calc-cur">EUR</span>
+          <input class="calc-input" type="number" id="dzdInput" value="27500" min="100" step="100" placeholder="0">
+          <span class="calc-cur">DZD</span>
         </div>
       </div>
       <div class="calc-arrow-btn">⇄</div>
       <div class="calc-field">
-        <label>VOUS RECEVEZ (BaridiMob)</label>
+        <label>VOUS RECEVEZ (Paysera)</label>
         <div class="calc-result-box">
-          <span class="calc-result-amount" id="dzdResult">--</span>
-          <span class="calc-result-cur">DZD</span>
+          <span class="calc-result-amount" id="eurResult">--</span>
+          <span class="calc-result-cur">EUR</span>
         </div>
       </div>
     </div>
@@ -246,25 +246,25 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
       <div class="step-icon">👤</div>
       <div class="step-num">ÉTAPE 1</div>
       <h3 class="step-title">Créez votre compte</h3>
-      <p class="step-desc">Inscription gratuite avec votre email, numéro CCP BaridiMob et email Paysera.</p>
+      <p class="step-desc">Inscription gratuite avec votre email, votre numéro CCP BaridiMob et votre email Paysera.</p>
     </div>
     <div class="step-card">
       <div class="step-icon">📋</div>
       <div class="step-num">ÉTAPE 2</div>
       <h3 class="step-title">Faites une demande</h3>
-      <p class="step-desc">Indiquez le montant en euros. Nous vous donnons le CCP admin pour le virement DZD.</p>
+      <p class="step-desc">Indiquez le montant en DZD à envoyer. Nous vous donnons le CCP admin pour effectuer le virement BaridiMob.</p>
     </div>
     <div class="step-card">
       <div class="step-icon">📸</div>
       <div class="step-num">ÉTAPE 3</div>
-      <h3 class="step-title">Envoyez les preuves</h3>
-      <p class="step-desc">Virement Paysera + virement BaridiMob → CCP admin. Uploadez les captures d'écran.</p>
+      <h3 class="step-title">Envoyez la preuve</h3>
+      <p class="step-desc">Effectuez le virement DZD vers notre CCP via BaridiMob, puis uploadez la capture d'écran comme preuve.</p>
     </div>
     <div class="step-card">
-      <div class="step-icon">✅</div>
+      <div class="step-icon">💶</div>
       <div class="step-num">ÉTAPE 4</div>
-      <h3 class="step-title">Transfert confirmé</h3>
-      <p class="step-desc">Après vérification, le transfert est validé. Suivi en temps réel dans votre espace.</p>
+      <h3 class="step-title">Recevez vos Euros</h3>
+      <p class="step-desc">Après vérification, nous envoyons les euros sur votre compte Paysera. Suivi en temps réel dans l'app.</p>
     </div>
   </div>
 </section>
@@ -290,7 +290,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
     </div>
     <div class="feature-card">
       <div class="feature-icon">📱</div>
-      <div class="feature-text"><h4>Mobile & Desktop</h4><p>Interface optimisée pour téléphone et ordinateur. Accédez depuis partout.</p></div>
+      <div class="feature-text"><h4>Mobile & Desktop</h4><p>Interface optimisée pour téléphone et ordinateur. Accédez depuis n'importe quel appareil.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
@@ -305,7 +305,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 
 <!-- CTA FINAL -->
 <div class="cta-section">
-  <h2>Prêt à faire votre premier échange ?</h2>
+  <h2>Prêt à convertir vos Dinars en Euros ?</h2>
   <p>Rejoignez des utilisateurs qui nous font confiance chaque jour</p>
   <a href="auth.html" class="btn-hero-primary">🚀 Créer mon compte gratuitement</a>
 </div>
@@ -313,7 +313,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">🏠 ⇄ 💳 AppDz Exchange</div>
-  <p style="font-size:12px;opacity:.5;margin-top:4px;">Plateforme de change EUR ↔ DZD · Paysera ↔ BaridiMob</p>
+  <p style="font-size:12px;opacity:.5;margin-top:4px;">Plateforme de change DZD → EUR · BaridiMob → Paysera</p>
   <div class="footer-links">
     <a href="auth.html">Connexion</a>
     <a href="auth.html">S'inscrire</a>
@@ -336,21 +336,27 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-let tauxActuel = 0;
+let tauxActuel = 275; // 1 EUR = 275 DZD par défaut
 
 // Taux depuis Firebase
 db.collection('config').doc('settings').get().then(function(doc){
   if(doc.exists){
     var d = doc.data();
-    tauxActuel = parseFloat(d.taux) || 0;
-    if(tauxActuel > 0){
+    var t = parseFloat(d.taux) || 0;
+    if(t > 0){
+      tauxActuel = t;
       document.getElementById('tauxLive').textContent = tauxActuel.toLocaleString('fr-FR');
-      document.getElementById('tauxNote').textContent = '1 EUR = ' + tauxActuel + ' DZD';
+      document.getElementById('tauxNote').textContent = tauxActuel + ' DZD = 1 EUR';
       calculer();
     }
   }
-}).catch(function(){
-  document.getElementById('tauxNote').textContent = 'Connectez-vous pour voir le taux';
+}).catch(function(){}).finally(function(){
+  // Affiche le taux par défaut si Firebase n'est pas accessible
+  if(document.getElementById('tauxLive').textContent === '--'){
+    document.getElementById('tauxLive').textContent = tauxActuel;
+    document.getElementById('tauxNote').textContent = tauxActuel + ' DZD = 1 EUR';
+    calculer();
+  }
 });
 
 // Stats
@@ -363,17 +369,18 @@ Promise.all([
   document.getElementById('statUsers').textContent = results[1].size;
 }).catch(function(){});
 
-// Calculateur
+// Calculateur DZD → EUR
 function calculer(){
-  var eur = parseFloat(document.getElementById('eurInput').value) || 0;
-  if(tauxActuel > 0 && eur > 0){
-    var dzd = Math.round(eur * tauxActuel).toLocaleString('fr-FR');
-    document.getElementById('dzdResult').textContent = dzd;
+  var dzd = parseFloat(document.getElementById('dzdInput').value) || 0;
+  if(tauxActuel > 0 && dzd > 0){
+    var eur = (dzd / tauxActuel).toFixed(2);
+    document.getElementById('eurResult').textContent = eur;
   } else {
-    document.getElementById('dzdResult').textContent = '--';
+    document.getElementById('eurResult').textContent = '--';
   }
 }
-document.getElementById('eurInput').addEventListener('input', calculer);
+document.getElementById('dzdInput').addEventListener('input', calculer);
+calculer(); // Calcul initial
 
 // Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(function(a){
