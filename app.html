@@ -507,7 +507,8 @@ var currentTaux  = 0;
 var adminCCP     = ADMIN_CCP_DEFAULT;
 var transferts   = [];
 var currentTxId  = null;
-var messagesListener = null;
+var messagesListener   = null;
+var transfertsListener = null;
 
 // ── Auth Guard ──
 auth.onAuthStateChanged(function(user) {
@@ -612,27 +613,33 @@ function loadPublicFeed() {
     });
 }
 
-// ── TRANSFERTS LIST ──
+// ── TRANSFERTS LIST (onSnapshot = temps réel) ──
 function loadTransferts() {
+  if (transfertsListener) return; // listener déjà actif
   document.getElementById('loaderAccueil').style.display = 'block';
-  document.getElementById('txList').innerHTML = '';
-  db.collection('transferts')
+  transfertsListener = db.collection('transferts')
     .where('userId', '==', currentUid)
     .orderBy('createdAt', 'desc')
-    .get().then(function(snap) {
+    .onSnapshot(function(snap) {
       document.getElementById('loaderAccueil').style.display = 'none';
       transferts = snap.docs.map(function(doc) {
         var d = doc.data();
         d.id = doc.id;
-        d.createdAt = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().getTime() : 0;
-        d.dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-DZ') + ' ' +
-          new Date(d.createdAt).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
+        var ts = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().getTime() : Date.now();
+        d.createdAt = ts;
+        d.dateStr = new Date(ts).toLocaleDateString('fr-DZ') + ' ' +
+          new Date(ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
         return d;
       });
       renderTxList();
-    }).catch(function(err) {
+      // Si le détail est ouvert, le rafraîchir aussi
+      if (currentTxId) {
+        var tx = transferts.find(function(t){ return t.id === currentTxId; });
+        if (tx) renderDetail(tx);
+      }
+    }, function(err) {
       document.getElementById('loaderAccueil').style.display = 'none';
-      console.error(err);
+      console.error('Erreur transferts:', err);
     });
 }
 
@@ -753,11 +760,11 @@ function renderDetail(tx) {
       uploadHtml = '<div style="background:#fff7ed;border:2px solid #f97316;border-radius:12px;padding:12px;margin-bottom:12px;">' +
         '<div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:4px;">Preuve insuffisante</div>' +
         '<div style="font-size:12px;color:#92400e;">Veuillez renvoyer une meilleure photo de votre recu de virement.</div></div>';
-      if (tx.preuveUserUrl) uploadHtml += '<img src="'+tx.preuveUserUrl+'" style="width:100%;border-radius:10px;border:1px solid #e0e8f5;cursor:pointer;margin-bottom:10px;" onclick="openImgViewer(\''+tx.preuveUserUrl+'\')" />';
+      if (tx.preuveUserUrl) uploadHtml += thumbHtml(tx.preuveUserUrl, 'Votre preuve envoyée');
       uploadHtml += '<div class="upload-area" onclick="triggerUpload()"><div class="upload-icon">&#128247;</div><div class="upload-text">Envoyer une nouvelle preuve</div></div>' +
         '<div id="uploadLoader" class="loader">Upload en cours...</div>';
     } else if (tx.preuveUserUrl) {
-      uploadHtml = '<img src="'+tx.preuveUserUrl+'" style="width:100%;border-radius:10px;border:1px solid #e0e8f5;cursor:pointer;" onclick="openImgViewer(\''+tx.preuveUserUrl+'\')" />';
+      uploadHtml = thumbHtml(tx.preuveUserUrl, 'Votre preuve envoyée');
       if (tx.statut === 'preuve_envoyee') {
         uploadHtml += '<button onclick="triggerUpload()" style="width:100%;margin-top:10px;padding:10px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;color:#0369a1;font-size:13px;font-weight:700;cursor:pointer;">Modifier la preuve</button>' +
           '<div id="uploadLoader" class="loader">Upload en cours...</div>';
@@ -766,8 +773,8 @@ function renderDetail(tx) {
   }
 
   var adminProofHtml = '';
-  if (tx.preuveAdminUrl) adminProofHtml = '<div style="margin-top:16px;font-size:12px;font-weight:700;color:#059669;margin-bottom:8px;">Preuve du virement Paysera :</div>' +
-    '<img src="'+tx.preuveAdminUrl+'" style="width:100%;border-radius:10px;border:1px solid #d1fae5;cursor:pointer;" onclick="openImgViewer(\''+tx.preuveAdminUrl+'\')" />';
+  if (tx.preuveAdminUrl) adminProofHtml = '<div style="margin-top:16px;font-size:12px;font-weight:700;color:#059669;margin-bottom:8px;">&#10003; Preuve du virement Paysera :</div>' +
+    thumbHtml(tx.preuveAdminUrl, 'Preuve admin');
 
   var cancelHtml = '';
   if (tx.statut === 'en_attente') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
@@ -1014,6 +1021,15 @@ function sendChatMessage() {
 }
 
 // ── HELPERS ──
+function thumbHtml(url, label) {
+  return '<div style="margin-bottom:12px;">' +
+    '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px;">' + (label||'Preuve') + ' <span style="color:#aaa;">(cliquez pour agrandir)</span></div>' +
+    '<img src="'+url+'" onclick="openImgViewer(\''+url+'\')" ' +
+    'style="width:110px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #e0e8f5;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:.15s;" ' +
+    'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
+    '</div>';
+}
+
 function openImgViewer(url) {
   document.getElementById('imgViewerSrc').src = url;
   document.getElementById('imgViewer').classList.add('open');
