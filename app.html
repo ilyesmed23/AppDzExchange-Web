@@ -1120,7 +1120,13 @@ function sendChatMessage() {
 }
 
 // ── NOTIFICATION EMAIL ADMIN ──
+var notifPaused = false;
+db.collection('config').doc('settings').get().then(function(s) {
+  if (s.exists) notifPaused = s.data().notifPaused === true;
+}).catch(function(){});
+
 function sendAdminEmail(subject, body) {
+  if (notifPaused) return; // Admin a mis en pause
   fetch('https://api.web3forms.com/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

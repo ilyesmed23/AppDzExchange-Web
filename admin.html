@@ -238,7 +238,28 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <button class="s-btn" onclick="saveSettings()">💾 Enregistrer</button>
         <div id="settingsMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
+
+      <!-- NOTIFICATIONS EMAIL -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">🔔 Notifications Email</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Active ou désactive les emails de notification (Web3Forms · 250/mois).
+          Désactivez pendant les tests pour économiser le quota.
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e0e8f5;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1a1f36;" id="notifLabel">⏳ Chargement...</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;" id="notifSub"></div>
+          </div>
+          <button id="notifToggleBtn" onclick="toggleNotif()"
+            style="padding:10px 20px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;">
+            ...
+          </button>
+        </div>
+        <div id="notifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
     </div>
+
 
   </div>
 </div>
@@ -317,6 +338,52 @@ function initListeners(){
       document.getElementById('sPaysera').value=d.payseraAdmin||'';
     }
   });
+  loadNotifState();
+}
+
+var notifPaused = false;
+
+function loadNotifState() {
+  db.collection('config').doc('settings').get().then(function(s) {
+    notifPaused = s.exists && s.data().notifPaused === true;
+    renderNotifBtn();
+  });
+}
+
+function renderNotifBtn() {
+  var label = document.getElementById('notifLabel');
+  var sub   = document.getElementById('notifSub');
+  var btn   = document.getElementById('notifToggleBtn');
+  if (notifPaused) {
+    label.textContent = '🔕 Notifications désactivées';
+    sub.textContent   = 'Aucun email ne sera envoyé';
+    btn.textContent   = '▶ Activer';
+    btn.style.background = '#d1fae5';
+    btn.style.color      = '#065f46';
+  } else {
+    label.textContent = '🔔 Notifications activées';
+    sub.textContent   = 'Emails envoyés à chaque action';
+    btn.textContent   = '⏸ Mettre en pause';
+    btn.style.background = '#fef3c7';
+    btn.style.color      = '#92400e';
+  }
+}
+
+function toggleNotif() {
+  notifPaused = !notifPaused;
+  db.collection('config').doc('settings').set({ notifPaused: notifPaused }, { merge: true })
+    .then(function() {
+      renderNotifBtn();
+      var msg = document.getElementById('notifMsg');
+      msg.textContent = notifPaused ? '✓ Notifications mises en pause' : '✓ Notifications réactivées';
+      msg.style.color = '#059669';
+      setTimeout(function(){ msg.textContent=''; }, 3000);
+    })
+    .catch(function(e) {
+      var msg = document.getElementById('notifMsg');
+      msg.textContent = 'Erreur : ' + e.message;
+      msg.style.color = '#dc2626';
+    });
 }
 
 // ── DASHBOARD ──

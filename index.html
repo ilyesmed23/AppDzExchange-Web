@@ -415,8 +415,10 @@ function sendContact() {
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     lu: false
   }).then(function() {
-    // Notification email admin
-    fetch('https://api.web3forms.com/submit', {
+    // Notification email admin (si pas en pause)
+    db.collection('config').doc('settings').get().then(function(s) {
+      if (s.exists && s.data().notifPaused === true) return;
+      fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -430,6 +432,7 @@ function sendContact() {
         from_name: 'AppDz Exchange',
         email: 'giftformenow@gmail.com'
       })
+    }).catch(function(){});
     }).catch(function(){});
     document.getElementById('contactFormWrap').style.display = 'none';
     var s = document.getElementById('contactSuccess');
