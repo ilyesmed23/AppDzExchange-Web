@@ -143,6 +143,23 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
   .tx-card{flex-wrap:wrap;}
   .tx-acts{width:100%;}
 }
+/* ── CUSTOM MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:18px;padding:28px 24px 20px;width:100%;max-width:420px;box-shadow:0 12px 48px rgba(0,0,0,.28);animation:modalIn .18s ease;}
+@keyframes modalIn{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-ico{font-size:38px;text-align:center;margin-bottom:12px;}
+.modal-ttl{font-size:16px;font-weight:800;color:#1a1f36;margin-bottom:8px;text-align:center;}
+.modal-msg{font-size:13px;color:#555;margin-bottom:22px;line-height:1.65;text-align:center;white-space:pre-line;}
+.modal-inp{width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;margin-bottom:16px;font-family:inherit;}
+.modal-inp:focus{border-color:#1254a0;}
+.modal-acts{display:flex;gap:10px;}
+.modal-cancel{flex:1;padding:12px;border:1.5px solid #e0e8f5;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;background:#fff;color:#555;transition:.12s;}
+.modal-cancel:hover{background:#f0f4fa;}
+.modal-ok{flex:1;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;transition:.12s;}
+.modal-ok:hover{opacity:.9;}
+.modal-ok.danger{background:linear-gradient(135deg,#dc2626,#ef4444);}
+
 /* ── NEW FEATURES ── */
 .b-vip{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;}
 .b-regular{background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
@@ -323,6 +340,32 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 
   </div>
 </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="cModal" class="modal-overlay" onclick="if(event.target===this)hideCModal()">
+  <div class="modal-box">
+    <div class="modal-ico" id="cModalIco">⚠️</div>
+    <div class="modal-ttl" id="cModalTtl">Confirmation</div>
+    <div class="modal-msg" id="cModalMsg"></div>
+    <div class="modal-acts">
+      <button class="modal-cancel" onclick="hideCModal()">Annuler</button>
+      <button class="modal-ok" id="cModalOk">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMPT MODAL -->
+<div id="pModal" class="modal-overlay" onclick="if(event.target===this)hidePModal()">
+  <div class="modal-box">
+    <div class="modal-ttl" id="pModalTtl">Saisie</div>
+    <div class="modal-msg" id="pModalHint" style="margin-bottom:10px;"></div>
+    <input class="modal-inp" id="pModalInp" type="text" onkeydown="if(event.key==='Enter')document.getElementById('pModalOk').click()">
+    <div class="modal-acts">
+      <button class="modal-cancel" onclick="hidePModal()">Annuler</button>
+      <button class="modal-ok" id="pModalOk">OK</button>
+    </div>
+  </div>
 </div>
 
 <!-- DRAWER DETAIL -->
@@ -643,11 +686,32 @@ function fillDrawer(t){
 }
 
 // ── ACTIONS ──
-function quickOk(id){if(!confirm('Valider la preuve ?'))return;chgSt(id,'validee');}
-function quickRej(id){var m=prompt('Motif (optionnel):');if(m===null)return;db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');}).catch(function(e){toast(e.message,'err');});}
-function quickInfo(id){var i=prompt('Information manquante :');if(!i)return;db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');}).catch(function(e){toast(e.message,'err');});}
-function promptRej(id){var m=prompt('Motif du rejet (optionnel):');if(m===null)return;db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});}
-function promptInfo(id){var i=prompt('Quelle information est manquante ?');if(!i)return;db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});}
+function quickOk(id){
+  showCModal('✅','Valider la preuve ?','Cette action va marquer le transfert comme Validé.','✓ Valider',false,function(){chgSt(id,'validee');});
+}
+function quickRej(id){
+  showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');}).catch(function(e){toast(e.message,'err');});
+  });
+}
+function quickInfo(id){
+  showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
+    if(!i)return;
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');}).catch(function(e){toast(e.message,'err');});
+  });
+}
+function promptRej(id){
+  showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
+    if(m===null)return;
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});
+  });
+}
+function promptInfo(id){
+  showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
+    if(!i)return;
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});
+  });
+}
 function chgSt(id,s){
   var t=allTx.find(function(x){return x.id===id;});
   var wasTerminee=t&&t.statut==='terminee';
@@ -674,17 +738,17 @@ function chgSt(id,s){
 }
 function delTx(id){
   var t=allTx.find(function(x){return x.id===id;});
-  var msg='⚠️ SUPPRIMER ce transfert ?\n\n'+(t?'• '+(t.nomUser||t.email||'—')+'\n• '+t.montantEur+' EUR — '+slbl(t.statut)+'\n• '+t.dateStr+'\n\n':'')+
-    'Les images (preuves) seront aussi supprimées.\n\n✅ Assurez-vous d\'avoir exporté ce transfert avant de continuer.';
-  if(!confirm(msg))return;
-  // Supprimer les fichiers Storage puis le document Firestore
-  toast('Suppression en cours...','info');
-  storage.ref('preuves/'+id).listAll().then(function(res){
-    return Promise.all(res.items.map(function(f){return f.delete();}));
-  }).catch(function(){/* pas de fichiers = ok */}).finally(function(){
-    db.collection('transferts').doc(id).delete()
-      .then(function(){toast('Transfert + preuves supprimés ✓','ok');closeDrawer();curTxId=null;})
-      .catch(function(e){toast('Erreur: '+e.message,'err');});
+  var msg=(t?'👤 '+(t.nomUser||t.email||'—')+'\n💰 '+t.montantEur+' EUR — '+slbl(t.statut)+'\n📅 '+t.dateStr+'\n\n':'')+
+    'Les preuves (images) seront aussi supprimées.\nAssurez-vous d\'avoir exporté ce transfert.';
+  showCModal('🗑️','Supprimer ce transfert ?',msg,'🗑 Supprimer',true,function(){
+    toast('Suppression en cours...','info');
+    storage.ref('preuves/'+id).listAll().then(function(res){
+      return Promise.all(res.items.map(function(f){return f.delete();}));
+    }).catch(function(){}).finally(function(){
+      db.collection('transferts').doc(id).delete()
+        .then(function(){toast('Transfert + preuves supprimés ✓','ok');closeDrawer();curTxId=null;})
+        .catch(function(e){toast('Erreur: '+e.message,'err');});
+    });
   });
 }
 
@@ -996,7 +1060,37 @@ function show(n){
 function slbl(s){return{en_attente:'En attente',preuve_envoyee:'Preuve reçue',validee:'Validé',terminee:'Terminé',rejetee:'Rejeté',annulee:'Annulé',manque_info:'Info manquante'}[s]||s;}
 function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'info');setTimeout(function(){t.className='toast';},3000);}
 function viewImg(url){document.getElementById('ivSrc').src=url;document.getElementById('imgViewer').classList.add('open');}
-function confirmLogout(){if(confirm('Se déconnecter ?'))auth.signOut().then(function(){location.href='auth.html';});}
+function confirmLogout(){
+  showCModal('🚪','Se déconnecter ?','Vous serez redirigé vers la page de connexion.','Se déconnecter',false,function(){
+    auth.signOut().then(function(){location.href='auth.html';});
+  });
+}
+
+// ── CUSTOM MODALS ──
+function showCModal(ico, title, msg, okLabel, danger, onOk){
+  document.getElementById('cModalIco').textContent=ico||'⚠️';
+  document.getElementById('cModalTtl').textContent=title||'Confirmation';
+  document.getElementById('cModalMsg').textContent=msg||'';
+  var btn=document.getElementById('cModalOk');
+  btn.textContent=okLabel||'Confirmer';
+  btn.className='modal-ok'+(danger?' danger':'');
+  btn.onclick=function(){hideCModal();onOk();};
+  document.getElementById('cModal').classList.add('open');
+}
+function hideCModal(){document.getElementById('cModal').classList.remove('open');}
+
+function showPModal(title, hint, placeholder, okLabel, onOk){
+  document.getElementById('pModalTtl').textContent=title||'Saisie';
+  document.getElementById('pModalHint').textContent=hint||'';
+  var inp=document.getElementById('pModalInp');
+  inp.placeholder=placeholder||'';inp.value='';
+  var btn=document.getElementById('pModalOk');
+  btn.textContent=okLabel||'OK';
+  btn.onclick=function(){var v=inp.value;hidePModal();onOk(v);};
+  document.getElementById('pModal').classList.add('open');
+  setTimeout(function(){inp.focus();},80);
+}
+function hidePModal(){document.getElementById('pModal').classList.remove('open');}
 
 // ── VIP ──
 function toggleVip(uid,currentVip){
@@ -1047,26 +1141,30 @@ function deselectAll(){
 }
 function bulkDelete(){
   if(selectedTxIds.size===0){toast('Aucun transfert sélectionné','info');return;}
-  if(!confirm('⚠️ SUPPRIMER '+selectedTxIds.size+' transfert(s) sélectionné(s) ?\n\nCette action est irréversible. Les preuves seront aussi supprimées.'))return;
-  toast('Suppression de '+selectedTxIds.size+' transfert(s)...','info');
-  var ids=Array.from(selectedTxIds);
-  var done=0;
-  ids.forEach(function(id){
-    storage.ref('preuves/'+id).listAll().then(function(res){
-      return Promise.all(res.items.map(function(f){return f.delete();}));
-    }).catch(function(){}).finally(function(){
-      db.collection('transferts').doc(id).delete().then(function(){
-        done++;
-        if(done===ids.length){
-          selectedTxIds.clear();
-          bulkSelectMode=false;
-          document.getElementById('bulkToggleBtn').style.background='#374151';
-          document.getElementById('bulkToggleBtn').style.borderColor='#374151';
-          document.getElementById('bulkToggleBtn').textContent='☑ Sélectionner';
-          document.getElementById('bulkBar').style.display='none';
-          toast(ids.length+' transfert(s) supprimé(s) ✓','ok');
-        }
-      }).catch(function(e){toast('Erreur: '+e.message,'err');});
+  var _count=selectedTxIds.size;
+  showCModal('🗑️','Supprimer '+_count+' transfert(s) ?',
+    'Cette action est irréversible.\nLes preuves (images) associées seront aussi supprimées.',
+    '🗑 Supprimer tout',true,function(){
+    toast('Suppression de '+_count+' transfert(s)...','info');
+    var ids=Array.from(selectedTxIds);
+    var done=0;
+    ids.forEach(function(id){
+      storage.ref('preuves/'+id).listAll().then(function(res){
+        return Promise.all(res.items.map(function(f){return f.delete();}));
+      }).catch(function(){}).finally(function(){
+        db.collection('transferts').doc(id).delete().then(function(){
+          done++;
+          if(done===ids.length){
+            selectedTxIds.clear();
+            bulkSelectMode=false;
+            document.getElementById('bulkToggleBtn').style.background='#374151';
+            document.getElementById('bulkToggleBtn').style.borderColor='#374151';
+            document.getElementById('bulkToggleBtn').textContent='☑ Sélectionner';
+            document.getElementById('bulkBar').style.display='none';
+            toast(ids.length+' transfert(s) supprimé(s) ✓','ok');
+          }
+        }).catch(function(e){toast('Erreur: '+e.message,'err');});
+      });
     });
   });
 }
