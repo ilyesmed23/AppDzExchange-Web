@@ -591,7 +591,7 @@ function loadInit() {
   loadPublicFeed();
   loadTransferts();
   loadMessages(); // listener permanent → badge toujours à jour
-  initNotifications(currentUid);
+  initNotifications(currentUid); // charge lastNotifRead depuis le profil user
 }
 
 // ── USER INFO ──
@@ -1133,53 +1133,14 @@ function updateUserBadgeDisplay() {
 var allNotifs = [], lastNotifRead = 0;
 
 function initNotifications(uid) {
-  // Charger lastNotifRead depuis le profil user
+  // Charger lastNotifRead depuis le profil user, puis les notifs arrivent via le onSnapshot settings
   db.collection('users').doc(uid).get().then(function(d) {
-    lastNotifRead = (d.exists && d.data().lastNotifRead) ? d.data().lastNotifRead.toMillis() : 0;
-    listenNotifs(uid);
-  }).catch(function(){ listenNotifs(uid); });
-}
-
-function listenNotifs(uid) {
-  // Deux listeners séparés : global "all" + personnel uid
-  // (évite index composite Firestore + contourne les règles de sécurité)
-  var merged = {};
-  function onUpdate(docs) {
-    docs.forEach(function(d) { merged[d.id] = d; });
-    allNotifs = Object.values(merged);
-    allNotifs.sort(function(a,b){ return b._ts - a._ts; });
+    lastNotifRead = (d.exists && d.data().lastNotifRead) ? d.data().lastNotifRead : 0;
+    if (lastNotifRead && lastNotifRead.toMillis) lastNotifRead = lastNotifRead.toMillis();
     updateNotifBadge();
     renderNotifs();
-  }
-  db.collection('notifications')
-    .where('userId', '==', 'all')
-    .onSnapshot(function(snap) {
-      snap.docs.forEach(function(d) {
-        var x = d.data(); x.id = d.id;
-        x._ts = x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().getTime() : 0;
-        merged[d.id] = x;
-      });
-      // Retirer les docs supprimés
-      Object.keys(merged).forEach(function(id) {
-        if(merged[id].userId === 'all' && !snap.docs.find(function(d){return d.id===id;})) delete merged[id];
-      });
-      allNotifs = Object.values(merged).sort(function(a,b){return b._ts-a._ts;});
-      updateNotifBadge(); renderNotifs();
-    }, function(){});
-  db.collection('notifications')
-    .where('userId', '==', uid)
-    .onSnapshot(function(snap) {
-      snap.docs.forEach(function(d) {
-        var x = d.data(); x.id = d.id;
-        x._ts = x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().getTime() : 0;
-        merged[d.id] = x;
-      });
-      Object.keys(merged).forEach(function(id) {
-        if(merged[id].userId === uid && !snap.docs.find(function(d){return d.id===id;})) delete merged[id];
-      });
-      allNotifs = Object.values(merged).sort(function(a,b){return b._ts-a._ts;});
-      updateNotifBadge(); renderNotifs();
-    }, function(){});
+  }).catch(function(){});
+  // Les notifications sont livrées par le onSnapshot config/settings déjà actif
 }
 
 function updateNotifBadge() {
@@ -1324,21 +1285,33 @@ function sendChatMessage() {
   });
 }
 
-// ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT (temps réel) ──
+// ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT + NOTIFS IN-APP (temps réel) ──
 var notifPaused = false;
 var _announceDismissed = false;
 db.collection('config').doc('settings').onSnapshot(function(s) {
   if (s.exists) {
-    notifPaused = s.data().notifPaused === true;
-    var announce = (s.data().announcement || '').trim();
+    var d = s.data();
+    notifPaused = d.notifPaused === true;
+
+    // Bandeau annonce
+    var announce = (d.announcement || '').trim();
     var banner = document.getElementById('announceBanner');
     if (announce && !_announceDismissed) {
       document.getElementById('announceText').textContent = announce;
       banner.style.display = 'flex';
     } else if (!announce) {
       banner.style.display = 'none';
-      _announceDismissed = false; // reset si l'admin supprime l'annonce
+      _announceDismissed = false;
     }
+
+    // Notifications in-app (stockées dans settings.recentNotifications)
+    var raw = d.recentNotifications || [];
+    allNotifs = raw.map(function(n) {
+      return { id: n.id||'', message: n.message||'', type: n.type||'announcement', _ts: typeof n.createdAt==='number' ? n.createdAt : 0 };
+    });
+    allNotifs.sort(function(a,b){ return b._ts - a._ts; });
+    updateNotifBadge();
+    renderNotifs();
   }
 }, function(){});
 

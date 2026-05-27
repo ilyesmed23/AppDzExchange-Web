@@ -1200,21 +1200,27 @@ function saveAlertThreshold(){
 // ── ANNOUNCEMENT ──
 function saveAnnouncement(){
   var v=document.getElementById('sAnnouncement').value.trim();
-  db.collection('config').doc('settings').set({announcement:v},{merge:true}).then(function(){
-    if(v){
-      // Créer une notification in-app pour tous les utilisateurs
-      db.collection('notifications').add({
-        userId:'all',
-        message:v,
-        type:'announcement',
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      }).catch(function(){});
-    }
-    document.getElementById('announceMsg').textContent=v?'✓ Annonce publiée + notification envoyée à tous les utilisateurs':'✓ Annonce désactivée';
-    document.getElementById('announceMsg').style.color='#059669';
-    toast(v?'📢 Annonce + notification envoyées':'Annonce désactivée','ok');
-    setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
-  }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  if(v){
+    // Lire les notifs existantes, ajouter la nouvelle en tête, garder max 30
+    db.collection('config').doc('settings').get().then(function(doc){
+      var existing=(doc.exists&&doc.data().recentNotifications)||[];
+      var newNotif={id:Date.now().toString(),message:v,type:'announcement',createdAt:Date.now()};
+      var updated=[newNotif].concat(existing).slice(0,30);
+      db.collection('config').doc('settings').set({announcement:v,recentNotifications:updated},{merge:true}).then(function(){
+        document.getElementById('announceMsg').textContent='✓ Annonce publiée + notification envoyée à tous les utilisateurs';
+        document.getElementById('announceMsg').style.color='#059669';
+        toast('📢 Annonce + notification envoyées','ok');
+        setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
+      }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  } else {
+    db.collection('config').doc('settings').set({announcement:''},{merge:true}).then(function(){
+      document.getElementById('announceMsg').textContent='✓ Annonce désactivée';
+      document.getElementById('announceMsg').style.color='#059669';
+      toast('Annonce désactivée','ok');
+      setTimeout(function(){document.getElementById('announceMsg').textContent='';},3000);
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  }
 }
 </script>
 </body>
