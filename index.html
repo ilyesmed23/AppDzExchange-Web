@@ -440,7 +440,9 @@ function sendContact() {
     lu: false
   }).then(function() {
     document.getElementById('contactFormWrap').style.display = 'none';
-    document.getElementById('contactSuccess').style.display = 'block';
+    var s = document.getElementById('contactSuccess');
+    s.style.display = 'block';
+    s.scrollIntoView({behavior:'smooth', block:'center'});
   }).catch(function(err) {
     errEl.textContent = 'Erreur lors de l\'envoi. Réessayez dans quelques instants.';
     errEl.style.display = 'block';
