@@ -143,6 +143,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
   .tx-card{flex-wrap:wrap;}
   .tx-acts{width:100%;}
 }
+/* ── USER SEARCH PICKER ── */
+.user-picker{position:relative;}
+.user-picker-input{width:100%;padding:10px 12px;border:1.5px solid #e0e8f5;border-radius:9px;font-size:13px;outline:none;background:#f8fafc;}
+.user-picker-input:focus{border-color:#1254a0;background:#fff;}
+.user-picker-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e0e8f5;border-top:none;border-radius:0 0 10px 10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.1);display:none;}
+.user-picker-results.open{display:block;}
+.user-picker-item{padding:10px 13px;cursor:pointer;border-bottom:1px solid #f5f6f8;transition:.1s;}
+.user-picker-item:last-child{border-bottom:none;}
+.user-picker-item:hover{background:#eff6ff;}
+.user-picker-item .upi-name{font-size:13px;font-weight:700;color:#1a1f36;}
+.user-picker-item .upi-email{font-size:11px;color:#aaa;}
+.user-picker-selected{display:flex;align-items:center;justify-content:space-between;background:#eff6ff;border:1.5px solid #1254a0;border-radius:9px;padding:9px 12px;margin-bottom:12px;}
+.user-picker-selected .ups-name{font-size:13px;font-weight:700;color:#1254a0;}
+.user-picker-selected .ups-email{font-size:11px;color:#60a5fa;}
+.user-picker-clear{background:none;border:none;color:#1254a0;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;}
+
 /* ── CUSTOM MODALS ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
@@ -332,6 +348,39 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <textarea class="s-input" id="sAnnouncement" rows="3" placeholder="ex: Maintenance prévue le 1er juin de 14h à 16h. Merci de votre compréhension." style="resize:vertical;font-family:inherit;"></textarea>
         <button class="s-btn" onclick="saveAnnouncement()">📢 Publier l'annonce</button>
         <div id="announceMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      <!-- NOTIFICATION PERSONNALISÉE -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">✉️ Notification personnalisée</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Envoyez un message privé à un utilisateur précis. Il apparaîtra dans son onglet 🔔 Notifications avec la mention <strong>Personnel</strong>.
+        </div>
+
+        <!-- Sélecteur utilisateur -->
+        <label class="s-lbl">RECHERCHER UN UTILISATEUR</label>
+        <div id="userPickerSelected" style="display:none;" class="user-picker-selected">
+          <div>
+            <div class="ups-name" id="upsName"></div>
+            <div class="ups-email" id="upsEmail"></div>
+          </div>
+          <button class="user-picker-clear" onclick="clearPickedUser()" title="Changer">✕</button>
+        </div>
+        <div id="userPickerField" class="user-picker">
+          <input class="user-picker-input" id="userPickerInput" type="text"
+            placeholder="Nom ou email de l'utilisateur..."
+            oninput="filterUserPicker(this.value)"
+            onfocus="filterUserPicker(this.value)"
+            autocomplete="off">
+          <div class="user-picker-results" id="userPickerResults"></div>
+        </div>
+
+        <label class="s-lbl" style="margin-top:12px;">MESSAGE</label>
+        <textarea class="s-input" id="sPersonalNotif" rows="3"
+          placeholder="ex: Votre demande a été traitée en priorité. Merci de votre confiance !"
+          style="resize:vertical;font-family:inherit;"></textarea>
+        <button class="s-btn" onclick="sendPersonalNotif()">✉️ Envoyer la notification</button>
+        <div id="personalNotifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
     </div>
@@ -1087,6 +1136,81 @@ function showPModal(title, hint, placeholder, okLabel, onOk){
   setTimeout(function(){inp.focus();},80);
 }
 function hidePModal(){document.getElementById('pModal').classList.remove('open');}
+
+// ── USER PICKER (notif personnalisée) ──
+var pickedUserId = null;
+
+function filterUserPicker(q) {
+  var results = document.getElementById('userPickerResults');
+  q = (q||'').toLowerCase().trim();
+  var matches = allUsers.filter(function(u) {
+    return !q || ((u.nom||'')+(u.email||'')).toLowerCase().includes(q);
+  }).slice(0, 8); // max 8 suggestions
+  if (!matches.length) { results.classList.remove('open'); return; }
+  results.innerHTML = matches.map(function(u) {
+    var init = (u.nom||u.email||'?').charAt(0).toUpperCase();
+    var lvl = getAdminBadge(u.id);
+    return '<div class="user-picker-item" onclick="pickUser(\''+u.id+'\',\''+escH(u.nom||'—')+'\',\''+escH(u.email||'')+'\')">'+
+      '<div style="display:flex;align-items:center;gap:9px;">'+
+        '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1254a0,#0097a7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;">'+init+'</div>'+
+        '<div><div class="upi-name">'+(u.nom||'—')+'<span class="badge '+lvl.cls+'" style="margin-left:6px;font-size:9px;">'+lvl.ico+' '+lvl.label+'</span></div>'+
+        '<div class="upi-email">'+(u.email||'—')+'</div></div>'+
+      '</div></div>';
+  }).join('');
+  results.classList.add('open');
+}
+
+function pickUser(uid, nom, email) {
+  pickedUserId = uid;
+  document.getElementById('upsName').textContent = nom;
+  document.getElementById('upsEmail').textContent = email;
+  document.getElementById('userPickerSelected').style.display = 'flex';
+  document.getElementById('userPickerField').style.display = 'none';
+  document.getElementById('userPickerResults').classList.remove('open');
+}
+
+function clearPickedUser() {
+  pickedUserId = null;
+  document.getElementById('userPickerSelected').style.display = 'none';
+  document.getElementById('userPickerField').style.display = 'block';
+  document.getElementById('userPickerInput').value = '';
+  document.getElementById('userPickerResults').classList.remove('open');
+}
+
+// Fermer dropdown si clic ailleurs
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#userPickerField')) {
+    var r = document.getElementById('userPickerResults');
+    if (r) r.classList.remove('open');
+  }
+});
+
+function sendPersonalNotif() {
+  var msg = (document.getElementById('sPersonalNotif').value||'').trim();
+  var out = document.getElementById('personalNotifMsg');
+  if (!pickedUserId) { out.textContent = 'Sélectionnez un utilisateur.'; out.style.color='#dc2626'; return; }
+  if (!msg) { out.textContent = 'Le message ne peut pas être vide.'; out.style.color='#dc2626'; return; }
+
+  var newNotif = { id: Date.now().toString(), message: msg, type: 'personal', createdAt: Date.now() };
+
+  // Lire les notifs existantes du user, en ajouter une, garder max 50
+  db.collection('users').doc(pickedUserId).get().then(function(doc) {
+    var existing = (doc.exists && doc.data().personalNotifications) || [];
+    var updated = [newNotif].concat(existing).slice(0, 50);
+    return db.collection('users').doc(pickedUserId).update({ personalNotifications: updated });
+  }).then(function() {
+    var userName = document.getElementById('upsName').textContent;
+    out.textContent = '✓ Notification envoyée à ' + userName;
+    out.style.color = '#059669';
+    document.getElementById('sPersonalNotif').value = '';
+    clearPickedUser();
+    toast('✉️ Notification envoyée à ' + userName, 'ok');
+    setTimeout(function(){ out.textContent = ''; }, 4000);
+  }).catch(function(e) {
+    out.textContent = 'Erreur : ' + e.message;
+    out.style.color = '#dc2626';
+  });
+}
 
 // ── BADGES NIVEAU ──
 function getAdminBadge(uid) {

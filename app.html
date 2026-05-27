@@ -305,9 +305,12 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       </div>
       <button onclick="handleLogout()" title="Se déconnecter"
         style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
-               padding:5px 10px;font-size:13px;cursor:pointer;font-weight:700;
-               display:flex;align-items:center;gap:5px;white-space:nowrap;">
-        🚪
+               padding:7px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
       </button>
     </div>
   </div>
@@ -1132,42 +1135,56 @@ function updateUserBadgeDisplay() {
 // ── NOTIFICATIONS ──
 var allNotifs = [], lastNotifRead = 0;
 
+var personalNotifs = [];
+
 function initNotifications(uid) {
-  // Charger lastNotifRead depuis le profil user, puis les notifs arrivent via le onSnapshot settings
-  db.collection('users').doc(uid).get().then(function(d) {
-    lastNotifRead = (d.exists && d.data().lastNotifRead) ? d.data().lastNotifRead : 0;
-    if (lastNotifRead && lastNotifRead.toMillis) lastNotifRead = lastNotifRead.toMillis();
+  // Charger lastNotifRead + notifications personnelles via onSnapshot sur le profil user
+  db.collection('users').doc(uid).onSnapshot(function(d) {
+    if (!d.exists) return;
+    var data = d.data();
+    // lastNotifRead
+    var lnr = data.lastNotifRead || 0;
+    lastNotifRead = lnr && lnr.toMillis ? lnr.toMillis() : (typeof lnr === 'number' ? lnr : 0);
+    // Notifications personnelles
+    personalNotifs = (data.personalNotifications || []).map(function(n) {
+      return { id: n.id||'', message: n.message||'', type: 'personal', _ts: typeof n.createdAt==='number' ? n.createdAt : 0 };
+    });
     updateNotifBadge();
     renderNotifs();
-  }).catch(function(){});
-  // Les notifications sont livrées par le onSnapshot config/settings déjà actif
+  }, function(){});
 }
 
-function updateNotifBadge() {
-  var unread = allNotifs.filter(function(n){ return n._ts > lastNotifRead; }).length;
-  var badge = document.getElementById('notifBadge');
-  if(unread > 0){ badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'inline'; }
-  else badge.style.display = 'none';
-}
 
 function renderNotifs() {
   var el = document.getElementById('notifList');
   if(!el) return;
-  if(!allNotifs.length){
+  // Fusionner notifs globales + personnelles, trier par date
+  var combined = allNotifs.concat(personalNotifs);
+  combined.sort(function(a,b){ return b._ts - a._ts; });
+  if(!combined.length){
     el.innerHTML = '<div class="notif-empty"><div class="notif-empty-ico">🔔</div><div>Aucune notification</div></div>';
     return;
   }
-  el.innerHTML = allNotifs.map(function(n) {
+  el.innerHTML = combined.map(function(n) {
     var isUnread = n._ts > lastNotifRead;
-    var ico = n.type === 'announcement' ? '📢' : (n.type === 'transfer' ? '💱' : '🔔');
+    var ico = n.type === 'personal' ? '✉️' : (n.type === 'announcement' ? '📢' : '🔔');
     var ts = n._ts ? new Date(n._ts).toLocaleDateString('fr-DZ') + ' ' + new Date(n._ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
+    var personalTag = n.type === 'personal' ? '<span style="font-size:10px;background:#ede9fe;color:#5b21b6;padding:1px 7px;border-radius:10px;font-weight:700;margin-left:6px;">Personnel</span>' : '';
     return '<div class="notif-item'+(isUnread?' unread':'')+'">'+
       '<div class="notif-ico">'+ico+'</div>'+
       '<div class="notif-body">'+
-        '<div class="notif-msg">'+(n.message||'')+'</div>'+
+        '<div class="notif-msg">'+(n.message||'')+personalTag+'</div>'+
         '<div class="notif-date">'+ts+'</div>'+
       '</div></div>';
   }).join('');
+}
+
+function updateNotifBadge() {
+  var combined = allNotifs.concat(personalNotifs);
+  var unread = combined.filter(function(n){ return n._ts > lastNotifRead; }).length;
+  var badge = document.getElementById('notifBadge');
+  if(unread > 0){ badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
 }
 
 function markAllNotifsRead() {
