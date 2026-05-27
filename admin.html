@@ -143,6 +143,20 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
   .tx-card{flex-wrap:wrap;}
   .tx-acts{width:100%;}
 }
+/* ── NEW FEATURES ── */
+.b-vip{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.b-regular{background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.vip-btn{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:800;border:none;cursor:pointer;transition:.15s;white-space:nowrap;}
+.vip-btn.is-vip{background:#fef9c3;color:#92400e;border:1.5px solid #f59e0b;}
+.vip-btn.not-vip{background:#f3f4f6;color:#6b7280;border:1.5px solid #e0e8f5;}
+.vip-btn:hover{opacity:.85;}
+.tx-card.big-alert{border-left-color:#ef4444!important;box-shadow:0 0 0 2px rgba(239,68,68,.12);}
+.alert-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.bulk-bar{background:#1a1f36;color:#fff;padding:10px 16px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.tx-cb{width:17px;height:17px;cursor:pointer;accent-color:#1254a0;flex-shrink:0;margin-right:6px;}
+.tx-card.selected{outline:2px solid #1254a0;background:#eff6ff;}
+.announce-bar{background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-radius:0;font-size:13px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -187,6 +201,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <button class="fbtn" id="f-annulee" onclick="setF('annulee')">🚫 Annulés</button>
         <button class="fbtn" onclick="exportFiltered()" style="background:#065f46;border-color:#065f46;color:#fff;">📥 Exporter Excel</button>
         <button class="fbtn" onclick="exportAll()" style="background:#1254a0;border-color:#1254a0;color:#fff;">📥 Tout exporter</button>
+        <button class="fbtn" id="bulkToggleBtn" onclick="toggleBulkMode()" style="background:#374151;border-color:#374151;color:#fff;">☑ Sélectionner</button>
+      </div>
+      <div id="bulkBar" class="bulk-bar" style="display:none;">
+        <span id="bulkCount" style="font-size:13px;font-weight:700;">0 sélectionné(s)</span>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="fbtn" onclick="selectAllVisible()" style="background:#fff;color:#1a1f36;border-color:#fff;">Tout sélectionner</button>
+          <button class="fbtn" onclick="deselectAll()" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);">Désélectionner</button>
+          <button class="fbtn" onclick="bulkDelete()" style="background:#fee2e2;border-color:#fee2e2;color:#dc2626;">🗑 Supprimer la sélection</button>
+          <button class="fbtn" onclick="toggleBulkMode()" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2);">✕ Annuler</button>
+        </div>
       </div>
       <div id="txList"></div>
     </div>
@@ -258,8 +282,44 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         </div>
         <div id="notifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
-    </div>
 
+      <!-- SOLDE EUR -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">💵 Solde EUR disponible</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Définissez votre solde EUR disponible. Il sera automatiquement décrémenté à chaque transfert marqué <strong>Terminé</strong>.
+        </div>
+        <label class="s-lbl">SOLDE ACTUEL (EUR)</label>
+        <input class="s-input" id="sSolde" type="number" min="0" step="0.01" placeholder="ex: 5000">
+        <button class="s-btn" onclick="saveSoldeEur()">💾 Mettre à jour le solde</button>
+        <div id="soldeMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      <!-- ALERTE GROS MONTANTS -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">🚨 Alerte gros montants</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Les transferts dépassant ce seuil seront mis en évidence (bordure rouge) dans la liste et comptés dans le tableau de bord.
+        </div>
+        <label class="s-lbl">SEUIL D'ALERTE (EUR)</label>
+        <input class="s-input" id="sAlertThreshold" type="number" min="0" placeholder="ex: 500">
+        <button class="s-btn" onclick="saveAlertThreshold()">💾 Enregistrer le seuil</button>
+        <div id="alertMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      <!-- ANNONCE BROADCAST -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">📢 Annonce aux utilisateurs</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Ce message sera affiché en bandeau à tous les utilisateurs connectés sur l'application. Laissez vide pour désactiver.
+        </div>
+        <label class="s-lbl">MESSAGE D'ANNONCE</label>
+        <textarea class="s-input" id="sAnnouncement" rows="3" placeholder="ex: Maintenance prévue le 1er juin de 14h à 16h. Merci de votre compréhension." style="resize:vertical;font-family:inherit;"></textarea>
+        <button class="s-btn" onclick="saveAnnouncement()">📢 Publier l'annonce</button>
+        <div id="announceMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+    </div>
 
   </div>
 </div>
@@ -299,6 +359,7 @@ firebase.initializeApp(firebaseConfig);
 var auth=firebase.auth(), db=firebase.firestore(), storage=firebase.storage();
 var ADMIN="giftformenow@gmail.com";
 var allTx=[], allUsers=[], curFilter='tous', curSearch='', curTxId=null;
+var alertThreshold=500, soldeEur=0, bulkSelectMode=false, selectedTxIds=new Set();
 
 auth.onAuthStateChanged(function(u){
   if(!u||u.email!==ADMIN){location.href='auth.html';return;}
@@ -336,6 +397,11 @@ function initListeners(){
       document.getElementById('sTaux').value=d.taux||275;
       document.getElementById('sCCP').value=d.ccpAdmin||'';
       document.getElementById('sPaysera').value=d.payseraAdmin||'';
+      soldeEur=typeof d.soldeEur==='number'?d.soldeEur:0;
+      document.getElementById('sSolde').value=soldeEur;
+      alertThreshold=typeof d.alertThreshold==='number'?d.alertThreshold:500;
+      document.getElementById('sAlertThreshold').value=alertThreshold;
+      document.getElementById('sAnnouncement').value=d.announcement||'';
     }
   });
   loadNotifState();
@@ -389,8 +455,12 @@ function toggleNotif() {
 // ── DASHBOARD ──
 function renderDash(){
   var c={en_attente:0,preuve_envoyee:0,validee:0,terminee:0,rejetee:0,annulee:0,manque_info:0};
-  var totEur=0;
-  allTx.forEach(function(t){if(c[t.statut]!==undefined)c[t.statut]++;if(t.statut==='terminee')totEur+=Number(t.montantEur)||0;});
+  var totEur=0, bigAlerts=0;
+  allTx.forEach(function(t){
+    if(c[t.statut]!==undefined)c[t.statut]++;
+    if(t.statut==='terminee')totEur+=Number(t.montantEur)||0;
+    if(Number(t.montantEur)>alertThreshold&&t.statut!=='terminee'&&t.statut!=='rejetee'&&t.statut!=='annulee')bigAlerts++;
+  });
   var cards=[
     {c:'c-orange',ico:'📤',lbl:'PREUVE REÇUE',val:c.preuve_envoyee,sub:'À valider maintenant',f:'preuve_envoyee'},
     {c:'c-blue',ico:'⏳',lbl:'EN ATTENTE',val:c.en_attente,sub:'Nouveaux transferts',f:'en_attente'},
@@ -398,12 +468,26 @@ function renderDash(){
     {c:'c-green',ico:'🏁',lbl:'TERMINÉS',val:c.terminee,sub:totEur.toLocaleString('fr-DZ')+' EUR échangés',f:'terminee'},
     {c:'c-red',ico:'❌',lbl:'REJETÉS/ANNULÉS',val:c.rejetee+c.annulee,sub:'',f:'rejetee'},
   ];
+  var extraCards='';
+  // Solde EUR card
+  var soldeColor=soldeEur<200?'#ef4444':soldeEur<1000?'#f59e0b':'#10b981';
+  extraCards+='<div class="stat-card" style="border-left-color:'+soldeColor+';cursor:default;" onclick="show(\'Settings\')" title="Cliquer pour modifier">'+
+    '<div class="stat-lbl">💵 SOLDE EUR DISPO</div>'+
+    '<div class="stat-val" style="font-size:20px;color:'+soldeColor+';">'+soldeEur.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €</div>'+
+    '<div class="stat-sub">Cliquer pour modifier</div></div>';
+  // Big alerts card
+  if(bigAlerts>0){
+    extraCards+='<div class="stat-card c-red" onclick="show(\'Tx\');setF(\'tous\')" style="cursor:pointer;">'+
+      '<div class="stat-lbl"><span class="alert-dot"></span>GROS MONTANTS (>'+alertThreshold+' EUR)</div>'+
+      '<div class="stat-val">🚨 '+bigAlerts+'</div>'+
+      '<div class="stat-sub">Transferts actifs à surveiller</div></div>';
+  }
   document.getElementById('statsGrid').innerHTML=cards.map(function(s){
     return '<div class="stat-card '+s.c+'" onclick="show(\'Tx\');setF(\''+s.f+'\')">'+
       '<div class="stat-lbl">'+s.lbl+'</div>'+
       '<div class="stat-val">'+s.ico+' '+s.val+'</div>'+
       '<div class="stat-sub">'+s.sub+'</div></div>';
-  }).join('');
+  }).join('')+extraCards;
   var rec=allTx.slice(0,6);
   document.getElementById('recentList').innerHTML=rec.length?rec.map(function(t){
     return '<div class="tx-card st-'+t.statut+'" onclick="openDrawer(\''+t.id+'\')">'+
@@ -432,6 +516,28 @@ function renderTxList(){
   });
   if(!filtered.length){list.innerHTML='<div class="empty"><div class="empty-ico">🔍</div><div>Aucun résultat</div></div>';return;}
   list.innerHTML=filtered.map(function(t){
+    var isBig=Number(t.montantEur)>alertThreshold;
+    var isSelected=selectedTxIds.has(t.id);
+    var bigClass=isBig?' big-alert':'';
+    var selClass=isSelected?' selected':'';
+    var userObj=allUsers.find(function(u){return u.id===t.userId;})||{};
+    var isVip=userObj.vip===true;
+    var vipBadge=isVip?'<span class="b-vip" style="margin-left:6px;">⭐ VIP</span>':'';
+    var alertBadge=isBig?'<span style="font-size:10px;color:#ef4444;font-weight:800;margin-left:6px;"><span class="alert-dot"></span>Gros montant</span>':'';
+
+    if(bulkSelectMode){
+      var cb='<input type="checkbox" class="tx-cb" '+( isSelected?'checked':'')+' onclick="event.stopPropagation();toggleSelect(\''+t.id+'\')" />';
+      return '<div class="tx-card st-'+t.statut+bigClass+selClass+'" onclick="toggleSelect(\''+t.id+'\')">'+
+        '<div style="display:flex;align-items:flex-start;gap:8px;flex:1;">'+cb+
+        '<div class="tx-info">'+
+          '<div class="tx-user">'+(t.nomUser||'—')+vipBadge+alertBadge+'<span class="tx-email" style="margin-left:6px;">'+(t.email||'')+'</span></div>'+
+          '<div class="tx-amount">'+t.montantEur+' EUR</div>'+
+          '<div class="tx-dzd">'+(t.montantDzd?'→ '+Number(t.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>'+
+          '<div class="tx-date">'+t.dateStr+'</div>'+
+        '</div></div>'+
+        '<div class="tx-right"><span class="badge b-'+t.statut+'">'+slbl(t.statut)+'</span></div></div>';
+    }
+
     var acts='<button class="abtn a-view" onclick="event.stopPropagation();openDrawer(\''+t.id+'\')">👁 Voir</button>';
     if(t.statut==='preuve_envoyee'){
       acts+='<button class="abtn a-ok" onclick="event.stopPropagation();quickOk(\''+t.id+'\')">✓ Valider</button>';
@@ -441,9 +547,9 @@ function renderTxList(){
       acts+='<button class="abtn a-proof" onclick="event.stopPropagation();startUpload(\''+t.id+'\')">📤 Preuve</button>';
     }
     acts+='<button class="abtn a-del" onclick="event.stopPropagation();delTx(\''+t.id+'\')">🗑</button>';
-    return '<div class="tx-card st-'+t.statut+'" onclick="openDrawer(\''+t.id+'\')">'+
+    return '<div class="tx-card st-'+t.statut+bigClass+'" onclick="openDrawer(\''+t.id+'\')">'+
       '<div class="tx-info">'+
-        '<div class="tx-user">'+(t.nomUser||'—')+'<span class="tx-email" style="margin-left:6px;">'+(t.email||'')+'</span></div>'+
+        '<div class="tx-user">'+(t.nomUser||'—')+vipBadge+alertBadge+'<span class="tx-email" style="margin-left:6px;">'+(t.email||'')+'</span></div>'+
         '<div class="tx-amount">'+t.montantEur+' EUR</div>'+
         '<div class="tx-dzd">'+(t.montantDzd?'→ '+Number(t.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>'+
         '<div class="tx-date">'+t.dateStr+'</div>'+
@@ -542,7 +648,30 @@ function quickRej(id){var m=prompt('Motif (optionnel):');if(m===null)return;db.c
 function quickInfo(id){var i=prompt('Information manquante :');if(!i)return;db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');}).catch(function(e){toast(e.message,'err');});}
 function promptRej(id){var m=prompt('Motif du rejet (optionnel):');if(m===null)return;db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});}
 function promptInfo(id){var i=prompt('Quelle information est manquante ?');if(!i)return;db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});}
-function chgSt(id,s){db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Statut → '+slbl(s),'ok');}).catch(function(e){toast(e.message,'err');});}
+function chgSt(id,s){
+  var t=allTx.find(function(x){return x.id===id;});
+  var wasTerminee=t&&t.statut==='terminee';
+  db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
+    toast('Statut → '+slbl(s),'ok');
+    // Solde EUR: décrémenter si passage à terminee, ré-incrémenter si on annule une terminee
+    if(t&&s==='terminee'&&!wasTerminee){
+      var newSolde=Math.max(0,soldeEur-(Number(t.montantEur)||0));
+      db.collection('config').doc('settings').set({soldeEur:newSolde},{merge:true}).then(function(){
+        soldeEur=newSolde;
+        document.getElementById('sSolde').value=newSolde;
+        renderDash();
+        toast('Solde EUR mis à jour : '+newSolde.toFixed(2)+' €','info');
+      }).catch(function(){});
+    }else if(t&&wasTerminee&&s!=='terminee'){
+      var newSolde=soldeEur+(Number(t.montantEur)||0);
+      db.collection('config').doc('settings').set({soldeEur:newSolde},{merge:true}).then(function(){
+        soldeEur=newSolde;
+        document.getElementById('sSolde').value=newSolde;
+        renderDash();
+      }).catch(function(){});
+    }
+  }).catch(function(e){toast(e.message,'err');});
+}
 function delTx(id){
   var t=allTx.find(function(x){return x.id===id;});
   var msg='⚠️ SUPPRIMER ce transfert ?\n\n'+(t?'• '+(t.nomUser||t.email||'—')+'\n• '+t.montantEur+' EUR — '+slbl(t.statut)+'\n• '+t.dateStr+'\n\n':'')+
@@ -643,15 +772,21 @@ function renderUsers(){
     var txN=allTx.filter(function(t){return t.userId===u.id;}).length;
     var init=(u.nom||u.email||'?').charAt(0).toUpperCase();
     var lastTx=allTx.filter(function(t){return t.userId===u.id;}).sort(function(a,b){return b._ts-a._ts;})[0];
+    var isVip=u.vip===true;
+    var vipBadgeHtml=isVip?'<span class="b-vip" style="margin-left:6px;">⭐ VIP</span>':'<span class="b-regular" style="margin-left:6px;">Régulier</span>';
+    var vipBtnHtml='<button class="vip-btn '+(isVip?'is-vip':'not-vip')+'" onclick="event.stopPropagation();toggleVip(\''+u.id+'\','+isVip+')">'+(isVip?'⭐ VIP':'☆ Régulier')+'</button>';
     return '<div class="user-row" onclick="showUserTx(\''+u.id+'\')">'+
-      '<div class="u-av">'+init+'</div>'+
+      '<div class="u-av" style="'+(isVip?'background:linear-gradient(135deg,#f59e0b,#d97706);':'')+'">'+init+'</div>'+
       '<div class="u-info">'+
-        '<div class="u-name">'+(u.nom||'—')+'</div>'+
+        '<div class="u-name">'+(u.nom||'—')+vipBadgeHtml+'</div>'+
         '<div class="u-email">'+(u.email||'—')+'</div>'+
         '<div class="u-meta">Paysera: '+(u.emailPaysera||'—')+' · CCP: '+(u.ccp||'—')+'</div>'+
         '<div class="u-meta">'+txN+' transfert(s)'+(lastTx?' · Dernier: '+lastTx.dateStr:'')+'</div>'+
       '</div>'+
-      '<button class="abtn a-view" onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">Voir transferts</button>'+
+      '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">'+
+        vipBtnHtml+
+        '<button class="abtn a-view" onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">Voir transferts</button>'+
+      '</div>'+
     '</div>';
   }).join('');
 }
@@ -862,6 +997,116 @@ function slbl(s){return{en_attente:'En attente',preuve_envoyee:'Preuve reçue',v
 function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'info');setTimeout(function(){t.className='toast';},3000);}
 function viewImg(url){document.getElementById('ivSrc').src=url;document.getElementById('imgViewer').classList.add('open');}
 function confirmLogout(){if(confirm('Se déconnecter ?'))auth.signOut().then(function(){location.href='auth.html';});}
+
+// ── VIP ──
+function toggleVip(uid,currentVip){
+  var newVip=!currentVip;
+  db.collection('users').doc(uid).update({vip:newVip}).then(function(){
+    toast(newVip?'⭐ Client marqué VIP':'Client marqué Régulier','ok');
+  }).catch(function(e){toast('Erreur: '+e.message,'err');});
+}
+
+// ── BULK SELECT ──
+function toggleBulkMode(){
+  bulkSelectMode=!bulkSelectMode;
+  selectedTxIds.clear();
+  var btn=document.getElementById('bulkToggleBtn');
+  var bar=document.getElementById('bulkBar');
+  if(bulkSelectMode){
+    btn.style.background='#059669';btn.style.borderColor='#059669';btn.textContent='☑ Mode sélection ON';
+    bar.style.display='flex';
+  }else{
+    btn.style.background='#374151';btn.style.borderColor='#374151';btn.textContent='☑ Sélectionner';
+    bar.style.display='none';
+  }
+  renderTxList();
+}
+function toggleSelect(id){
+  if(selectedTxIds.has(id))selectedTxIds.delete(id);else selectedTxIds.add(id);
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent=selectedTxIds.size+' sélectionné(s)';
+  // Update visual without full re-render
+  renderTxList();
+}
+function selectAllVisible(){
+  var filtered=allTx.filter(function(t){
+    if(curFilter!=='tous'&&t.statut!==curFilter)return false;
+    if(curSearch){var h=((t.nomUser||'')+(t.email||'')+(t.emailPaysera||'')+(t.montantEur||'')).toLowerCase();if(!h.includes(curSearch))return false;}
+    return true;
+  });
+  filtered.forEach(function(t){selectedTxIds.add(t.id);});
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent=selectedTxIds.size+' sélectionné(s)';
+  renderTxList();
+}
+function deselectAll(){
+  selectedTxIds.clear();
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent='0 sélectionné(s)';
+  renderTxList();
+}
+function bulkDelete(){
+  if(selectedTxIds.size===0){toast('Aucun transfert sélectionné','info');return;}
+  if(!confirm('⚠️ SUPPRIMER '+selectedTxIds.size+' transfert(s) sélectionné(s) ?\n\nCette action est irréversible. Les preuves seront aussi supprimées.'))return;
+  toast('Suppression de '+selectedTxIds.size+' transfert(s)...','info');
+  var ids=Array.from(selectedTxIds);
+  var done=0;
+  ids.forEach(function(id){
+    storage.ref('preuves/'+id).listAll().then(function(res){
+      return Promise.all(res.items.map(function(f){return f.delete();}));
+    }).catch(function(){}).finally(function(){
+      db.collection('transferts').doc(id).delete().then(function(){
+        done++;
+        if(done===ids.length){
+          selectedTxIds.clear();
+          bulkSelectMode=false;
+          document.getElementById('bulkToggleBtn').style.background='#374151';
+          document.getElementById('bulkToggleBtn').style.borderColor='#374151';
+          document.getElementById('bulkToggleBtn').textContent='☑ Sélectionner';
+          document.getElementById('bulkBar').style.display='none';
+          toast(ids.length+' transfert(s) supprimé(s) ✓','ok');
+        }
+      }).catch(function(e){toast('Erreur: '+e.message,'err');});
+    });
+  });
+}
+
+// ── SOLDE EUR ──
+function saveSoldeEur(){
+  var v=parseFloat(document.getElementById('sSolde').value);
+  if(isNaN(v)||v<0){document.getElementById('soldeMsg').textContent='Valeur invalide.';document.getElementById('soldeMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({soldeEur:v},{merge:true}).then(function(){
+    soldeEur=v;renderDash();
+    document.getElementById('soldeMsg').textContent='✓ Solde mis à jour : '+v.toFixed(2)+' €';
+    document.getElementById('soldeMsg').style.color='#059669';
+    toast('Solde EUR enregistré','ok');
+    setTimeout(function(){document.getElementById('soldeMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('soldeMsg').textContent='Erreur: '+e.message;document.getElementById('soldeMsg').style.color='#dc2626';});
+}
+
+// ── ALERT THRESHOLD ──
+function saveAlertThreshold(){
+  var v=parseFloat(document.getElementById('sAlertThreshold').value);
+  if(isNaN(v)||v<0){document.getElementById('alertMsg').textContent='Valeur invalide.';document.getElementById('alertMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({alertThreshold:v},{merge:true}).then(function(){
+    alertThreshold=v;renderDash();renderTxList();
+    document.getElementById('alertMsg').textContent='✓ Seuil enregistré : '+v+' EUR';
+    document.getElementById('alertMsg').style.color='#059669';
+    toast('Seuil alerte enregistré','ok');
+    setTimeout(function(){document.getElementById('alertMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('alertMsg').textContent='Erreur: '+e.message;document.getElementById('alertMsg').style.color='#dc2626';});
+}
+
+// ── ANNOUNCEMENT ──
+function saveAnnouncement(){
+  var v=document.getElementById('sAnnouncement').value.trim();
+  db.collection('config').doc('settings').set({announcement:v},{merge:true}).then(function(){
+    document.getElementById('announceMsg').textContent=v?'✓ Annonce publiée pour tous les utilisateurs':'✓ Annonce désactivée';
+    document.getElementById('announceMsg').style.color='#059669';
+    toast(v?'📢 Annonce publiée':'Annonce désactivée','ok');
+    setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
+  }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+}
 </script>
 </body>
 </html>

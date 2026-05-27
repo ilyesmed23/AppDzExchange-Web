@@ -158,6 +158,12 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .profile-row:last-child { border-bottom:none; }
 .profile-row label { color:#888; font-size:12px; font-weight:700; }
 
+/* ── ANNOUNCEMENT BANNER ── */
+.announce-banner{background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;line-height:1.4;}
+.announce-banner .announce-ico{font-size:18px;flex-shrink:0;}
+.announce-banner .announce-text{flex:1;}
+.announce-banner .announce-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
 /* ═══════════════════════════════════════
    RESPONSIVE DESKTOP (≥ 769px)
 ═══════════════════════════════════════ */
@@ -280,6 +286,13 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
     <span class="taux-label">Taux EUR > DZD</span>
     <span class="taux-value" id="tauxValue">-- DZD</span>
   </div>
+</div>
+
+<!-- ANNOUNCEMENT BANNER -->
+<div id="announceBanner" class="announce-banner" style="display:none;">
+  <span class="announce-ico">📢</span>
+  <span class="announce-text" id="announceText"></span>
+  <button class="announce-close" onclick="this.parentElement.style.display='none'" title="Fermer">✕</button>
 </div>
 
 <!-- CONTENT -->
@@ -1119,10 +1132,18 @@ function sendChatMessage() {
   });
 }
 
-// ── NOTIFICATION EMAIL ADMIN ──
+// ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT ──
 var notifPaused = false;
 db.collection('config').doc('settings').get().then(function(s) {
-  if (s.exists) notifPaused = s.data().notifPaused === true;
+  if (s.exists) {
+    notifPaused = s.data().notifPaused === true;
+    // Show announcement banner if set
+    var announce = (s.data().announcement || '').trim();
+    if (announce) {
+      document.getElementById('announceText').textContent = announce;
+      document.getElementById('announceBanner').style.display = 'flex';
+    }
+  }
 }).catch(function(){});
 
 function sendAdminEmail(subject, body) {
