@@ -280,7 +280,15 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <div class="header">
   <div class="header-top">
     <div class="header-logo">AppDz Exchange</div>
-    <div class="header-user" id="headerUser">Chargement...</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="header-user" id="headerUser">Chargement...</div>
+      <button onclick="handleLogout()" title="Se déconnecter"
+        style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
+               padding:5px 10px;font-size:13px;cursor:pointer;font-weight:700;
+               display:flex;align-items:center;gap:5px;white-space:nowrap;">
+        🚪
+      </button>
+    </div>
   </div>
   <div class="taux-bar">
     <span class="taux-label">Taux EUR > DZD</span>
@@ -292,7 +300,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <div id="announceBanner" class="announce-banner" style="display:none;">
   <span class="announce-ico">📢</span>
   <span class="announce-text" id="announceText"></span>
-  <button class="announce-close" onclick="this.parentElement.style.display='none'" title="Fermer">✕</button>
+  <button class="announce-close" onclick="_announceDismissed=true;this.parentElement.style.display='none'" title="Fermer">✕</button>
 </div>
 
 <!-- CONTENT -->
@@ -1132,19 +1140,23 @@ function sendChatMessage() {
   });
 }
 
-// ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT ──
+// ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT (temps réel) ──
 var notifPaused = false;
-db.collection('config').doc('settings').get().then(function(s) {
+var _announceDismissed = false;
+db.collection('config').doc('settings').onSnapshot(function(s) {
   if (s.exists) {
     notifPaused = s.data().notifPaused === true;
-    // Show announcement banner if set
     var announce = (s.data().announcement || '').trim();
-    if (announce) {
+    var banner = document.getElementById('announceBanner');
+    if (announce && !_announceDismissed) {
       document.getElementById('announceText').textContent = announce;
-      document.getElementById('announceBanner').style.display = 'flex';
+      banner.style.display = 'flex';
+    } else if (!announce) {
+      banner.style.display = 'none';
+      _announceDismissed = false; // reset si l'admin supprime l'annonce
     }
   }
-}).catch(function(){});
+}, function(){});
 
 function sendAdminEmail(subject, body) {
   if (notifPaused) return; // Admin a mis en pause

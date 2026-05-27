@@ -435,7 +435,7 @@ function initListeners(){
     renderUsers();
   });
 
-  db.collection('config').doc('settings').get().then(function(s){
+  db.collection('config').doc('settings').onSnapshot(function(s){
     if(s.exists){var d=s.data();
       document.getElementById('sTaux').value=d.taux||275;
       document.getElementById('sCCP').value=d.ccpAdmin||'';
@@ -445,9 +445,13 @@ function initListeners(){
       alertThreshold=typeof d.alertThreshold==='number'?d.alertThreshold:500;
       document.getElementById('sAlertThreshold').value=alertThreshold;
       document.getElementById('sAnnouncement').value=d.announcement||'';
+      notifPaused=d.notifPaused===true;
+      renderNotifBtn();
+      renderDash();
+      renderTxList();
     }
   });
-  loadNotifState();
+  // loadNotifState() is now handled by the onSnapshot above
 }
 
 var notifPaused = false;
