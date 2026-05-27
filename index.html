@@ -11,8 +11,6 @@
   --bg:#f0f4fa;--card:#fff;--text:#1a1a2e;--muted:#666;--border:#e0e8f5;
 }
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);}
-
-/* NAV */
 nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;
   box-shadow:0 2px 16px rgba(0,0,0,.2);}
@@ -20,6 +18,10 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .nav-logo-icons{font-size:20px;}
 .nav-logo-text{font-size:18px;font-weight:800;}
 .nav-links{display:flex;align-items:center;gap:12px;}
+.btn-nav-contact{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);
+  color:#fff;padding:8px 20px;border-radius:22px;font-weight:700;font-size:14px;
+  cursor:pointer;text-decoration:none;transition:.2s;}
+.btn-nav-contact:hover{background:rgba(255,255,255,.28);}
 .btn-nav-login{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);
   color:#fff;padding:8px 20px;border-radius:22px;font-weight:700;font-size:14px;
   cursor:pointer;text-decoration:none;transition:.2s;}
@@ -27,8 +29,6 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .btn-nav-register{background:#fff;color:var(--blue);padding:8px 20px;border-radius:22px;
   font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;border:none;display:inline-block;}
 .btn-nav-register:hover{background:#e8f0fd;}
-
-/* HERO */
 .hero{background:var(--grad);color:#fff;padding:70px 5% 60px;text-align:center;}
 .hero-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
   padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.8px;margin-bottom:20px;}
@@ -43,9 +43,7 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   padding:14px 32px;border-radius:28px;font-weight:700;font-size:16px;text-decoration:none;
   display:inline-block;transition:.2s;}
 .btn-hero-secondary:hover{background:rgba(255,255,255,.12);}
-
-/* TAUX BAR */
-.taux-bar{background:rgba(0,0,0,.18);}
+.taux-bar{background:rgba(10,30,60,.85);}
 .taux-inner{max-width:900px;margin:0 auto;padding:16px 5%;display:flex;align-items:center;
   justify-content:center;gap:24px;flex-wrap:wrap;}
 .taux-item{display:flex;align-items:center;gap:8px;color:#fff;}
@@ -54,14 +52,10 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .taux-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .taux-sep{width:1px;height:28px;background:rgba(255,255,255,.2);}
-
-/* SECTION */
 .section{padding:64px 5%;}
 .section-center{text-align:center;margin-bottom:40px;}
 .section-title{font-size:clamp(22px,3vw,34px);font-weight:900;color:var(--text);margin-bottom:8px;}
 .section-sub{font-size:15px;color:var(--muted);line-height:1.6;}
-
-/* CALCULATEUR */
 .calc-card{background:var(--card);border-radius:24px;padding:36px;max-width:560px;
   margin:0 auto;box-shadow:0 8px 40px rgba(18,84,160,.12);border:1px solid var(--border);}
 .calc-fields{display:flex;align-items:flex-end;gap:14px;margin-bottom:16px;}
@@ -88,16 +82,12 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   font-size:16px;font-weight:800;cursor:pointer;text-decoration:none;
   text-align:center;transition:.2s;}
 .btn-calc-go:hover{opacity:.9;transform:translateY(-1px);}
-
-/* STATS */
 .stats-section{background:var(--grad);padding:50px 5%;text-align:center;}
 .stats-grid{max-width:900px;margin:0 auto;display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:24px;}
 .stat-item{color:#fff;}
 .stat-num{font-size:40px;font-weight:900;display:block;}
 .stat-label{font-size:13px;opacity:.75;font-weight:600;margin-top:4px;}
-
-/* STEPS */
 .steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
   gap:22px;max-width:1000px;margin:0 auto;}
 .step-card{background:var(--card);border-radius:20px;padding:26px 22px;
@@ -110,8 +100,6 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .step-num{font-size:11px;font-weight:800;color:var(--teal);letter-spacing:.8px;margin-bottom:6px;}
 .step-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;}
 .step-desc{font-size:13px;color:var(--muted);line-height:1.6;}
-
-/* FEATURES */
 .why-bg{background:linear-gradient(135deg,#f8fafc,#f0f4fa);}
 .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
   gap:18px;max-width:1000px;margin:0 auto;}
@@ -122,19 +110,14 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .feature-text h4{font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px;}
 .feature-text p{font-size:13px;color:var(--muted);line-height:1.5;}
-
-/* CTA */
 .cta-section{background:var(--grad);padding:64px 5%;text-align:center;color:#fff;}
 .cta-section h2{font-size:clamp(22px,4vw,38px);font-weight:900;margin-bottom:12px;}
 .cta-section p{font-size:16px;opacity:.85;margin-bottom:30px;}
-
-/* FOOTER */
 footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 .footer-logo{font-size:17px;font-weight:800;margin-bottom:6px;}
-.footer-links{display:flex;gap:20px;justify-content:center;margin-top:10px;}
+.footer-links{display:flex;gap:20px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
 .footer-links a{color:rgba(255,255,255,.5);font-size:12px;text-decoration:none;}
 .footer-links a:hover{color:#0097a7;}
-
 @media(max-width:600px){
   .calc-fields{flex-direction:column;}
   .calc-arrow-btn{transform:rotate(90deg);align-self:center;}
@@ -152,7 +135,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
     <span class="nav-logo-text">AppDz Exchange</span>
   </a>
   <div class="nav-links">
-    <a href="#contact" class="btn-nav-login">Contact</a>
+    <a href="#contact" class="btn-nav-contact">Contact</a>
     <a href="auth.html" class="btn-nav-login">Connexion</a>
     <a href="auth.html" class="btn-nav-register">S'inscrire</a>
   </div>
@@ -170,7 +153,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 </div>
 
 <!-- TAUX BAR -->
-<div class="taux-bar" style="background:rgba(10,30,60,.85);">
+<div class="taux-bar">
   <div class="taux-inner">
     <div class="taux-item">
       <div class="taux-dot"></div>
@@ -217,22 +200,10 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <!-- STATS -->
 <div class="stats-section">
   <div class="stats-grid">
-    <div class="stat-item">
-      <span class="stat-num" id="statEchanges">--</span>
-      <span class="stat-label">Échanges réalisés</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num" id="statUsers">--</span>
-      <span class="stat-label">Utilisateurs actifs</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num">24h</span>
-      <span class="stat-label">Délai moyen</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num">100%</span>
-      <span class="stat-label">Taux de succès</span>
-    </div>
+    <div class="stat-item"><span class="stat-num" id="statEchanges">--</span><span class="stat-label">Échanges réalisés</span></div>
+    <div class="stat-item"><span class="stat-num" id="statUsers">--</span><span class="stat-label">Utilisateurs actifs</span></div>
+    <div class="stat-item"><span class="stat-num">24h</span><span class="stat-label">Délai moyen</span></div>
+    <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Taux de succès</span></div>
   </div>
 </div>
 
@@ -240,7 +211,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <section class="section" id="comment">
   <div class="section-center">
     <h2 class="section-title">Comment ça marche ?</h2>
-    <p class="section-sub">4 étapes simples pour recevoir vos dinars</p>
+    <p class="section-sub">4 étapes simples pour échanger vos DZD</p>
   </div>
   <div class="steps-grid">
     <div class="step-card">
@@ -337,11 +308,11 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
         Envoyer le message →
       </button>
     </div>
-    <div id="contactSuccess" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;border-radius:16px;padding:28px;text-align:center;">
-        <div style="font-size:40px;margin-bottom:12px;">✅</div>
-        <h3 style="font-size:20px;font-weight:800;color:#065f46;margin-bottom:8px;">Message envoyé !</h3>
-        <p style="color:#047857;font-size:14px;line-height:1.6;">Nous avons bien reçu votre message. Vous recevrez une réponse à l'adresse email indiquée sous 24h.</p>
-      </div>
+    <div id="contactSuccess" style="display:none;background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:20px;padding:36px 28px;text-align:center;margin-top:8px;">
+      <div style="font-size:48px;margin-bottom:14px;">✅</div>
+      <h3 style="font-size:22px;font-weight:900;color:#065f46;margin-bottom:10px;">Message envoyé !</h3>
+      <p style="color:#047857;font-size:15px;line-height:1.6;">Nous avons bien reçu votre message.<br>Vous recevrez une réponse à l'adresse email indiquée sous 24h.</p>
+    </div>
   </div>
 </section>
 
@@ -365,7 +336,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
     <a href="auth.html">Se connecter</a>
     <a href="auth.html">S'inscrire</a>
   </div>
-  <p style="color:rgba(255,255,255,.25);font-size:11px;margin-top:16px;">© 2025 AppDz Exchange — Tous droits réservés</p>
+  <p style="color:rgba(255,255,255,.25);font-size:11px;margin-top:14px;">© 2025 AppDz Exchange — Tous droits réservés</p>
 </footer>
 
 <!-- FIREBASE -->
@@ -383,7 +354,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-// ── TAUX ──────────────────────────────────────────────
+// Taux
 function loadTaux() {
   db.collection('config').doc('settings').get().then(function(doc) {
     if (doc.exists) {
@@ -393,49 +364,37 @@ function loadTaux() {
       calcEur(t);
       document.getElementById('dzdInput').addEventListener('input', function() { calcEur(t); });
     }
-  }).catch(function() {});
+  }).catch(function(){});
 }
 function calcEur(taux) {
   var dzd = parseFloat(document.getElementById('dzdInput').value) || 0;
-  var eur = taux > 0 ? (dzd / taux).toFixed(2) : '--';
-  document.getElementById('eurResult').textContent = eur;
+  document.getElementById('eurResult').textContent = taux > 0 ? (dzd / taux).toFixed(2) : '--';
 }
 loadTaux();
 
-// ── STATS ─────────────────────────────────────────────
+// Stats
 function loadStats() {
-  db.collection('transferts').where('statut','==','terminee').get().then(function(snap) {
-    document.getElementById('statEchanges').textContent = snap.size;
-  }).catch(function() {});
-  db.collection('users').get().then(function(snap) {
-    document.getElementById('statUsers').textContent = snap.size;
-  }).catch(function() {});
+  db.collection('transferts').where('statut','==','terminee').get()
+    .then(function(s){ document.getElementById('statEchanges').textContent = s.size; }).catch(function(){});
+  db.collection('users').get()
+    .then(function(s){ document.getElementById('statUsers').textContent = s.size; }).catch(function(){});
 }
 loadStats();
 
-// ── CONTACT (visiteur non inscrit) ────────────────────
+// Contact
 function sendContact() {
   var nom   = (document.getElementById('cNom').value || '').trim();
   var email = (document.getElementById('cEmail').value || '').trim();
   var msg   = (document.getElementById('cMsg').value || '').trim();
   var errEl = document.getElementById('cError');
   errEl.style.display = 'none';
-
-  if (!nom)   { errEl.textContent = 'Veuillez entrer votre nom.'; errEl.style.display='block'; return; }
-  if (!email || !/\S+@\S+\.\S+/.test(email)) {
-    errEl.textContent = 'Veuillez entrer une adresse email valide.';
-    errEl.style.display = 'block'; return;
-  }
-  if (!msg)   { errEl.textContent = 'Veuillez écrire un message.'; errEl.style.display='block'; return; }
-
+  if (!nom) { errEl.textContent = 'Veuillez entrer votre nom.'; errEl.style.display='block'; return; }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { errEl.textContent = 'Email invalide.'; errEl.style.display='block'; return; }
+  if (!msg)  { errEl.textContent = 'Veuillez écrire un message.'; errEl.style.display='block'; return; }
   var btn = document.getElementById('cBtn');
-  btn.disabled = true;
-  btn.textContent = 'Envoi en cours…';
-
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
   db.collection('contacts').add({
-    nom: nom,
-    email: email,
-    message: msg,
+    nom: nom, email: email, message: msg,
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     lu: false
   }).then(function() {
@@ -444,108 +403,11 @@ function sendContact() {
     s.style.display = 'block';
     s.scrollIntoView({behavior:'smooth', block:'center'});
   }).catch(function(err) {
-    errEl.textContent = 'Erreur lors de l\'envoi. Réessayez dans quelques instants.';
+    errEl.textContent = 'Erreur lors de l\'envoi. Réessayez.';
     errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Envoyer le message →';
+    btn.disabled = false; btn.textContent = 'Envoyer le message →';
   });
 }
-</script>
-</body>
-</html>
-      <div style="font-size:40px;margin-bottom:10px;">✅</div>
-      <div style="font-size:16px;font-weight:800;color:#065f46;margin-bottom:6px;">Message envoyé !</div>
-      <div style="font-size:14px;color:#047857;">Nous vous répondrons à l'adresse indiquée sous 24h.</div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA FINAL -->
-<div class="cta-section">
-  <h2>Prêt à échanger vos DZD contre des EUR ?</h2>
-  <p>Rejoignez des utilisateurs qui nous font confiance chaque jour</p>
-  <a href="auth.html" class="btn-hero-primary">🚀 Créer mon compte gratuitement</a>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">🏠 ⇄ 💳 AppDz Exchange</div>
-  <p style="font-size:12px;opacity:.5;margin-top:4px;">Plateforme de change DZD → EUR · BaridiMob → Paysera</p>
-  <div class="footer-links">
-    <a href="auth.html">Connexion</a>
-    <a href="auth.html">S'inscrire</a>
-    <a href="#comment">Comment ça marche</a>
-  </div>
-  <p style="font-size:11px;opacity:.35;margin-top:14px;">© 2025 AppDz Exchange · Tous droits réservés</p>
-</footer>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
-  authDomain: "appdzexchange.firebaseapp.com",
-  projectId: "appdzexchange",
-  storageBucket: "appdzexchange.firebasestorage.app",
-  messagingSenderId: "217882852483",
-  appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-let tauxActuel = 275; // 1 EUR = 275 DZD par défaut
-
-// Taux depuis Firebase
-db.collection('config').doc('settings').get().then(function(doc){
-  if(doc.exists){
-    var d = doc.data();
-    var t = parseFloat(d.taux) || 0;
-    if(t > 0){
-      tauxActuel = t;
-      document.getElementById('tauxLive').textContent = tauxActuel.toLocaleString('fr-FR');
-      document.getElementById('tauxNote').textContent = tauxActuel + ' DZD = 1 EUR';
-      calculer();
-    }
-  }
-}).catch(function(){}).finally(function(){
-  // Affiche le taux par défaut si Firebase n'est pas accessible
-  if(document.getElementById('tauxLive').textContent === '--'){
-    document.getElementById('tauxLive').textContent = tauxActuel;
-    document.getElementById('tauxNote').textContent = tauxActuel + ' DZD = 1 EUR';
-    calculer();
-  }
-});
-
-// Stats
-Promise.all([
-  db.collection('transfers').get(),
-  db.collection('users').get()
-]).then(function(results){
-  var tx = results[0].docs.filter(function(d){ return d.data().statut === 'terminee'; }).length;
-  document.getElementById('statEchanges').textContent = tx;
-  document.getElementById('statUsers').textContent = results[1].size;
-}).catch(function(){});
-
-// Calculateur DZD → EUR
-function calculer(){
-  var dzd = parseFloat(document.getElementById('dzdInput').value) || 0;
-  if(tauxActuel > 0 && dzd > 0){
-    var eur = (dzd / tauxActuel).toFixed(2);
-    document.getElementById('eurResult').textContent = eur;
-  } else {
-    document.getElementById('eurResult').textContent = '--';
-  }
-}
-document.getElementById('dzdInput').addEventListener('input', calculer);
-calculer(); // Calcul initial
-
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(function(a){
-  a.addEventListener('click', function(e){
-    var t = document.querySelector(this.getAttribute('href'));
-    if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
-  });
-});
 </script>
 </body>
 </html>
