@@ -161,12 +161,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 .modal-ok.danger{background:linear-gradient(135deg,#dc2626,#ef4444);}
 
 /* ── NEW FEATURES ── */
-.b-vip{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap;}
-.b-regular{background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
-.vip-btn{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:800;border:none;cursor:pointer;transition:.15s;white-space:nowrap;}
-.vip-btn.is-vip{background:#fef9c3;color:#92400e;border:1.5px solid #f59e0b;}
-.vip-btn.not-vip{background:#f3f4f6;color:#6b7280;border:1.5px solid #e0e8f5;}
-.vip-btn:hover{opacity:.85;}
+.b-debutant{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.b-silver{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.b-or{background:#fef9c3;color:#92400e;border:1px solid #fcd34d;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.b-vip{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;box-shadow:0 0 0 1px rgba(245,158,11,.25);}
 .tx-card.big-alert{border-left-color:#ef4444!important;box-shadow:0 0 0 2px rgba(239,68,68,.12);}
 .alert-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px;animation:pulse 1.2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
@@ -567,9 +565,8 @@ function renderTxList(){
     var isSelected=selectedTxIds.has(t.id);
     var bigClass=isBig?' big-alert':'';
     var selClass=isSelected?' selected':'';
-    var userObj=allUsers.find(function(u){return u.id===t.userId;})||{};
-    var isVip=userObj.vip===true;
-    var vipBadge=isVip?'<span class="b-vip" style="margin-left:6px;">⭐ VIP</span>':'';
+    var lvl=t.userId?getAdminBadge(t.userId):null;
+    var vipBadge=lvl&&lvl.label!=='Nouveau'?'<span class="badge '+lvl.cls+'" style="margin-left:6px;">'+lvl.ico+' '+lvl.label+'</span>':'';
     var alertBadge=isBig?'<span style="font-size:10px;color:#ef4444;font-weight:800;margin-left:6px;"><span class="alert-dot"></span>Gros montant</span>':'';
 
     if(bulkSelectMode){
@@ -839,21 +836,17 @@ function renderUsers(){
     var txN=allTx.filter(function(t){return t.userId===u.id;}).length;
     var init=(u.nom||u.email||'?').charAt(0).toUpperCase();
     var lastTx=allTx.filter(function(t){return t.userId===u.id;}).sort(function(a,b){return b._ts-a._ts;})[0];
-    var isVip=u.vip===true;
-    var vipBadgeHtml=isVip?'<span class="b-vip" style="margin-left:6px;">⭐ VIP</span>':'<span class="b-regular" style="margin-left:6px;">Régulier</span>';
-    var vipBtnHtml='<button class="vip-btn '+(isVip?'is-vip':'not-vip')+'" onclick="event.stopPropagation();toggleVip(\''+u.id+'\','+isVip+')">'+(isVip?'⭐ VIP':'☆ Régulier')+'</button>';
+    var lvl = getAdminBadge(u.id);
+    var avatarStyle = lvl.label==='VIP'?'background:linear-gradient(135deg,#f59e0b,#d97706);':lvl.label==='Or'?'background:linear-gradient(135deg,#d97706,#b45309);':'';
     return '<div class="user-row" onclick="showUserTx(\''+u.id+'\')">'+
-      '<div class="u-av" style="'+(isVip?'background:linear-gradient(135deg,#f59e0b,#d97706);':'')+'">'+init+'</div>'+
+      '<div class="u-av" style="'+avatarStyle+'">'+init+'</div>'+
       '<div class="u-info">'+
-        '<div class="u-name">'+(u.nom||'—')+vipBadgeHtml+'</div>'+
+        '<div class="u-name">'+(u.nom||'—')+'<span class="badge '+lvl.cls+'" style="margin-left:7px;">'+lvl.ico+' '+lvl.label+'</span></div>'+
         '<div class="u-email">'+(u.email||'—')+'</div>'+
         '<div class="u-meta">Paysera: '+(u.emailPaysera||'—')+' · CCP: '+(u.ccp||'—')+'</div>'+
-        '<div class="u-meta">'+txN+' transfert(s)'+(lastTx?' · Dernier: '+lastTx.dateStr:'')+'</div>'+
+        '<div class="u-meta">'+txN+' transfert(s) · '+lvl.done+' terminé(s)'+(lastTx?' · Dernier: '+lastTx.dateStr:'')+'</div>'+
       '</div>'+
-      '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">'+
-        vipBtnHtml+
-        '<button class="abtn a-view" onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">Voir transferts</button>'+
-      '</div>'+
+      '<button class="abtn a-view" onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">Voir transferts</button>'+
     '</div>';
   }).join('');
 }
@@ -1095,12 +1088,18 @@ function showPModal(title, hint, placeholder, okLabel, onOk){
 }
 function hidePModal(){document.getElementById('pModal').classList.remove('open');}
 
-// ── VIP ──
-function toggleVip(uid,currentVip){
-  var newVip=!currentVip;
-  db.collection('users').doc(uid).update({vip:newVip}).then(function(){
-    toast(newVip?'⭐ Client marqué VIP':'Client marqué Régulier','ok');
-  }).catch(function(e){toast('Erreur: '+e.message,'err');});
+// ── BADGES NIVEAU ──
+function getAdminBadge(uid) {
+  var done = allTx.filter(function(t){ return t.userId===uid && t.statut==='terminee'; }).length;
+  if (done >= 20) return { label:'VIP',      ico:'⭐', cls:'b-vip',      done:done };
+  if (done >= 10) return { label:'Or',       ico:'🥇', cls:'b-or',       done:done };
+  if (done >= 5)  return { label:'Silver',   ico:'🥈', cls:'b-silver',   done:done };
+  if (done >= 1)  return { label:'Débutant', ico:'🔵', cls:'b-debutant', done:done };
+  return { label:'Nouveau', ico:'🆕', cls:'b-regular', done:done };
+}
+function badgeHtml(uid) {
+  var b = getAdminBadge(uid);
+  return '<span class="badge '+b.cls+'" title="'+b.done+' transfert(s) terminé(s)">'+b.ico+' '+b.label+'</span>';
 }
 
 // ── BULK SELECT ──

@@ -158,6 +158,13 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .profile-row:last-child { border-bottom:none; }
 .profile-row label { color:#888; font-size:12px; font-weight:700; }
 
+/* ── BADGES NIVEAU ── */
+.lvl-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;vertical-align:middle;}
+.lvl-debutant{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;}
+.lvl-silver{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;}
+.lvl-or{background:#fef9c3;color:#92400e;border:1px solid #fcd34d;}
+.lvl-vip{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;border:1px solid #f59e0b;box-shadow:0 0 0 1px rgba(245,158,11,.3);}
+
 /* ── NOTIFICATIONS ── */
 .notif-item{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid #1254a0;display:flex;gap:12px;align-items:flex-start;}
 .notif-item.unread{border-left-color:#ef4444;background:#fff9f9;}
@@ -291,8 +298,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <div class="header">
   <div class="header-top">
     <div class="header-logo">AppDz Exchange</div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="header-user" id="headerUser">Chargement...</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="header-user" id="headerUser">Chargement...</div>
+        <span id="headerBadge" style="display:none;"></span>
+      </div>
       <button onclick="handleLogout()" title="Se déconnecter"
         style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
                padding:5px 10px;font-size:13px;cursor:pointer;font-weight:700;
@@ -371,6 +381,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
     <div class="card">
       <div class="profile-avatar" id="profileAvatar">?</div>
       <div class="profile-name" id="profileNom">--</div>
+      <div style="text-align:center;margin-bottom:6px;"><span id="profileBadge" style="display:none;"></span></div>
       <div class="profile-email" id="profileEmail">--</div>
       <div class="profile-row">
         <label>EMAIL PAYSERA</label>
@@ -383,6 +394,14 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div class="profile-row">
         <label>MEMBRE DEPUIS</label>
         <span id="profileDate">--</span>
+      </div>
+      <div class="profile-row">
+        <label>NIVEAU</label>
+        <span id="profileLevel">--</span>
+      </div>
+      <div class="profile-row">
+        <label>TRANSFERTS RÉALISÉS</label>
+        <span id="profileTxCount" style="color:#1254a0;font-weight:700;">--</span>
       </div>
     </div>
     <button class="btn btn-primary" onclick="openEditProfile()" style="margin-top:6px;margin-bottom:8px;">
@@ -681,6 +700,7 @@ function loadTransferts() {
       // Tri décroissant côté client
       transferts.sort(function(a, b) { return b._ts - a._ts; });
       renderTxList();
+      updateUserBadgeDisplay();
       // Rafraîchir le détail si ouvert
       if (currentTxId) {
         var tx = transferts.find(function(t) { return t.id === currentTxId; });
@@ -1062,6 +1082,53 @@ function confirmEditProfile() {
     });
 }
 
+// ── BADGES NIVEAU ──
+function getLevelBadge(completedCount) {
+  if (completedCount >= 20) return { label:'VIP',      ico:'⭐', cls:'lvl-vip',      next:null,                      nextAt:null };
+  if (completedCount >= 10) return { label:'Or',       ico:'🥇', cls:'lvl-or',       next:'VIP ⭐',                   nextAt:20   };
+  if (completedCount >= 5)  return { label:'Silver',   ico:'🥈', cls:'lvl-silver',   next:'Or 🥇',                    nextAt:10   };
+  if (completedCount >= 1)  return { label:'Débutant', ico:'🔵', cls:'lvl-debutant', next:'Silver 🥈',                nextAt:5    };
+  return null;
+}
+
+function updateUserBadgeDisplay() {
+  var done = transferts.filter(function(t){ return t.statut === 'terminee'; }).length;
+  var badge = getLevelBadge(done);
+
+  // Header badge
+  var hb = document.getElementById('headerBadge');
+  if (badge) {
+    hb.innerHTML = '<span class="lvl-badge '+badge.cls+'">'+badge.ico+' '+badge.label+'</span>';
+    hb.style.display = 'inline';
+  } else {
+    hb.style.display = 'none';
+  }
+
+  // Profil badge (sous le nom)
+  var pb = document.getElementById('profileBadge');
+  if (badge) {
+    pb.innerHTML = '<span class="lvl-badge '+badge.cls+'" style="font-size:13px;padding:5px 14px;">'+badge.ico+' '+badge.label+'</span>';
+    pb.style.display = 'inline';
+  } else {
+    pb.style.display = 'none';
+  }
+
+  // Profil ligne NIVEAU
+  var pl = document.getElementById('profileLevel');
+  if (pl) {
+    if (badge) {
+      var nextTxt = badge.next ? ' · Prochain : '+badge.next+' à '+badge.nextAt+' transferts' : ' · Niveau maximum !';
+      pl.innerHTML = '<span class="lvl-badge '+badge.cls+'">'+badge.ico+' '+badge.label+'</span><span style="font-size:11px;color:#aaa;margin-left:6px;">'+nextTxt+'</span>';
+    } else {
+      pl.innerHTML = '<span style="color:#aaa;font-size:12px;">Aucun (réalisez votre 1er transfert)</span>';
+    }
+  }
+
+  // Profil ligne TRANSFERTS RÉALISÉS
+  var tc = document.getElementById('profileTxCount');
+  if (tc) tc.textContent = done + ' terminé(s) / ' + transferts.length + ' au total';
+}
+
 // ── NOTIFICATIONS ──
 var allNotifs = [], lastNotifRead = 0;
 
@@ -1074,20 +1141,44 @@ function initNotifications(uid) {
 }
 
 function listenNotifs(uid) {
-  // Ecouter les notifications globales (all) et personnelles
+  // Deux listeners séparés : global "all" + personnel uid
+  // (évite index composite Firestore + contourne les règles de sécurité)
+  var merged = {};
+  function onUpdate(docs) {
+    docs.forEach(function(d) { merged[d.id] = d; });
+    allNotifs = Object.values(merged);
+    allNotifs.sort(function(a,b){ return b._ts - a._ts; });
+    updateNotifBadge();
+    renderNotifs();
+  }
   db.collection('notifications')
-    .orderBy('createdAt', 'desc')
-    .limit(50)
+    .where('userId', '==', 'all')
     .onSnapshot(function(snap) {
-      allNotifs = snap.docs.map(function(d) {
+      snap.docs.forEach(function(d) {
         var x = d.data(); x.id = d.id;
         x._ts = x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().getTime() : 0;
-        return x;
-      }).filter(function(n) {
-        return n.userId === 'all' || n.userId === uid;
+        merged[d.id] = x;
       });
-      updateNotifBadge();
-      renderNotifs();
+      // Retirer les docs supprimés
+      Object.keys(merged).forEach(function(id) {
+        if(merged[id].userId === 'all' && !snap.docs.find(function(d){return d.id===id;})) delete merged[id];
+      });
+      allNotifs = Object.values(merged).sort(function(a,b){return b._ts-a._ts;});
+      updateNotifBadge(); renderNotifs();
+    }, function(){});
+  db.collection('notifications')
+    .where('userId', '==', uid)
+    .onSnapshot(function(snap) {
+      snap.docs.forEach(function(d) {
+        var x = d.data(); x.id = d.id;
+        x._ts = x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().getTime() : 0;
+        merged[d.id] = x;
+      });
+      Object.keys(merged).forEach(function(id) {
+        if(merged[id].userId === uid && !snap.docs.find(function(d){return d.id===id;})) delete merged[id];
+      });
+      allNotifs = Object.values(merged).sort(function(a,b){return b._ts-a._ts;});
+      updateNotifBadge(); renderNotifs();
     }, function(){});
 }
 
