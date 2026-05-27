@@ -415,6 +415,22 @@ function sendContact() {
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     lu: false
   }).then(function() {
+    // Notification email admin
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: 'd841a00c-9128-413e-8711-519a9e40221d',
+        subject: '✉️ Nouveau contact visiteur — ' + nom,
+        message: 'Message d\'un visiteur non inscrit :\n\n' +
+          '👤 Nom : ' + nom + '\n' +
+          '📧 Email : ' + email + '\n\n' +
+          '💬 Message : ' + msg + '\n\n' +
+          '🔗 Voir dans admin : https://ilyesmed23.github.io/AppDzExchange-Web/admin.html',
+        from_name: 'AppDz Exchange',
+        email: 'giftformenow@gmail.com'
+      })
+    }).catch(function(){});
     document.getElementById('contactFormWrap').style.display = 'none';
     var s = document.getElementById('contactSuccess');
     s.style.display = 'block';

@@ -911,6 +911,19 @@ function handleCreateTransfert() {
     document.getElementById('newLoader').style.display = 'none';
     document.getElementById('montantEur').value = '';
     document.getElementById('montantDzd').textContent = '-- DZD';
+    // Notification email admin
+    var u = currentUser || {};
+    sendAdminEmail(
+      '🔔 Nouvelle demande de transfert — ' + eur + ' EUR',
+      'Nouvelle demande de transfert reçue :\n\n' +
+      '👤 Nom : ' + (u.nom || '—') + '\n' +
+      '📧 Email : ' + (u.email || '—') + '\n' +
+      '🏦 CCP : ' + (u.ccp || '—') + '\n' +
+      '💳 Paysera : ' + (u.emailPaysera || '—') + '\n\n' +
+      '💰 Montant : ' + eur + ' EUR → ' + Math.round(eur * currentTaux) + ' DZD\n' +
+      '📊 Taux appliqué : ' + currentTaux + ' DZD/EUR\n\n' +
+      '🔗 Connectez-vous sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html pour valider.'
+    );
     return db.collection('transferts').doc(ref.id).get();
   }).then(function(snap) {
     var d = snap.data(); d.id = snap.id;
@@ -1090,10 +1103,35 @@ function sendChatMessage() {
     readByUser: true
   }).then(function() {
     input.disabled = false;
+    // Notification email admin
+    var u = currentUser || {};
+    sendAdminEmail(
+      '💬 Nouveau message de ' + (u.nom || u.email || 'utilisateur'),
+      'Nouveau message reçu dans la messagerie :\n\n' +
+      '👤 Nom : ' + (u.nom || '—') + '\n' +
+      '📧 Email : ' + (u.email || '—') + '\n\n' +
+      '💬 Message : ' + text + '\n\n' +
+      '🔗 Répondre sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html'
+    );
   }).catch(function(err) {
     input.disabled = false;
     alert('Erreur : ' + err.message);
   });
+}
+
+// ── NOTIFICATION EMAIL ADMIN ──
+function sendAdminEmail(subject, body) {
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      access_key: 'd841a00c-9128-413e-8711-519a9e40221d',
+      subject: subject,
+      message: body,
+      from_name: 'AppDz Exchange',
+      email: 'giftformenow@gmail.com'
+    })
+  }).catch(function(){});
 }
 
 // ── HELPERS ──
