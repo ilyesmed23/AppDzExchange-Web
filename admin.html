@@ -721,21 +721,20 @@ function chgSt(id,s){
   var wasTerminee=t&&t.statut==='terminee';
   db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
     toast('Statut → '+slbl(s),'ok');
-    // Solde EUR: décrémenter si passage à terminee, ré-incrémenter si on annule une terminee
-    if(t&&s==='terminee'&&!wasTerminee){
+    // Solde EUR: décrémenter à la validation (validee), ré-incrémenter si annulation
+    var wasValideeOrMore = t&&(t.statut==='validee'||t.statut==='terminee');
+    var becomesValideeOrMore = (s==='validee'||s==='terminee');
+    if(t && becomesValideeOrMore && !wasValideeOrMore){
+      // Nouveau passage en validée → déduire du solde
       var newSolde=Math.max(0,soldeEur-(Number(t.montantEur)||0));
       db.collection('config').doc('settings').set({soldeEur:newSolde},{merge:true}).then(function(){
-        soldeEur=newSolde;
-        document.getElementById('sSolde').value=newSolde;
-        renderDash();
-        toast('Solde EUR mis à jour : '+newSolde.toFixed(2)+' €','info');
+        toast('💵 Solde mis à jour : '+newSolde.toFixed(2)+' € (−'+t.montantEur+' EUR)','info');
       }).catch(function(){});
-    }else if(t&&wasTerminee&&s!=='terminee'){
+    }else if(t && wasValideeOrMore && !becomesValideeOrMore){
+      // Annulation d'une validation → remettre dans le solde
       var newSolde=soldeEur+(Number(t.montantEur)||0);
       db.collection('config').doc('settings').set({soldeEur:newSolde},{merge:true}).then(function(){
-        soldeEur=newSolde;
-        document.getElementById('sSolde').value=newSolde;
-        renderDash();
+        toast('💵 Solde restauré : '+newSolde.toFixed(2)+' € (+'+t.montantEur+' EUR)','info');
       }).catch(function(){});
     }
   }).catch(function(e){toast(e.message,'err');});
@@ -1203,9 +1202,18 @@ function saveAlertThreshold(){
 function saveAnnouncement(){
   var v=document.getElementById('sAnnouncement').value.trim();
   db.collection('config').doc('settings').set({announcement:v},{merge:true}).then(function(){
-    document.getElementById('announceMsg').textContent=v?'✓ Annonce publiée pour tous les utilisateurs':'✓ Annonce désactivée';
+    if(v){
+      // Créer une notification in-app pour tous les utilisateurs
+      db.collection('notifications').add({
+        userId:'all',
+        message:v,
+        type:'announcement',
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(){});
+    }
+    document.getElementById('announceMsg').textContent=v?'✓ Annonce publiée + notification envoyée à tous les utilisateurs':'✓ Annonce désactivée';
     document.getElementById('announceMsg').style.color='#059669';
-    toast(v?'📢 Annonce publiée':'Annonce désactivée','ok');
+    toast(v?'📢 Annonce + notification envoyées':'Annonce désactivée','ok');
     setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
   }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
 }
