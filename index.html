@@ -398,6 +398,32 @@ function loadStats() {
 }
 loadStats();
 
+// ── Visitor Tracking ──
+(function trackVisit() {
+  try {
+    fetch('https://api.ipify.org?format=json')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        db.collection('visits').add({
+          ip: data.ip || 'inconnu',
+          page: 'accueil',
+          userAgent: navigator.userAgent.substring(0, 200),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          ts: Date.now()
+        }).catch(function(){});
+      }).catch(function() {
+        // IP non disponible — enregistrer quand même sans IP
+        db.collection('visits').add({
+          ip: 'inconnu',
+          page: 'accueil',
+          userAgent: navigator.userAgent.substring(0, 200),
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          ts: Date.now()
+        }).catch(function(){});
+      });
+  } catch(e) {}
+})();
+
 // Contact
 function sendContact() {
   var nom   = (document.getElementById('cNom').value || '').trim();

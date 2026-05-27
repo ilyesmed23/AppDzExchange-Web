@@ -584,8 +584,32 @@ auth.onAuthStateChanged(function(user) {
   if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
   if (!user.emailVerified) { window.location.href = 'auth.html'; return; }
   currentUid = user.uid;
+  recordLogin(user.uid);
   loadInit();
 });
+
+// ── Login History ──
+function recordLogin(uid) {
+  var entry = {
+    timestamp: Date.now(),
+    dateStr: new Date().toLocaleString('fr-DZ', {
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    }),
+    ip: 'inconnu'
+  };
+  fetch('https://api.ipify.org?format=json')
+    .then(function(r){ return r.json(); })
+    .then(function(data) { entry.ip = data.ip || 'inconnu'; })
+    .catch(function() {})
+    .finally(function() {
+      db.collection('users').doc(uid).get().then(function(snap) {
+        var hist = (snap.exists && snap.data().loginHistory) || [];
+        hist = [entry].concat(hist).slice(0, 100);
+        db.collection('users').doc(uid).update({ loginHistory: hist }).catch(function(){});
+      }).catch(function(){});
+    });
+}
 
 function loadInit() {
   loadUserInfo();
