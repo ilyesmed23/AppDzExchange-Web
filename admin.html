@@ -295,6 +295,28 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <div id="settingsMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
+      <!-- MODE MAINTENANCE -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">🚧 Mode Maintenance</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Met le site en pause pour les utilisateurs. Le panneau admin reste accessible.
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e0e8f5;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1a1f36;" id="maintLabel">⏳ Chargement...</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;" id="maintSub"></div>
+          </div>
+          <button id="maintToggleBtn" onclick="toggleMaintenance()"
+            style="padding:10px 20px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;">
+            ...
+          </button>
+        </div>
+        <label class="s-lbl" style="margin-top:12px;">Message affiché aux visiteurs</label>
+        <input class="s-input" id="sMaintMsg" type="text" placeholder="🚧 Site en maintenance, revenez bientôt...">
+        <button class="s-btn" onclick="saveMaintMsg()">💾 Mettre à jour le message</button>
+        <div id="maintStatusMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
       <!-- NOTIFICATIONS EMAIL -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">🔔 Notifications Email</div>
@@ -525,6 +547,9 @@ function initListeners(){
       document.getElementById('sAnnouncement').value=d.announcement||'';
       notifPaused=d.notifPaused===true;
       renderNotifBtn();
+      maintenanceMode=d.maintenanceMode===true;
+      document.getElementById('sMaintMsg').value=d.maintenanceMessage||'';
+      renderMaintBtn();
       renderDash();
       renderTxList();
     }
@@ -574,6 +599,52 @@ function toggleNotif() {
       var msg = document.getElementById('notifMsg');
       msg.textContent = 'Erreur : ' + e.message;
       msg.style.color = '#dc2626';
+    });
+}
+
+// ── MAINTENANCE ──
+var maintenanceMode = false;
+
+function renderMaintBtn() {
+  var label = document.getElementById('maintLabel');
+  var sub   = document.getElementById('maintSub');
+  var btn   = document.getElementById('maintToggleBtn');
+  if (maintenanceMode) {
+    label.textContent = '🚧 Site en maintenance';
+    sub.textContent   = 'Les visiteurs voient la page de maintenance';
+    btn.textContent   = '▶️ Remettre en ligne';
+    btn.style.background = '#fee2e2';
+    btn.style.color      = '#991b1b';
+  } else {
+    label.textContent = '✅ Site en ligne';
+    sub.textContent   = 'Le site est accessible normalement';
+    btn.textContent   = '🚧 Mettre en maintenance';
+    btn.style.background = '#fef3c7';
+    btn.style.color      = '#92400e';
+  }
+}
+
+function toggleMaintenance() {
+  maintenanceMode = !maintenanceMode;
+  db.collection('config').doc('settings').set({ maintenanceMode: maintenanceMode }, { merge: true })
+    .then(function() {
+      renderMaintBtn();
+      var msg = document.getElementById('maintStatusMsg');
+      msg.textContent = maintenanceMode ? '🚧 Site mis en maintenance' : '✅ Site remis en ligne';
+      msg.style.color = maintenanceMode ? '#dc2626' : '#059669';
+      setTimeout(function(){ msg.textContent=''; }, 3000);
+      toast(maintenanceMode ? '🚧 Site en maintenance' : '✅ Site remis en ligne', maintenanceMode ? 'err' : 'ok');
+    });
+}
+
+function saveMaintMsg() {
+  var v = document.getElementById('sMaintMsg').value.trim() || '🚧 Site en maintenance, revenez bientôt.';
+  db.collection('config').doc('settings').set({ maintenanceMessage: v }, { merge: true })
+    .then(function() {
+      var msg = document.getElementById('maintStatusMsg');
+      msg.textContent = '✓ Message mis à jour';
+      msg.style.color = '#059669';
+      setTimeout(function(){ msg.textContent=''; }, 2500);
     });
 }
 
