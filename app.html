@@ -580,13 +580,14 @@ const storage = firebase.storage();
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 
 // ── EmailJS Init ──
-var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejTpl2 = 'template_84rbhxk', _ejReady = false, _ejPaused = false;
+var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejTpl2 = 'template_84rbhxk', _ejReady = false, _ejPaused = false, _ejTpl2Paused = false;
 db.collection('config').doc('settings').get().then(function(s){
   if(!s.exists) return;
   var d = s.data();
   _ejKey = d.ejKey || ''; _ejSvc = d.ejSvc || ''; _ejTpl = d.ejTpl || '';
   if(d.ejTpl2) _ejTpl2 = d.ejTpl2;
   _ejPaused = !!d.ejNotifPaused;
+  _ejTpl2Paused = !!d.ejTpl2Paused;
   if(_ejKey && _ejSvc && _ejTpl){
     try{ emailjs.init(_ejKey); _ejReady = true; }catch(e){}
   }
@@ -594,7 +595,7 @@ db.collection('config').doc('settings').get().then(function(s){
 
 // Envoi auto confirmation quand l'utilisateur uploade sa preuve
 function sendUserConfirmEmail(txData){
-  if(!_ejReady || _ejPaused) return;
+  if(!_ejReady || _ejTpl2Paused) return;
   var u = currentUser || {};
   var toEmail = u.email || (txData && txData.email) || '';
   if(!toEmail) return;

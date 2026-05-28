@@ -360,6 +360,19 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         </div>
         <div id="ejNotifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
 
+        <!-- Toggle Confirmation auto utilisateur (template_84rbhxk) -->
+        <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e0e8f5;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1a1f36;" id="ejTpl2Label">⏳ Chargement...</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;">Confirmation auto quand l'utilisateur upload sa preuve</div>
+          </div>
+          <button id="ejTpl2ToggleBtn" onclick="toggleEjTpl2()"
+            style="padding:10px 20px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;">
+            ...
+          </button>
+        </div>
+        <div id="ejTpl2Msg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+
         <!-- Config clés EmailJS -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e0e8f5;">
           <div style="font-size:12px;color:#666;margin-bottom:10px;">
@@ -636,6 +649,8 @@ function initListeners(){
       ejNotifPaused=d.ejNotifPaused===true;
       notifPaused=ejNotifPaused; // sendEmailNotif utilise notifPaused
       renderEjNotifBtn();
+      ejTpl2Paused=d.ejTpl2Paused===true;
+      renderEjTpl2Btn();
       maintenanceMode=d.maintenanceMode===true;
       document.getElementById('sMaintMsg').value=d.maintenanceMessage||'';
       renderMaintBtn();
@@ -733,6 +748,43 @@ function toggleEjNotif() {
     })
     .catch(function(e) {
       var msg = document.getElementById('ejNotifMsg');
+      msg.textContent = 'Erreur : ' + e.message;
+      msg.style.color = '#dc2626';
+    });
+}
+
+// ── EMAILJS TPL2 (confirmation upload preuve) TOGGLE ──
+var ejTpl2Paused = false;
+
+function renderEjTpl2Btn() {
+  var label = document.getElementById('ejTpl2Label');
+  var btn   = document.getElementById('ejTpl2ToggleBtn');
+  if(!label) return;
+  if (ejTpl2Paused) {
+    label.textContent = '🔕 Confirmation upload désactivée';
+    btn.textContent   = '▶ Activer';
+    btn.style.background = '#d1fae5';
+    btn.style.color      = '#065f46';
+  } else {
+    label.textContent = '📧 Confirmation upload activée';
+    btn.textContent   = '⏸ Mettre en pause';
+    btn.style.background = '#fef3c7';
+    btn.style.color      = '#92400e';
+  }
+}
+
+function toggleEjTpl2() {
+  ejTpl2Paused = !ejTpl2Paused;
+  db.collection('config').doc('settings').set({ ejTpl2Paused: ejTpl2Paused }, { merge: true })
+    .then(function() {
+      renderEjTpl2Btn();
+      var msg = document.getElementById('ejTpl2Msg');
+      msg.textContent = ejTpl2Paused ? '✓ Confirmation upload mise en pause' : '✓ Confirmation upload réactivée';
+      msg.style.color = '#059669';
+      setTimeout(function(){ msg.textContent=''; }, 3000);
+    })
+    .catch(function(e) {
+      var msg = document.getElementById('ejTpl2Msg');
       msg.textContent = 'Erreur : ' + e.message;
       msg.style.color = '#dc2626';
     });
