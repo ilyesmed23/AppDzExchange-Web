@@ -544,7 +544,9 @@ var _ejReady = false;
 })();
 
 function sendEmailNotif(t, newStatut, motif){
-  if(!_ejReady || !t || notifPaused) return;
+  if(!t) return;
+  if(notifPaused){toast('⚠️ Notifications désactivées (toggle dans Paramètres)','err');return;}
+  if(!_ejReady){toast('⚠️ EmailJS non configuré — vérifie les clés dans Paramètres','err');return;}
   var toEmail = t.email;
   if(!toEmail && t.userId){
     var u=allUsers.find(function(x){return x.id===t.userId;});
@@ -870,7 +872,7 @@ function fillDrawer(t){
     acts='<button class="dbtn d-gray" style="opacity:.6;cursor:default;">✓ Transfert terminé</button>';
   }
   acts+='<button class="dbtn d-green" onclick="exportSingle(\''+t.id+'\')">📥 Exporter</button>';
-  if(_ejReady && !notifPaused) acts+='<button class="dbtn d-blue" onclick="sendEmailNotif(allTx.find(function(x){return x.id===\''+t.id+'\';}),\''+t.statut+'\')">📧 Notifier</button>';
+  acts+='<button class="dbtn d-blue" onclick="sendEmailNotif(allTx.find(function(x){return x.id===\''+t.id+'\';}),\''+t.statut+'\')">📧 Notifier</button>';
   acts+='<button class="dbtn d-red" onclick="delTx(\''+t.id+'\')" style="margin-left:auto;">🗑 Supprimer</button>';
 
   var statBtns=['en_attente','preuve_envoyee','validee','terminee','rejetee','annulee','manque_info'].map(function(s){
