@@ -597,12 +597,10 @@ function sendUserConfirmEmail(type, txData){
   var toEmail = u.email || (txData && txData.email) || '';
   if(!toEmail) return;
   var labels = {
-    'demande': '📋 Demande de transfert reçue',
-    'preuve':  '📎 Preuve de paiement reçue'
+    'demande': '✅ Demande de transfert enregistrée'
   };
   var motifs = {
-    'demande': 'Votre demande de transfert a bien été reçue et est en cours de traitement par notre équipe.',
-    'preuve':  'Votre preuve de paiement a bien été reçue. Votre transfert est en cours de validation.'
+    'demande': 'Votre demande de transfert a bien été enregistrée et est actuellement en cours de traitement par notre équipe. Vous recevrez une réponse dans un délai de 24 à 48 heures.'
   };
   emailjs.send(_ejSvc, _ejTpl, {
     to_email:     toEmail,
@@ -1058,8 +1056,6 @@ function handleFileSelected(input) {
     });
   }).then(function() {
     if (loader) loader.style.display = 'none';
-    // Confirmation automatique preuve reçue
-    sendUserConfirmEmail('preuve', transferts.find(function(t){ return t.id === currentTxId; }));
     return db.collection('transferts').doc(currentTxId).get();
   }).then(function(snap) {
     var d = snap.data(); d.id = snap.id;
