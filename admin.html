@@ -544,7 +544,7 @@ var _ejReady = false;
 })();
 
 function sendEmailNotif(t, newStatut, motif){
-  if(!_ejReady || !t) return;
+  if(!_ejReady || !t || notifPaused) return;
   var toEmail = t.email;
   if(!toEmail && t.userId){
     var u=allUsers.find(function(x){return x.id===t.userId;});
@@ -870,6 +870,7 @@ function fillDrawer(t){
     acts='<button class="dbtn d-gray" style="opacity:.6;cursor:default;">✓ Transfert terminé</button>';
   }
   acts+='<button class="dbtn d-green" onclick="exportSingle(\''+t.id+'\')">📥 Exporter</button>';
+  if(_ejReady && !notifPaused) acts+='<button class="dbtn d-blue" onclick="sendEmailNotif(allTx.find(function(x){return x.id===\''+t.id+'\';}),\''+t.statut+'\')">📧 Notifier</button>';
   acts+='<button class="dbtn d-red" onclick="delTx(\''+t.id+'\')" style="margin-left:auto;">🗑 Supprimer</button>';
 
   var statBtns=['en_attente','preuve_envoyee','validee','terminee','rejetee','annulee','manque_info'].map(function(s){
@@ -916,28 +917,28 @@ function quickOk(id){
 function quickRej(id){
   var t=allTx.find(function(x){return x.id===id;});
   showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
-    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');sendEmailNotif(t,'rejetee',m);}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');}).catch(function(e){toast(e.message,'err');});
   });
 }
 function quickInfo(id){
   var t=allTx.find(function(x){return x.id===id;});
   showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
     if(!i)return;
-    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');sendEmailNotif(t,'manque_info',i);}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');}).catch(function(e){toast(e.message,'err');});
   });
 }
 function promptRej(id){
   var t=allTx.find(function(x){return x.id===id;});
   showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
     if(m===null)return;
-    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');sendEmailNotif(t,'rejetee',m);closeDrawer();}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});
   });
 }
 function promptInfo(id){
   var t=allTx.find(function(x){return x.id===id;});
   showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
     if(!i)return;
-    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');sendEmailNotif(t,'manque_info',i);}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});
   });
 }
 function chgSt(id,s){
@@ -945,7 +946,6 @@ function chgSt(id,s){
   var wasTerminee=t&&t.statut==='terminee';
   db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
     toast('Statut → '+slbl(s),'ok');
-    sendEmailNotif(t,s);
     // Compteur échanges terminés
     if(s==='terminee' && !wasTerminee){
       db.collection('config').doc('settings').set({totalEchanges:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(function(){});
@@ -1055,7 +1055,7 @@ function handleProofUpload(input){
   storage.ref('preuves/'+curTxId+'/admin_'+Date.now()+'.'+ext).put(file)
     .then(function(s){return s.ref.getDownloadURL();})
     .then(function(url){return db.collection('transferts').doc(curTxId).update({preuveAdminUrl:url,statut:'terminee',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});})
-    .then(function(){if(prog)prog.style.display='none';toast('Preuve uploadée — Transfert terminé !','ok');var tDone=allTx.find(function(x){return x.id===curTxId;});sendEmailNotif(tDone,'terminee');closeDrawer();curTxId=null;})
+    .then(function(){if(prog)prog.style.display='none';toast('Preuve uploadée — Transfert terminé !','ok');closeDrawer();curTxId=null;})
     .catch(function(e){if(prog)prog.style.display='none';toast('Erreur upload: '+e.message,'err');});
   input.value='';
 }
