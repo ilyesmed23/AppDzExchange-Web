@@ -373,7 +373,10 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
         <div class="info-row"><label>Email Paysera</label><b id="userPayseraDisplay">--</b></div>
       </div>
       <div id="newLoader" class="loader">Creation de la demande...</div>
-      <button class="btn btn-primary" onclick="handleCreateTransfert()">
+      <div id="maintBanner" style="display:none;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#92400e;text-align:center;">
+        🚧 Les nouvelles demandes sont temporairement suspendues. Revenez bientôt.
+      </div>
+      <button id="btnSubmitTransfer" class="btn btn-primary" onclick="handleCreateTransfert()">
         Soumettre la demande
       </button>
     </div>
@@ -568,19 +571,15 @@ const storage = firebase.storage();
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 
 // ── Maintenance Check ──
+var siteEnMaintenance = false;
 (function checkMaintenance() {
-  db.collection('config').doc('settings').get().then(function(s) {
-    if (s.exists && s.data().maintenanceMode === true) {
-      var msg = s.data().maintenanceMessage || '🚧 Site en maintenance, revenez bientôt.';
-      document.body.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 100%);font-family:sans-serif;text-align:center;padding:20px;">'
-        + '<div style="background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,.12);padding:48px 40px;max-width:480px;width:100%;">'
-        + '<div style="font-size:72px;margin-bottom:20px;">🚧</div>'
-        + '<h1 style="font-size:26px;font-weight:800;color:#1a1f36;margin:0 0 12px;">Site en maintenance</h1>'
-        + '<p style="font-size:15px;color:#555;line-height:1.7;margin:0 0 28px;">' + msg + '</p>'
-        + '<div style="font-size:13px;color:#aaa;">Merci de votre compréhension &mdash; AppDz Exchange</div>'
-        + '</div></div>';
-    }
-  }).catch(function(){});
+  db.collection('config').doc('settings').onSnapshot(function(s) {
+    siteEnMaintenance = s.exists && s.data().maintenanceMode === true;
+    var banner = document.getElementById('maintBanner');
+    var btn    = document.getElementById('btnSubmitTransfer');
+    if (banner) banner.style.display = siteEnMaintenance ? 'block' : 'none';
+    if (btn)    btn.style.display    = siteEnMaintenance ? 'none'  : 'block';
+  });
 })();
 const ADMIN_CCP_DEFAULT = "00799999000965940950";
 
@@ -997,6 +996,7 @@ function handleFileSelected(input) {
 
 // ── CREATE TRANSFERT ──
 function handleCreateTransfert() {
+  if (siteEnMaintenance) return;
   var eur = parseFloat(document.getElementById('montantEur').value);
   var errEl = document.getElementById('newError');
   errEl.style.display = 'none';
