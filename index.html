@@ -11,6 +11,7 @@
   --bg:#f0f4fa;--card:#fff;--text:#1a1a2e;--muted:#666;--border:#e0e8f5;
 }
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);}
+body[dir="rtl"]{font-family:'Segoe UI',Tahoma,Arial,sans-serif;}
 nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;
   box-shadow:0 2px 16px rgba(0,0,0,.2);}
@@ -29,6 +30,13 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .btn-nav-register{background:#fff;color:var(--blue);padding:8px 20px;border-radius:22px;
   font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;border:none;display:inline-block;}
 .btn-nav-register:hover{background:#e8f0fd;}
+/* Lang switcher */
+.lang-switcher{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);
+  border-radius:20px;padding:3px;}
+.lang-btn{background:transparent;border:none;color:#fff;font-size:12px;font-weight:800;
+  padding:4px 10px;border-radius:16px;cursor:pointer;transition:.15s;letter-spacing:.5px;}
+.lang-btn.active{background:rgba(255,255,255,.9);color:var(--blue);}
+.lang-btn:hover:not(.active){background:rgba(255,255,255,.2);}
 .hero{background:var(--grad);color:#fff;padding:70px 5% 60px;text-align:center;}
 .hero-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
   padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.8px;margin-bottom:20px;}
@@ -119,18 +127,13 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 .footer-links a{color:rgba(255,255,255,.5);font-size:12px;text-decoration:none;}
 .footer-links a:hover{color:#0097a7;}
 @media(max-width:600px){
-  /* Nav */
   .nav-logo-icons{display:none;}
   .nav-logo-text{font-size:16px;}
   .btn-nav-contact{display:none;}
   nav{padding:0 4%;height:56px;}
-
-  /* Hero */
   .hero{padding:40px 5% 36px;}
   .btn-hero-primary,.btn-hero-secondary{padding:13px 22px;font-size:15px;width:100%;text-align:center;}
   .hero-cta{flex-direction:column;gap:10px;align-items:center;}
-
-  /* Sections */
   .section{padding:36px 4%;}
   .calc-card{padding:20px 14px;}
   .calc-fields{flex-direction:column;align-items:stretch;}
@@ -153,20 +156,24 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
     <span class="nav-logo-text">AppDz Exchange</span>
   </a>
   <div class="nav-links">
-    <a href="#contact" class="btn-nav-contact">Contact</a>
-    <a href="auth.html" class="btn-nav-login">Connexion</a>
-    <a href="auth.html" class="btn-nav-register">S'inscrire</a>
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="btnFr" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" id="btnAr" onclick="setLang('ar')">AR</button>
+    </div>
+    <a href="#contact" class="btn-nav-contact" data-i18n="nav_contact">Contact</a>
+    <a href="auth.html" class="btn-nav-login" data-i18n="nav_login">Connexion</a>
+    <a href="auth.html" class="btn-nav-register" data-i18n="nav_register">S'inscrire</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-badge">✦ SERVICE D'ÉCHANGE DZD / EUR</div>
-  <h1>BaridiMob vers Paysera —<br><span>rapide, transparent, fiable</span></h1>
-  <p>Soumettez votre demande, envoyez vos DZD via BaridiMob, recevez vos EUR sur Paysera. Taux garanti, traitement rapide, suivi en temps réel.</p>
+  <div class="hero-badge" data-i18n="hero_badge">✦ SERVICE D'ÉCHANGE DZD / EUR</div>
+  <h1 data-i18n="hero_h1">BaridiMob vers Paysera —<br><span data-i18n="hero_h1_span">rapide, transparent, fiable</span></h1>
+  <p data-i18n="hero_p">Soumettez votre demande, envoyez vos DZD via BaridiMob, recevez vos EUR sur Paysera. Taux garanti, traitement rapide, suivi en temps réel.</p>
   <div class="hero-cta">
-    <a href="auth.html" class="btn-hero-primary">🚀 Commencer gratuitement</a>
-    <a href="#comment" class="btn-hero-secondary">Comment ça marche ↓</a>
+    <a href="auth.html" class="btn-hero-primary" data-i18n="hero_btn1">🚀 Commencer gratuitement</a>
+    <a href="#comment" class="btn-hero-secondary" data-i18n="hero_btn2">Comment ça marche ↓</a>
   </div>
 </div>
 
@@ -175,27 +182,27 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
   <div class="taux-inner">
     <div class="taux-item">
       <div class="taux-dot"></div>
-      <span class="taux-label">TAUX EN DIRECT</span>
+      <span class="taux-label" data-i18n="taux_label">TAUX EN DIRECT</span>
       <span class="taux-value" id="tauxLive">--</span>
-      <span style="color:rgba(255,255,255,.7);font-size:13px;">DZD = 1 EUR</span>
+      <span style="color:rgba(255,255,255,.7);font-size:13px;" data-i18n="taux_unit">DZD = 1 EUR</span>
     </div>
     <div class="taux-sep"></div>
-    <div class="taux-item"><span style="opacity:.65;font-size:13px;">🏦 BaridiMob → Paysera</span></div>
+    <div class="taux-item"><span style="opacity:.65;font-size:13px;" data-i18n="taux_route">🏦 BaridiMob → Paysera</span></div>
     <div class="taux-sep"></div>
-    <div class="taux-item"><span style="opacity:.65;font-size:13px;">⚡ Traitement 24–48h</span></div>
+    <div class="taux-item"><span style="opacity:.65;font-size:13px;" data-i18n="taux_delay">⚡ Traitement 24–48h</span></div>
   </div>
 </div>
 
 <!-- CALCULATEUR -->
 <section class="section" style="text-align:center;">
   <div class="section-center">
-    <h2 class="section-title">💱 Simulez votre transfert</h2>
-    <p class="section-sub">Calculez combien vous recevrez en euros — aucune inscription requise</p>
+    <h2 class="section-title" data-i18n="calc_title">💱 Simulez votre transfert</h2>
+    <p class="section-sub" data-i18n="calc_sub">Calculez combien vous recevrez en euros — aucune inscription requise</p>
   </div>
   <div class="calc-card">
     <div class="calc-fields">
       <div class="calc-field">
-        <label>VOUS ENVOYEZ (BaridiMob)</label>
+        <label data-i18n="calc_send">VOUS ENVOYEZ (BaridiMob)</label>
         <div class="calc-input-wrap">
           <input class="calc-input" type="number" id="dzdInput" value="27500" min="100" step="100" placeholder="0">
           <span class="calc-cur">DZD</span>
@@ -203,58 +210,58 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
       </div>
       <div class="calc-arrow-btn">⇄</div>
       <div class="calc-field">
-        <label>VOUS RECEVEZ (Paysera)</label>
+        <label data-i18n="calc_receive">VOUS RECEVEZ (Paysera)</label>
         <div class="calc-result-box">
           <span class="calc-result-amount" id="eurResult">--</span>
           <span class="calc-result-cur">EUR</span>
         </div>
       </div>
     </div>
-    <p class="calc-note">Taux actuel : <strong id="tauxNote">chargement...</strong> · Mis à jour par l'administrateur</p>
-    <a href="auth.html" class="btn-calc-go">Faire ce transfert maintenant →</a>
+    <p class="calc-note"><span data-i18n="calc_note_prefix">Taux actuel :</span> <strong id="tauxNote">chargement...</strong> · <span data-i18n="calc_note_suffix">Mis à jour par l'administrateur</span></p>
+    <a href="auth.html" class="btn-calc-go" data-i18n="calc_btn">Faire ce transfert maintenant →</a>
   </div>
 </section>
 
 <!-- STATS -->
 <div class="stats-section">
   <div class="stats-grid">
-    <div class="stat-item"><span class="stat-num" id="statEchanges">--</span><span class="stat-label">Échanges réalisés</span></div>
-    <div class="stat-item"><span class="stat-num" id="statUsers">--</span><span class="stat-label">Utilisateurs actifs</span></div>
-    <div class="stat-item"><span class="stat-num">24h</span><span class="stat-label">Délai moyen</span></div>
-    <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Taux de succès</span></div>
+    <div class="stat-item"><span class="stat-num" id="statEchanges">--</span><span class="stat-label" data-i18n="stat1">Échanges réalisés</span></div>
+    <div class="stat-item"><span class="stat-num" id="statUsers">--</span><span class="stat-label" data-i18n="stat2">Utilisateurs actifs</span></div>
+    <div class="stat-item"><span class="stat-num">24h</span><span class="stat-label" data-i18n="stat3">Délai moyen</span></div>
+    <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label" data-i18n="stat4">Taux de succès</span></div>
   </div>
 </div>
 
 <!-- COMMENT CA MARCHE -->
 <section class="section" id="comment">
   <div class="section-center">
-    <h2 class="section-title">Comment ça marche ?</h2>
-    <p class="section-sub">4 étapes simples pour échanger vos DZD</p>
+    <h2 class="section-title" data-i18n="steps_title">Comment ça marche ?</h2>
+    <p class="section-sub" data-i18n="steps_sub">4 étapes simples pour échanger vos DZD</p>
   </div>
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-icon">👤</div>
-      <div class="step-num">ÉTAPE 1</div>
-      <h3 class="step-title">Créez votre compte</h3>
-      <p class="step-desc">Inscription gratuite avec votre email, votre numéro CCP BaridiMob et votre email Paysera.</p>
+      <div class="step-num" data-i18n="step1_num">ÉTAPE 1</div>
+      <h3 class="step-title" data-i18n="step1_title">Créez votre compte</h3>
+      <p class="step-desc" data-i18n="step1_desc">Inscription gratuite avec votre email, votre numéro CCP BaridiMob et votre email Paysera.</p>
     </div>
     <div class="step-card">
       <div class="step-icon">📋</div>
-      <div class="step-num">ÉTAPE 2</div>
-      <h3 class="step-title">Faites une demande</h3>
-      <p class="step-desc">Indiquez le montant en DZD à envoyer. Nous vous donnons le CCP admin pour effectuer le virement BaridiMob.</p>
+      <div class="step-num" data-i18n="step2_num">ÉTAPE 2</div>
+      <h3 class="step-title" data-i18n="step2_title">Faites une demande</h3>
+      <p class="step-desc" data-i18n="step2_desc">Indiquez le montant en DZD à envoyer. Nous vous donnons le CCP admin pour effectuer le virement BaridiMob.</p>
     </div>
     <div class="step-card">
       <div class="step-icon">📸</div>
-      <div class="step-num">ÉTAPE 3</div>
-      <h3 class="step-title">Envoyez la preuve</h3>
-      <p class="step-desc">Effectuez le virement DZD vers notre CCP via BaridiMob, puis uploadez la capture d'écran comme preuve.</p>
+      <div class="step-num" data-i18n="step3_num">ÉTAPE 3</div>
+      <h3 class="step-title" data-i18n="step3_title">Envoyez la preuve</h3>
+      <p class="step-desc" data-i18n="step3_desc">Effectuez le virement DZD vers notre CCP via BaridiMob, puis uploadez la capture d'écran comme preuve.</p>
     </div>
     <div class="step-card">
       <div class="step-icon">💶</div>
-      <div class="step-num">ÉTAPE 4</div>
-      <h3 class="step-title">Recevez vos Euros</h3>
-      <p class="step-desc">Après vérification, nous envoyons les euros sur votre compte Paysera. Suivi en temps réel dans l'app.</p>
+      <div class="step-num" data-i18n="step4_num">ÉTAPE 4</div>
+      <h3 class="step-title" data-i18n="step4_title">Recevez vos Euros</h3>
+      <p class="step-desc" data-i18n="step4_desc">Après vérification, nous envoyons les euros sur votre compte Paysera. Suivi en temps réel dans l'app.</p>
     </div>
   </div>
 </section>
@@ -262,33 +269,33 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <!-- POURQUOI NOUS -->
 <section class="section why-bg">
   <div class="section-center">
-    <h2 class="section-title">Pourquoi AppDz Exchange ?</h2>
-    <p class="section-sub">Une plateforme pensée pour la diaspora algérienne</p>
+    <h2 class="section-title" data-i18n="why_title">Pourquoi AppDz Exchange ?</h2>
+    <p class="section-sub" data-i18n="why_sub">Une plateforme pensée pour la diaspora algérienne</p>
   </div>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">🔒</div>
-      <div class="feature-text"><h4>Sécurisé & Fiable</h4><p>Authentification Firebase, vérification email et suivi complet de chaque transfert.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat1_title">Sécurisé & Fiable</h4><p data-i18n="feat1_desc">Authentification Firebase, vérification email et suivi complet de chaque transfert.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">📊</div>
-      <div class="feature-text"><h4>Taux transparent</h4><p>Le taux EUR/DZD est affiché en temps réel. Aucune surprise, aucun frais caché.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat2_title">Taux transparent</h4><p data-i18n="feat2_desc">Le taux EUR/DZD est affiché en temps réel. Aucune surprise, aucun frais caché.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">💬</div>
-      <div class="feature-text"><h4>Chat avec l'admin</h4><p>Contactez directement l'administrateur dans l'application pour toute question.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat3_title">Chat avec l'admin</h4><p data-i18n="feat3_desc">Contactez directement l'administrateur dans l'application pour toute question.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">📱</div>
-      <div class="feature-text"><h4>Mobile & Desktop</h4><p>Interface optimisée pour téléphone et ordinateur. Accédez depuis n'importe quel appareil.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat4_title">Mobile & Desktop</h4><p data-i18n="feat4_desc">Interface optimisée pour téléphone et ordinateur. Accédez depuis n'importe quel appareil.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
-      <div class="feature-text"><h4>Traitement rapide</h4><p>Les demandes sont traitées en 24 à 48 heures après réception des preuves.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat5_title">Traitement rapide</h4><p data-i18n="feat5_desc">Les demandes sont traitées en 24 à 48 heures après réception des preuves.</p></div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🔔</div>
-      <div class="feature-text"><h4>Suivi en temps réel</h4><p>Suivez le statut de votre demande à chaque étape dans votre espace personnel.</p></div>
+      <div class="feature-text"><h4 data-i18n="feat6_title">Suivi en temps réel</h4><p data-i18n="feat6_desc">Suivez le statut de votre demande à chaque étape dans votre espace personnel.</p></div>
     </div>
   </div>
 </section>
@@ -296,82 +303,82 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <!-- CONTACT -->
 <section id="contact" style="background:#f0f4fa;padding:64px 5%;">
   <div style="max-width:560px;margin:0 auto;text-align:center;">
-    <div style="display:inline-block;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.6px;margin-bottom:14px;">CONTACT</div>
-    <h2 style="font-size:clamp(22px,4vw,34px);font-weight:900;color:#1a1f36;margin-bottom:10px;">Une question ? Écrivez-nous</h2>
-    <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.6;">Pas besoin d'être inscrit. Envoyez-nous votre question, nous vous répondrons par email sous 24h.</p>
+    <div style="display:inline-block;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.6px;margin-bottom:14px;" data-i18n="contact_badge">CONTACT</div>
+    <h2 style="font-size:clamp(22px,4vw,34px);font-weight:900;color:#1a1f36;margin-bottom:10px;" data-i18n="contact_title">Une question ? Écrivez-nous</h2>
+    <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.6;" data-i18n="contact_sub">Pas besoin d'être inscrit. Envoyez-nous votre question, nous vous répondrons par email sous 24h.</p>
     <div id="contactFormWrap" style="background:#fff;border-radius:20px;padding:28px 28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:left;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div>
-          <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;">VOTRE NOM *</label>
-          <input id="cNom" type="text" placeholder="Ex: Ahmed Benali" maxlength="60"
+          <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="contact_name_lbl">VOTRE NOM *</label>
+          <input id="cNom" type="text" data-i18n-ph="contact_name_ph" placeholder="Ex: Ahmed Benali" maxlength="60"
             style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#f8fafc;box-sizing:border-box;"
             onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'">
         </div>
         <div>
-          <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;">VOTRE EMAIL *</label>
+          <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="contact_email_lbl">VOTRE EMAIL *</label>
           <input id="cEmail" type="email" placeholder="votre@email.com" maxlength="100"
             style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#f8fafc;box-sizing:border-box;"
             onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'">
         </div>
       </div>
       <div style="margin-bottom:16px;">
-        <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;">VOTRE MESSAGE *</label>
-        <textarea id="cMsg" placeholder="Décrivez votre question ou demande..." maxlength="800" rows="4"
+        <label style="font-size:11px;font-weight:800;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="contact_msg_lbl">VOTRE MESSAGE *</label>
+        <textarea id="cMsg" data-i18n-ph="contact_msg_ph" placeholder="Décrivez votre question ou demande..." maxlength="800" rows="4"
           style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#f8fafc;resize:vertical;font-family:inherit;box-sizing:border-box;"
           onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"></textarea>
       </div>
       <div id="cError" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;font-size:13px;color:#dc2626;margin-bottom:12px;"></div>
       <button id="cBtn" onclick="sendContact()"
-        style="width:100%;padding:13px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;">
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;" data-i18n="contact_send_btn">
         Envoyer le message →
       </button>
     </div>
     <div id="contactSuccess" style="display:none;background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:20px;padding:36px 28px;text-align:center;margin-top:8px;">
       <div style="font-size:48px;margin-bottom:14px;">✅</div>
-      <h3 style="font-size:22px;font-weight:900;color:#065f46;margin-bottom:10px;">Message envoyé !</h3>
-      <p style="color:#047857;font-size:15px;line-height:1.6;">Nous avons bien reçu votre message.<br>Vous recevrez une réponse à l'adresse email indiquée sous 24h.</p>
+      <h3 style="font-size:22px;font-weight:900;color:#065f46;margin-bottom:10px;" data-i18n="contact_success_title">Message envoyé !</h3>
+      <p style="color:#047857;font-size:15px;line-height:1.6;" data-i18n="contact_success_msg">Nous avons bien reçu votre message.<br>Vous recevrez une réponse à l'adresse email indiquée sous 24h.</p>
     </div>
   </div>
 </section>
 
-<!-- APPLICATION MOBILE — BIENTÔT -->
+<!-- APPLICATION MOBILE -->
 <section style="background:#fff;padding:56px 5%;text-align:center;border-top:1px solid #e0e8f5;">
   <div style="max-width:560px;margin:0 auto;">
-    <div style="display:inline-block;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.6px;margin-bottom:14px;">APPLICATION MOBILE</div>
-    <h2 style="font-size:clamp(22px,4vw,34px);font-weight:900;color:#1a1f36;margin-bottom:10px;">Bientôt sur Android</h2>
-    <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.6;">L'application mobile est en cours de développement. En attendant, utilisez la version web disponible sur tous les appareils.</p>
+    <div style="display:inline-block;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:.6px;margin-bottom:14px;" data-i18n="app_badge">APPLICATION MOBILE</div>
+    <h2 style="font-size:clamp(22px,4vw,34px);font-weight:900;color:#1a1f36;margin-bottom:10px;" data-i18n="app_title">Bientôt sur Android</h2>
+    <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.6;" data-i18n="app_desc">L'application mobile est en cours de développement. En attendant, utilisez la version web disponible sur tous les appareils.</p>
     <div style="display:inline-flex;align-items:center;gap:14px;background:#f1f5f9;color:#94a3b8;padding:16px 32px;border-radius:18px;font-size:16px;font-weight:800;cursor:default;">
       <span style="font-size:28px;">📱</span>
       <div style="text-align:left;">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.5px;">DISPONIBLE PROCHAINEMENT</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.5px;" data-i18n="app_soon_label">DISPONIBLE PROCHAINEMENT</div>
         <div style="font-size:18px;font-weight:900;">Android</div>
       </div>
     </div>
-    <p style="font-size:13px;color:#94a3b8;margin-top:20px;">⏳ En cours de développement — restez connecté</p>
+    <p style="font-size:13px;color:#94a3b8;margin-top:20px;" data-i18n="app_soon_note">⏳ En cours de développement — restez connecté</p>
   </div>
 </section>
 
 <!-- CTA FINAL -->
 <section class="cta-section">
-  <h2>Prêt à échanger vos DZD contre des EUR ?</h2>
-  <p>Rejoignez AppDz Exchange — inscription gratuite, transfert en 24–48h.</p>
+  <h2 data-i18n="cta_title">Prêt à échanger vos DZD contre des EUR ?</h2>
+  <p data-i18n="cta_sub">Rejoignez AppDz Exchange — inscription gratuite, transfert en 24–48h.</p>
   <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-    <a href="auth.html" class="btn-hero-primary">🚀 Créer mon compte</a>
-    <a href="#contact" class="btn-hero-secondary">💬 Nous contacter</a>
+    <a href="auth.html" class="btn-hero-primary" data-i18n="cta_btn1">🚀 Créer mon compte</a>
+    <a href="#contact" class="btn-hero-secondary" data-i18n="cta_btn2">💬 Nous contacter</a>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">🏠⇄💳 AppDz Exchange</div>
-  <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:4px;">Service d'échange BaridiMob (DZD) ↔ Paysera (EUR)</p>
+  <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:4px;" data-i18n="footer_tagline">Service d'échange BaridiMob (DZD) ↔ Paysera (EUR)</p>
   <div class="footer-links">
-    <a href="#comment">Comment ça marche</a>
-    <a href="#contact">Contact</a>
-    <a href="auth.html">Se connecter</a>
-    <a href="auth.html">S'inscrire</a>
+    <a href="#comment" data-i18n="footer_how">Comment ça marche</a>
+    <a href="#contact" data-i18n="footer_contact">Contact</a>
+    <a href="auth.html" data-i18n="footer_login">Se connecter</a>
+    <a href="auth.html" data-i18n="footer_register">S'inscrire</a>
   </div>
-  <p style="color:rgba(255,255,255,.25);font-size:11px;margin-top:14px;">© 2025 AppDz Exchange — Tous droits réservés</p>
+  <p style="color:rgba(255,255,255,.25);font-size:11px;margin-top:14px;" data-i18n="footer_copy">© 2025 AppDz Exchange — Tous droits réservés</p>
 </footer>
 
 <!-- FIREBASE -->
@@ -389,13 +396,200 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-// Taux
+// ── TRADUCTIONS ──
+var T = {
+  fr: {
+    nav_contact: 'Contact',
+    nav_login: 'Connexion',
+    nav_register: "S'inscrire",
+    hero_badge: '✦ SERVICE D\'ÉCHANGE DZD / EUR',
+    hero_h1: 'BaridiMob vers Paysera —',
+    hero_h1_span: 'rapide, transparent, fiable',
+    hero_p: 'Soumettez votre demande, envoyez vos DZD via BaridiMob, recevez vos EUR sur Paysera. Taux garanti, traitement rapide, suivi en temps réel.',
+    hero_btn1: '🚀 Commencer gratuitement',
+    hero_btn2: 'Comment ça marche ↓',
+    taux_label: 'TAUX EN DIRECT',
+    taux_unit: 'DZD = 1 EUR',
+    taux_route: '🏦 BaridiMob → Paysera',
+    taux_delay: '⚡ Traitement 24–48h',
+    calc_title: '💱 Simulez votre transfert',
+    calc_sub: 'Calculez combien vous recevrez en euros — aucune inscription requise',
+    calc_send: 'VOUS ENVOYEZ (BaridiMob)',
+    calc_receive: 'VOUS RECEVEZ (Paysera)',
+    calc_note_prefix: 'Taux actuel :',
+    calc_note_suffix: "Mis à jour par l'administrateur",
+    calc_btn: 'Faire ce transfert maintenant →',
+    stat1: 'Échanges réalisés',
+    stat2: 'Utilisateurs actifs',
+    stat3: 'Délai moyen',
+    stat4: 'Taux de succès',
+    steps_title: 'Comment ça marche ?',
+    steps_sub: '4 étapes simples pour échanger vos DZD',
+    step1_num: 'ÉTAPE 1', step1_title: 'Créez votre compte',
+    step1_desc: 'Inscription gratuite avec votre email, votre numéro CCP BaridiMob et votre email Paysera.',
+    step2_num: 'ÉTAPE 2', step2_title: 'Faites une demande',
+    step2_desc: 'Indiquez le montant en DZD à envoyer. Nous vous donnons le CCP admin pour effectuer le virement BaridiMob.',
+    step3_num: 'ÉTAPE 3', step3_title: 'Envoyez la preuve',
+    step3_desc: 'Effectuez le virement DZD vers notre CCP via BaridiMob, puis uploadez la capture d\'écran comme preuve.',
+    step4_num: 'ÉTAPE 4', step4_title: 'Recevez vos Euros',
+    step4_desc: 'Après vérification, nous envoyons les euros sur votre compte Paysera. Suivi en temps réel dans l\'app.',
+    why_title: 'Pourquoi AppDz Exchange ?',
+    why_sub: 'Une plateforme pensée pour la diaspora algérienne',
+    feat1_title: 'Sécurisé & Fiable', feat1_desc: 'Authentification Firebase, vérification email et suivi complet de chaque transfert.',
+    feat2_title: 'Taux transparent', feat2_desc: 'Le taux EUR/DZD est affiché en temps réel. Aucune surprise, aucun frais caché.',
+    feat3_title: "Chat avec l'admin", feat3_desc: "Contactez directement l'administrateur dans l'application pour toute question.",
+    feat4_title: 'Mobile & Desktop', feat4_desc: 'Interface optimisée pour téléphone et ordinateur. Accédez depuis n\'importe quel appareil.',
+    feat5_title: 'Traitement rapide', feat5_desc: 'Les demandes sont traitées en 24 à 48 heures après réception des preuves.',
+    feat6_title: 'Suivi en temps réel', feat6_desc: 'Suivez le statut de votre demande à chaque étape dans votre espace personnel.',
+    contact_badge: 'CONTACT',
+    contact_title: 'Une question ? Écrivez-nous',
+    contact_sub: "Pas besoin d'être inscrit. Envoyez-nous votre question, nous vous répondrons par email sous 24h.",
+    contact_name_lbl: 'VOTRE NOM *', contact_name_ph: 'Ex: Ahmed Benali',
+    contact_email_lbl: 'VOTRE EMAIL *',
+    contact_msg_lbl: 'VOTRE MESSAGE *', contact_msg_ph: 'Décrivez votre question ou demande...',
+    contact_send_btn: 'Envoyer le message →',
+    contact_success_title: 'Message envoyé !',
+    contact_success_msg: 'Nous avons bien reçu votre message.<br>Vous recevrez une réponse à l\'adresse email indiquée sous 24h.',
+    app_badge: 'APPLICATION MOBILE',
+    app_title: 'Bientôt sur Android',
+    app_desc: "L'application mobile est en cours de développement. En attendant, utilisez la version web disponible sur tous les appareils.",
+    app_soon_label: 'DISPONIBLE PROCHAINEMENT',
+    app_soon_note: '⏳ En cours de développement — restez connecté',
+    cta_title: 'Prêt à échanger vos DZD contre des EUR ?',
+    cta_sub: 'Rejoignez AppDz Exchange — inscription gratuite, transfert en 24–48h.',
+    cta_btn1: '🚀 Créer mon compte',
+    cta_btn2: '💬 Nous contacter',
+    footer_tagline: 'Service d\'échange BaridiMob (DZD) ↔ Paysera (EUR)',
+    footer_how: 'Comment ça marche',
+    footer_contact: 'Contact',
+    footer_login: 'Se connecter',
+    footer_register: "S'inscrire",
+    footer_copy: '© 2025 AppDz Exchange — Tous droits réservés',
+    err_nom: 'Veuillez entrer votre nom.',
+    err_email: 'Email invalide.',
+    err_msg: 'Veuillez écrire un message.',
+    err_send: "Erreur lors de l'envoi. Réessayez.",
+    sending: 'Envoi en cours…',
+  },
+  ar: {
+    nav_contact: 'تواصل معنا',
+    nav_login: 'تسجيل الدخول',
+    nav_register: 'إنشاء حساب',
+    hero_badge: '✦ خدمة تحويل DZD / EUR',
+    hero_h1: 'بريدي موب إلى Paysera —',
+    hero_h1_span: 'سريع، شفاف، موثوق',
+    hero_p: 'قدّم طلبك، أرسل دينارك عبر بريدي موب، واستقبل يوروهاتك على Paysera. سعر مضمون، معالجة سريعة، متابعة فورية.',
+    hero_btn1: '🚀 ابدأ مجاناً',
+    hero_btn2: 'كيف يعمل؟ ↓',
+    taux_label: 'السعر المباشر',
+    taux_unit: 'دج = 1 يورو',
+    taux_route: '🏦 بريدي موب ← Paysera',
+    taux_delay: '⚡ معالجة 24–48 ساعة',
+    calc_title: '💱 احسب تحويلك',
+    calc_sub: 'احسب كم ستستقبل باليورو — دون تسجيل',
+    calc_send: 'أنت ترسل (بريدي موب)',
+    calc_receive: 'أنت تستقبل (Paysera)',
+    calc_note_prefix: 'السعر الحالي:',
+    calc_note_suffix: 'محدّث من طرف المسؤول',
+    calc_btn: '← قم بهذا التحويل الآن',
+    stat1: 'تحويلات منجزة',
+    stat2: 'مستخدمون نشطون',
+    stat3: 'متوسط المدة',
+    stat4: 'نسبة النجاح',
+    steps_title: 'كيف يعمل؟',
+    steps_sub: '4 خطوات بسيطة لتحويل دينارك',
+    step1_num: 'الخطوة 1', step1_title: 'أنشئ حسابك',
+    step1_desc: 'تسجيل مجاني بإيميلك ورقم CCP بريدي موب وإيميل Paysera الخاص بك.',
+    step2_num: 'الخطوة 2', step2_title: 'قدّم طلبك',
+    step2_desc: 'حدّد المبلغ بالدينار الذي تريد إرساله. سنعطيك رقم CCP للإدارة لإجراء التحويل عبر بريدي موب.',
+    step3_num: 'الخطوة 3', step3_title: 'أرسل الإثبات',
+    step3_desc: 'أجرِ التحويل من بريدي موب إلى CCP الخاص بنا، ثم ارفع لقطة الشاشة كإثبات.',
+    step4_num: 'الخطوة 4', step4_title: 'استقبل يوروهاتك',
+    step4_desc: 'بعد التحقق، نرسل اليوروهات إلى حساب Paysera الخاص بك. متابعة فورية في التطبيق.',
+    why_title: 'لماذا AppDz Exchange؟',
+    why_sub: 'منصة مصممة للجالية الجزائرية',
+    feat1_title: 'آمن وموثوق', feat1_desc: 'مصادقة Firebase، التحقق من البريد الإلكتروني ومتابعة كاملة لكل تحويل.',
+    feat2_title: 'سعر شفاف', feat2_desc: 'يظهر سعر EUR/DZD في الوقت الفعلي. لا مفاجآت ولا رسوم مخفية.',
+    feat3_title: 'تواصل مع المسؤول', feat3_desc: 'تواصل مباشرة مع المسؤول داخل التطبيق لأي استفسار.',
+    feat4_title: 'موبايل وكمبيوتر', feat4_desc: 'واجهة محسّنة للهاتف والكمبيوتر. ادخل من أي جهاز.',
+    feat5_title: 'معالجة سريعة', feat5_desc: 'تُعالج الطلبات في غضون 24 إلى 48 ساعة بعد استلام الإثباتات.',
+    feat6_title: 'متابعة فورية', feat6_desc: 'تابع حالة طلبك في كل مرحلة من مراحله في حسابك الشخصي.',
+    contact_badge: 'تواصل معنا',
+    contact_title: 'هل لديك سؤال؟ راسلنا',
+    contact_sub: 'لا حاجة للتسجيل. أرسل لنا سؤالك وسنردّ عليك بالبريد الإلكتروني خلال 24 ساعة.',
+    contact_name_lbl: 'اسمك *', contact_name_ph: 'مثال: أحمد بن علي',
+    contact_email_lbl: 'بريدك الإلكتروني *',
+    contact_msg_lbl: 'رسالتك *', contact_msg_ph: 'اكتب سؤالك أو طلبك...',
+    contact_send_btn: '← إرسال الرسالة',
+    contact_success_title: 'تم إرسال الرسالة!',
+    contact_success_msg: 'لقد استلمنا رسالتك.<br>ستصلك إجابة على بريدك الإلكتروني خلال 24 ساعة.',
+    app_badge: 'تطبيق الجوال',
+    app_title: 'قريباً على أندرويد',
+    app_desc: 'تطبيق الجوال قيد التطوير حالياً. في الوقت الراهن، استخدم النسخة الإلكترونية المتاحة على جميع الأجهزة.',
+    app_soon_label: 'متاح قريباً',
+    app_soon_note: '⏳ قيد التطوير — ترقّب الإطلاق',
+    cta_title: 'هل أنت مستعد لتحويل دينارك إلى يورو؟',
+    cta_sub: 'انضم إلى AppDz Exchange — تسجيل مجاني، تحويل في 24–48 ساعة.',
+    cta_btn1: '🚀 إنشاء حسابي',
+    cta_btn2: '💬 تواصل معنا',
+    footer_tagline: 'خدمة تحويل بريدي موب (DZD) ↔ Paysera (EUR)',
+    footer_how: 'كيف يعمل',
+    footer_contact: 'تواصل معنا',
+    footer_login: 'تسجيل الدخول',
+    footer_register: 'إنشاء حساب',
+    footer_copy: '© 2025 AppDz Exchange — جميع الحقوق محفوظة',
+    err_nom: 'الرجاء إدخال اسمك.',
+    err_email: 'البريد الإلكتروني غير صالح.',
+    err_msg: 'الرجاء كتابة رسالة.',
+    err_send: 'خطأ في الإرسال. حاول مجدداً.',
+    sending: 'جارٍ الإرسال…',
+  }
+};
+
+var currentLang = 'fr';
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  // Boutons switcher
+  document.getElementById('btnFr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btnAr').classList.toggle('active', lang === 'ar');
+  // Textes
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (T[lang] && T[lang][key] !== undefined) {
+      if (key === 'hero_h1') {
+        // Garde le <span> interne
+        var span = el.querySelector('span');
+        el.childNodes[0].nodeValue = T[lang][key] + (lang === 'ar' ? '' : '\n');
+        if (span && T[lang]['hero_h1_span']) span.textContent = T[lang]['hero_h1_span'];
+      } else if (key === 'contact_success_msg') {
+        el.innerHTML = T[lang][key];
+      } else {
+        el.textContent = T[lang][key];
+      }
+    }
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-ph');
+    if (T[lang] && T[lang][key]) el.placeholder = T[lang][key];
+  });
+}
+
+// Init langue sauvegardée
+var savedLang = localStorage.getItem('lang') || 'fr';
+setLang(savedLang);
+
+// ── Taux ──
 function loadTaux() {
   db.collection('config').doc('settings').get().then(function(doc) {
     if (doc.exists) {
       var t = doc.data().taux || 0;
       document.getElementById('tauxLive').textContent = t;
-      document.getElementById('tauxNote').textContent = t + ' DZD = 1 EUR';
+      document.getElementById('tauxNote').textContent = t + (currentLang === 'ar' ? ' دج = 1 يورو' : ' DZD = 1 EUR');
       calcEur(t);
       document.getElementById('dzdInput').addEventListener('input', function() { calcEur(t); });
     }
@@ -407,15 +601,13 @@ function calcEur(taux) {
 }
 loadTaux();
 
-// Stats (lecture depuis config/settings — public)
+// ── Stats ──
 function loadStats() {
   db.collection('config').doc('settings').get().then(function(doc) {
     if (doc.exists) {
       var d = doc.data();
-      var echanges = typeof d.totalEchanges === 'number' ? d.totalEchanges : 0;
-      var users    = typeof d.totalUsers    === 'number' ? d.totalUsers    : 0;
-      document.getElementById('statEchanges').textContent = echanges > 0 ? echanges : '0';
-      document.getElementById('statUsers').textContent    = users    > 0 ? users    : '0';
+      document.getElementById('statEchanges').textContent = typeof d.totalEchanges === 'number' ? d.totalEchanges : '0';
+      document.getElementById('statUsers').textContent    = typeof d.totalUsers    === 'number' ? d.totalUsers    : '0';
     }
   }).catch(function(){});
 }
@@ -428,69 +620,57 @@ loadStats();
       .then(function(r){ return r.json(); })
       .then(function(data) {
         db.collection('visits').add({
-          ip: data.ip || 'inconnu',
-          page: 'accueil',
+          ip: data.ip || 'inconnu', page: 'accueil',
           userAgent: navigator.userAgent.substring(0, 200),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          ts: Date.now()
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(), ts: Date.now()
         }).catch(function(){});
       }).catch(function() {
-        // IP non disponible — enregistrer quand même sans IP
         db.collection('visits').add({
-          ip: 'inconnu',
-          page: 'accueil',
+          ip: 'inconnu', page: 'accueil',
           userAgent: navigator.userAgent.substring(0, 200),
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          ts: Date.now()
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(), ts: Date.now()
         }).catch(function(){});
       });
   } catch(e) {}
 })();
 
-// Contact
+// ── Contact ──
 function sendContact() {
+  var lang = currentLang;
   var nom   = (document.getElementById('cNom').value || '').trim();
   var email = (document.getElementById('cEmail').value || '').trim();
   var msg   = (document.getElementById('cMsg').value || '').trim();
   var errEl = document.getElementById('cError');
   errEl.style.display = 'none';
-  if (!nom) { errEl.textContent = 'Veuillez entrer votre nom.'; errEl.style.display='block'; return; }
-  if (!email || !/\S+@\S+\.\S+/.test(email)) { errEl.textContent = 'Email invalide.'; errEl.style.display='block'; return; }
-  if (!msg)  { errEl.textContent = 'Veuillez écrire un message.'; errEl.style.display='block'; return; }
+  if (!nom)  { errEl.textContent = T[lang].err_nom;   errEl.style.display='block'; return; }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { errEl.textContent = T[lang].err_email; errEl.style.display='block'; return; }
+  if (!msg)  { errEl.textContent = T[lang].err_msg;   errEl.style.display='block'; return; }
   var btn = document.getElementById('cBtn');
-  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  btn.disabled = true; btn.textContent = T[lang].sending;
   db.collection('contacts').add({
     nom: nom, email: email, message: msg,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    lu: false
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(), lu: false
   }).then(function() {
-    // Notification email admin (si pas en pause)
     db.collection('config').doc('settings').get().then(function(s) {
       if (s.exists && s.data().notifPaused === true) return;
       fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        access_key: 'd841a00c-9128-413e-8711-519a9e40221d',
-        subject: '✉️ Nouveau contact visiteur — ' + nom,
-        message: 'Message d\'un visiteur non inscrit :\n\n' +
-          '👤 Nom : ' + nom + '\n' +
-          '📧 Email : ' + email + '\n\n' +
-          '💬 Message : ' + msg + '\n\n' +
-          '🔗 Voir dans admin : https://ilyesmed23.github.io/AppDzExchange-Web/admin.html',
-        from_name: 'AppDz Exchange',
-        email: 'giftformenow@gmail.com'
-      })
-    }).catch(function(){});
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'd841a00c-9128-413e-8711-519a9e40221d',
+          subject: '✉️ Nouveau contact visiteur — ' + nom,
+          message: 'Message d\'un visiteur :\n\n👤 ' + nom + '\n📧 ' + email + '\n\n💬 ' + msg,
+          from_name: 'AppDz Exchange', email: 'giftformenow@gmail.com'
+        })
+      }).catch(function(){});
     }).catch(function(){});
     document.getElementById('contactFormWrap').style.display = 'none';
-    var s = document.getElementById('contactSuccess');
-    s.style.display = 'block';
-    s.scrollIntoView({behavior:'smooth', block:'center'});
-  }).catch(function(err) {
-    errEl.textContent = 'Erreur lors de l\'envoi. Réessayez.';
+    var sEl = document.getElementById('contactSuccess');
+    sEl.style.display = 'block';
+    sEl.scrollIntoView({behavior:'smooth', block:'center'});
+  }).catch(function() {
+    errEl.textContent = T[lang].err_send;
     errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Envoyer le message →';
+    btn.disabled = false; btn.textContent = T[lang].contact_send_btn;
   });
 }
 </script>
