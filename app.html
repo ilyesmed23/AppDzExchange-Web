@@ -580,36 +580,30 @@ const storage = firebase.storage();
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 
 // ── EmailJS Init ──
-var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejReady = false, _ejPaused = false;
+var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejTpl2 = 'template_84rbhxk', _ejReady = false, _ejPaused = false;
 db.collection('config').doc('settings').get().then(function(s){
   if(!s.exists) return;
   var d = s.data();
   _ejKey = d.ejKey || ''; _ejSvc = d.ejSvc || ''; _ejTpl = d.ejTpl || '';
-  _ejPaused = !!d.notifPaused;
+  if(d.ejTpl2) _ejTpl2 = d.ejTpl2;
+  _ejPaused = !!d.ejNotifPaused;
   if(_ejKey && _ejSvc && _ejTpl){
     try{ emailjs.init(_ejKey); _ejReady = true; }catch(e){}
   }
 }).catch(function(){});
 
-function sendUserConfirmEmail(type, txData){
+// Envoi auto confirmation quand l'utilisateur uploade sa preuve
+function sendUserConfirmEmail(txData){
   if(!_ejReady || _ejPaused) return;
   var u = currentUser || {};
   var toEmail = u.email || (txData && txData.email) || '';
   if(!toEmail) return;
-  var labels = {
-    'demande': '✅ Demande de transfert enregistrée'
-  };
-  var motifs = {
-    'demande': 'Votre demande de transfert a bien été enregistrée et est actuellement en cours de traitement par notre équipe. Vous recevrez une réponse dans un délai de 24 à 48 heures.'
-  };
-  emailjs.send(_ejSvc, _ejTpl, {
+  emailjs.send(_ejSvc, _ejTpl2, {
     to_email:     toEmail,
     to_name:      u.nom || toEmail,
-    statut_label: labels[type] || type,
     montant_eur:  (txData && txData.montantEur) || '—',
     montant_dzd:  (txData && txData.montantDzd) || '—',
-    email_paysera:(txData && txData.emailPaysera) || '—',
-    motif:        motifs[type] || '',
+    email_paysera:(txData && txData.emailPaysera) || u.emailPaysera || '—',
     date:         new Date().toLocaleDateString('fr-DZ')
   }).catch(function(e){ console.warn('EmailJS:', e); });
 }
@@ -1056,6 +1050,9 @@ function handleFileSelected(input) {
     });
   }).then(function() {
     if (loader) loader.style.display = 'none';
+    // Email auto de confirmation à l'utilisateur
+    var tx = transferts.find(function(t){ return t.id === currentTxId; });
+    sendUserConfirmEmail(tx);
     return db.collection('transferts').doc(currentTxId).get();
   }).then(function(snap) {
     var d = snap.data(); d.id = snap.id;
@@ -1114,8 +1111,6 @@ function handleCreateTransfert() {
       '📊 Taux appliqué : ' + currentTaux + ' DZD/EUR\n\n' +
       '🔗 Connectez-vous sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html pour valider.'
     );
-    // Confirmation automatique à l'utilisateur
-    sendUserConfirmEmail('demande', { montantEur: eur, montantDzd: dzd, emailPaysera: (currentUser||{}).emailPaysera||'—' });
     return db.collection('transferts').doc(ref.id).get();
   }).then(function(snap) {
     var d = snap.data(); d.id = snap.id;

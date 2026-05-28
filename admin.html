@@ -372,8 +372,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
           <input class="s-input" id="sEjKey" type="text" placeholder="ex: XXXXXXXXXXXXXXXX">
           <label class="s-lbl">SERVICE ID</label>
           <input class="s-input" id="sEjSvc" type="text" placeholder="ex: service_xxxxxxx">
-          <label class="s-lbl">TEMPLATE ID</label>
+          <label class="s-lbl">TEMPLATE ID — Notifications admin (bouton 📧 Notifier)</label>
           <input class="s-input" id="sEjTpl" type="text" placeholder="ex: template_xxxxxxx">
+          <label class="s-lbl">TEMPLATE ID 2 — Confirmation auto utilisateur (upload preuve)</label>
+          <input class="s-input" id="sEjTpl2" type="text" placeholder="ex: template_84rbhxk">
           <button class="s-btn" onclick="saveEmailJSConfig()">💾 Enregistrer la config EmailJS</button>
           <div id="ejMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
         </div>
@@ -641,6 +643,7 @@ function initListeners(){
       if(d.ejKey){document.getElementById('sEjKey').value=d.ejKey;EMAILJS_PUBLIC_KEY=d.ejKey;}
       if(d.ejSvc){document.getElementById('sEjSvc').value=d.ejSvc;EMAILJS_SERVICE_ID=d.ejSvc;}
       if(d.ejTpl){document.getElementById('sEjTpl').value=d.ejTpl;EMAILJS_TEMPLATE_ID=d.ejTpl;}
+      if(d.ejTpl2){var el2=document.getElementById('sEjTpl2');if(el2)el2.value=d.ejTpl2;}
       if(d.ejKey&&d.ejKey!=='YOUR_PUBLIC_KEY'){try{emailjs.init(d.ejKey);_ejReady=true;}catch(e){}}
       renderDash();
       renderTxList();
@@ -1221,9 +1224,10 @@ function saveEmailJSConfig(){
   var k=document.getElementById('sEjKey').value.trim();
   var s=document.getElementById('sEjSvc').value.trim();
   var tp=document.getElementById('sEjTpl').value.trim();
+  var tp2=(document.getElementById('sEjTpl2')||{}).value||'template_84rbhxk';tp2=tp2.trim()||'template_84rbhxk';
   var msg=document.getElementById('ejMsg');
   if(!k||!s||!tp){msg.textContent='Remplis tous les champs.';msg.style.color='#dc2626';return;}
-  db.collection('config').doc('settings').set({ejKey:k,ejSvc:s,ejTpl:tp},{merge:true})
+  db.collection('config').doc('settings').set({ejKey:k,ejSvc:s,ejTpl:tp,ejTpl2:tp2},{merge:true})
     .then(function(){
       EMAILJS_PUBLIC_KEY=k;EMAILJS_SERVICE_ID=s;EMAILJS_TEMPLATE_ID=tp;
       try{emailjs.init(k);_ejReady=true;}catch(e){}
