@@ -341,6 +341,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <div id="notifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
+      <!-- EMAILJS CONFIG -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">📧 EmailJS — Notifications automatiques</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Crée un compte gratuit sur <a href="https://www.emailjs.com" target="_blank" style="color:#1254a0;">emailjs.com</a>
+          (200 emails/mois gratuits), configure un template avec les variables indiquées, puis remplis les champs ci-dessous.
+          <br><br>
+          <strong>Variables du template :</strong><br>
+          <code style="font-size:11px;background:#f0f4fa;padding:2px 6px;border-radius:4px;">
+            {{to_name}}, {{to_email}}, {{statut_label}}, {{montant_eur}}, {{montant_dzd}},
+            {{email_paysera}}, {{motif}}, {{date}}
+          </code>
+        </div>
+        <label class="s-lbl">PUBLIC KEY (Account → API Keys)</label>
+        <input class="s-input" id="sEjKey" type="text" placeholder="ex: XXXXXXXXXXXXXXXX">
+        <label class="s-lbl">SERVICE ID</label>
+        <input class="s-input" id="sEjSvc" type="text" placeholder="ex: service_xxxxxxx">
+        <label class="s-lbl">TEMPLATE ID</label>
+        <input class="s-input" id="sEjTpl" type="text" placeholder="ex: template_xxxxxxx">
+        <button class="s-btn" onclick="saveEmailJSConfig()">💾 Enregistrer la config EmailJS</button>
+        <div id="ejMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
       <!-- SOLDE EUR -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">💵 Solde EUR disponible</div>
@@ -496,6 +519,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleProofUpload(this)">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -504,6 +528,43 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 var firebaseConfig={apiKey:"AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",authDomain:"appdzexchange.firebaseapp.com",projectId:"appdzexchange",storageBucket:"appdzexchange.firebasestorage.app",messagingSenderId:"217882852453",appId:"1:217882852483:android:b687e98a47d7f274d9efb6"};
 firebase.initializeApp(firebaseConfig);
 var auth=firebase.auth(), db=firebase.firestore(), storage=firebase.storage();
+
+// ── EMAILJS CONFIG ── (remplir après création compte sur emailjs.com)
+var EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // Account → API Keys
+var EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // Email Services
+var EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // Email Templates
+var _ejReady = false;
+(function(){
+  try{
+    if(EMAILJS_PUBLIC_KEY!=='YOUR_PUBLIC_KEY'){
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      _ejReady=true;
+    }
+  }catch(e){}
+})();
+
+function sendEmailNotif(t, newStatut, motif){
+  if(!_ejReady || !t) return;
+  var toEmail = t.email;
+  if(!toEmail && t.userId){
+    var u=allUsers.find(function(x){return x.id===t.userId;});
+    if(u) toEmail=u.email;
+  }
+  if(!toEmail) return;
+  var labels={'validee':'✅ Transfert Validé','terminee':'🎉 Transfert Terminé',
+    'rejetee':'❌ Transfert Rejeté','manque_info':'⚠️ Information Manquante','annulee':'🚫 Transfert Annulé'};
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email:    toEmail,
+    to_name:     t.nomUser||toEmail,
+    statut_label:labels[newStatut]||newStatut,
+    montant_eur: t.montantEur||'—',
+    montant_dzd: t.montantDzd||'—',
+    email_paysera:t.emailPaysera||'—',
+    motif:       motif||'',
+    date:        t.dateStr||new Date().toLocaleDateString('fr-FR')
+  }).then(function(){toast('📧 Email envoyé à '+toEmail,'ok');})
+    .catch(function(e){console.warn('EmailJS:',e);});
+}
 var ADMIN="giftformenow@gmail.com";
 var allTx=[], allUsers=[], curFilter='tous', curSearch='', curTxId=null;
 var alertThreshold=500, soldeEur=0, bulkSelectMode=false, selectedTxIds=new Set();
@@ -556,6 +617,11 @@ function initListeners(){
       maintenanceMode=d.maintenanceMode===true;
       document.getElementById('sMaintMsg').value=d.maintenanceMessage||'';
       renderMaintBtn();
+      // EmailJS config
+      if(d.ejKey){document.getElementById('sEjKey').value=d.ejKey;EMAILJS_PUBLIC_KEY=d.ejKey;}
+      if(d.ejSvc){document.getElementById('sEjSvc').value=d.ejSvc;EMAILJS_SERVICE_ID=d.ejSvc;}
+      if(d.ejTpl){document.getElementById('sEjTpl').value=d.ejTpl;EMAILJS_TEMPLATE_ID=d.ejTpl;}
+      if(d.ejKey&&d.ejKey!=='YOUR_PUBLIC_KEY'){try{emailjs.init(d.ejKey);_ejReady=true;}catch(e){}}
       renderDash();
       renderTxList();
     }
@@ -848,26 +914,30 @@ function quickOk(id){
   showCModal('✅','Valider la preuve ?','Cette action va marquer le transfert comme Validé.','✓ Valider',false,function(){chgSt(id,'validee');});
 }
 function quickRej(id){
+  var t=allTx.find(function(x){return x.id===id;});
   showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
-    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Rejeté','ok');sendEmailNotif(t,'rejetee',m);}).catch(function(e){toast(e.message,'err');});
   });
 }
 function quickInfo(id){
+  var t=allTx.find(function(x){return x.id===id;});
   showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
     if(!i)return;
-    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Info demandée','ok');sendEmailNotif(t,'manque_info',i);}).catch(function(e){toast(e.message,'err');});
   });
 }
 function promptRej(id){
+  var t=allTx.find(function(x){return x.id===id;});
   showPModal('Motif du rejet','Optionnel — laissez vide si pas de motif.','ex: Preuve illisible ou incorrecte','✗ Rejeter',function(m){
     if(m===null)return;
-    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');closeDrawer();}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'rejetee',motifRejet:m||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Transfert rejeté','ok');sendEmailNotif(t,'rejetee',m);closeDrawer();}).catch(function(e){toast(e.message,'err');});
   });
 }
 function promptInfo(id){
+  var t=allTx.find(function(x){return x.id===id;});
   showPModal('Information manquante','Précisez l\'information à demander à l\'utilisateur.','ex: Preuve de virement manquante','⚠ Envoyer',function(i){
     if(!i)return;
-    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');}).catch(function(e){toast(e.message,'err');});
+    db.collection('transferts').doc(id).update({statut:'manque_info',infoManquante:i,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){toast('Demande envoyée','ok');sendEmailNotif(t,'manque_info',i);}).catch(function(e){toast(e.message,'err');});
   });
 }
 function chgSt(id,s){
@@ -875,6 +945,7 @@ function chgSt(id,s){
   var wasTerminee=t&&t.statut==='terminee';
   db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
     toast('Statut → '+slbl(s),'ok');
+    sendEmailNotif(t,s);
     // Compteur échanges terminés
     if(s==='terminee' && !wasTerminee){
       db.collection('config').doc('settings').set({totalEchanges:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(function(){});
@@ -984,7 +1055,7 @@ function handleProofUpload(input){
   storage.ref('preuves/'+curTxId+'/admin_'+Date.now()+'.'+ext).put(file)
     .then(function(s){return s.ref.getDownloadURL();})
     .then(function(url){return db.collection('transferts').doc(curTxId).update({preuveAdminUrl:url,statut:'terminee',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});})
-    .then(function(){if(prog)prog.style.display='none';toast('Preuve uploadée — Transfert terminé !','ok');closeDrawer();curTxId=null;})
+    .then(function(){if(prog)prog.style.display='none';toast('Preuve uploadée — Transfert terminé !','ok');var tDone=allTx.find(function(x){return x.id===curTxId;});sendEmailNotif(tDone,'terminee');closeDrawer();curTxId=null;})
     .catch(function(e){if(prog)prog.style.display='none';toast('Erreur upload: '+e.message,'err');});
   input.value='';
 }
@@ -1083,6 +1154,21 @@ function saveSettings(){
   db.collection('config').doc('settings').set({taux:t,ccpAdmin:c,payseraAdmin:p},{merge:true})
     .then(function(){document.getElementById('settingsMsg').textContent='✓ Enregistré';document.getElementById('settingsMsg').style.color='#059669';toast('Paramètres sauvegardés','ok');})
     .catch(function(e){document.getElementById('settingsMsg').textContent='Erreur: '+e.message;document.getElementById('settingsMsg').style.color='#dc2626';});
+}
+
+function saveEmailJSConfig(){
+  var k=document.getElementById('sEjKey').value.trim();
+  var s=document.getElementById('sEjSvc').value.trim();
+  var tp=document.getElementById('sEjTpl').value.trim();
+  var msg=document.getElementById('ejMsg');
+  if(!k||!s||!tp){msg.textContent='Remplis tous les champs.';msg.style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({ejKey:k,ejSvc:s,ejTpl:tp},{merge:true})
+    .then(function(){
+      EMAILJS_PUBLIC_KEY=k;EMAILJS_SERVICE_ID=s;EMAILJS_TEMPLATE_ID=tp;
+      try{emailjs.init(k);_ejReady=true;}catch(e){}
+      msg.textContent='✓ Config EmailJS enregistrée';msg.style.color='#059669';
+      toast('📧 EmailJS configuré','ok');
+    }).catch(function(e){msg.textContent='Erreur: '+e.message;msg.style.color='#dc2626';});
 }
 
 // ── MESSAGES ──

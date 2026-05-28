@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "giftformenow@gmail.com";
+    }
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ── CONFIG / PARAMÈTRES ──
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+      // Utilisateurs auth peuvent SEULEMENT incrémenter totalUsers
+      allow update: if isAuth() && !isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalUsers']);
+    }
+
+    // ── UTILISATEURS ──
+    match /users/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.get('blocked', false) == false;
+      allow update: if isAdmin()
+        || (isOwner(uid)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blocked','vip']));
+      allow delete: if isAdmin();
+    }
+
+    // ── TRANSFERTS ──
+    match /transferts/{txId} {
+      allow read:   if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.statut == 'en_attente';
+      allow update: if isAdmin()
+        || (isAuth()
+            && resource.data.userId == request.auth.uid
+            && resource.data.statut == 'en_attente'
+            && request.resource.data.statut == 'annulee');
+      allow delete: if isAdmin();
+    }
+
+    // ── CONVERSATIONS ──
+    match /conversations/{convId} {
+      allow read:   if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth();
+      allow update: if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ── MESSAGES ──
+    match /messages/{msgId} {
+      allow read:   if isAdmin() || isAuth();
+      allow create: if isAuth();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── CONTACTS (formulaire public) ──
+    match /contacts/{contactId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── VISITES ──
+    match /visits/{visitId} {
+      allow create, update: if true;
+      allow read, delete:   if isAdmin();
+    }
+
+  }
+}
