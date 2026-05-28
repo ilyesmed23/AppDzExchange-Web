@@ -166,8 +166,13 @@ body { font-family:'Segoe UI',Arial,sans-serif; min-height:100vh;
     <h2>Confirmez votre email</h2>
     <p class="verif-msg">Un lien de confirmation a ete envoye a <br>
       <span class="verif-email" id="verifEmailDisplay"></span><br><br>
-      Cliquez sur le lien puis revenez ici.</p>
-    <button class="btn btn-primary" onclick="handleCheckVerif()">J'ai confirme</button>
+      Cliquez sur le lien puis revenez ici.<br>
+      <span style="color:#f59e0b;font-weight:700;">&#128233; Verifiez aussi vos spams !</span></p>
+    <button class="btn btn-primary" onclick="handleCheckVerif()">J'ai confirme &#10003;</button>
+    <button class="btn btn-primary" onclick="window.location.href='app.html'"
+      style="margin-top:8px;background:rgba(18,84,160,.15);color:#1254a0;border:1.5px solid #1254a0;">
+      Continuer sans confirmer &#8594;
+    </button>
     <div class="divider">────────────</div>
     <button class="btn-link" onclick="handleResendVerif()">Renvoyer l'email</button>
     <button class="btn-link" onclick="handleLogoutVerif()">Retour connexion</button>
@@ -211,10 +216,12 @@ const auth = firebase.auth();
 const db   = firebase.firestore();
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 
+var isRegistering = false;
+
 auth.onAuthStateChanged(function(user) {
-  if (user) {
+  if (user && !isRegistering) {
     if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
-    if (user.emailVerified) { window.location.href = 'app.html'; }
+    window.location.href = 'app.html'; // Accès même sans email vérifié
   }
 });
 
@@ -249,11 +256,7 @@ function handleLogin() {
           return;
         }
         if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; }
-        else if (!user.emailVerified) {
-          setLoader('loginLoader', false);
-          document.getElementById('verifEmailDisplay').textContent = user.email;
-          showPanel('verifPanel');
-        } else { window.location.href = 'app.html'; }
+        else { window.location.href = 'app.html'; } // Accès même sans email vérifié
       });
     })
     .catch(function(err) {
@@ -279,6 +282,7 @@ function handleRegister() {
   if (pass.length < 6) { showError('registerError','Mot de passe minimum 6 caracteres.'); return; }
   if (ccp && (!/^\d{9}$/.test(ccp))) { showError('registerError','Le numero CCP doit contenir exactement 9 chiffres apres le prefixe.'); return; }
   setLoader('registerLoader', true);
+  isRegistering = true;
   auth.createUserWithEmailAndPassword(email, pass)
     .then(function(cred) {
       var user = cred.user;
@@ -293,12 +297,14 @@ function handleRegister() {
         ).catch(function(){});
         return user.sendEmailVerification();
       }).then(function() {
+        isRegistering = false;
         setLoader('registerLoader', false);
         document.getElementById('verifEmailDisplay').textContent = email;
         showPanel('verifPanel');
       });
     })
     .catch(function(err) {
+      isRegistering = false;
       setLoader('registerLoader', false);
       var m = {
         'auth/email-already-in-use':'Cet email est deja utilise.',
@@ -313,8 +319,7 @@ function handleCheckVerif() {
   var user = auth.currentUser;
   if (!user) { showPanel('loginPanel'); return; }
   user.reload().then(function() {
-    if (user.emailVerified) { window.location.href = 'app.html'; }
-    else { alert('Email pas encore confirme. Verifiez votre boite mail.'); }
+    window.location.href = 'app.html'; // Accès toujours autorisé
   });
 }
 function handleResendVerif() {

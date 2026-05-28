@@ -303,6 +303,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div style="display:flex;align-items:center;gap:6px;">
         <div class="header-user" id="headerUser">Chargement...</div>
         <span id="headerBadge" style="display:none;"></span>
+        <span id="emailVerifBadge" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px;color:#92400e;">📧 Email non confirmée</span>
       </div>
       <button onclick="handleLogout()" title="Se déconnecter"
         style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
@@ -377,6 +378,10 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div id="maintBanner" style="display:none;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#92400e;text-align:center;">
         🚧 Les nouvelles demandes sont temporairement suspendues. Revenez bientôt.
       </div>
+      <div id="emailVerifBanner" style="display:none;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#92400e;text-align:center;">
+        📧 Confirmez votre email pour soumettre une demande.<br>
+        <span style="font-size:11px;">Vérifiez aussi vos spams · <a onclick="resendVerifEmail()" style="color:#1254a0;cursor:pointer;text-decoration:underline;">Renvoyer le lien</a></span>
+      </div>
       <button id="btnSubmitTransfer" class="btn btn-primary" onclick="handleCreateTransfert()">
         Soumettre la demande
       </button>
@@ -389,6 +394,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div class="profile-avatar" id="profileAvatar">?</div>
       <div class="profile-name" id="profileNom">--</div>
       <div style="text-align:center;margin-bottom:6px;"><span id="profileBadge" style="display:none;"></span></div>
+      <div style="text-align:center;margin-bottom:8px;"><span id="profileEmailVerifBadge" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:20px;font-size:11px;font-weight:700;padding:3px 12px;color:#92400e;">📧 Email non confirmée</span></div>
       <div class="profile-email" id="profileEmail">--</div>
       <div class="profile-row">
         <label>EMAIL PAYSERA</label>
@@ -595,11 +601,13 @@ var messagesListener   = null;
 var transfertsListener = null;
 
 // ── Auth Guard ──
+var currentUserEmailVerified = false;
+
 auth.onAuthStateChanged(function(user) {
   if (!user) { window.location.href = 'auth.html'; return; }
   if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
-  if (!user.emailVerified) { window.location.href = 'auth.html'; return; }
   currentUid = user.uid;
+  currentUserEmailVerified = user.emailVerified;
   recordLogin(user.uid);
   loadInit();
 });
@@ -635,6 +643,32 @@ function loadInit() {
   loadTransferts();
   loadMessages(); // listener permanent → badge toujours à jour
   initNotifications(currentUid); // charge lastNotifRead depuis le profil user
+  updateEmailVerifUI(); // badge + blocage transfer si email non vérifié
+}
+
+function updateEmailVerifUI() {
+  var badge    = document.getElementById('emailVerifBadge');
+  var prBadge  = document.getElementById('profileEmailVerifBadge');
+  var banner   = document.getElementById('emailVerifBanner');
+  var btn      = document.getElementById('btnSubmitTransfer');
+  if (!currentUserEmailVerified) {
+    if (badge)   badge.style.display   = 'inline';
+    if (prBadge) prBadge.style.display = 'inline';
+    if (banner)  banner.style.display  = 'block';
+    if (btn)     btn.style.display     = 'none';
+  } else {
+    if (badge)   badge.style.display   = 'none';
+    if (prBadge) prBadge.style.display = 'none';
+    if (banner)  banner.style.display  = 'none';
+    if (btn)     btn.style.display     = 'block';
+  }
+}
+
+function resendVerifEmail() {
+  var user = firebase.auth().currentUser;
+  if (user) user.sendEmailVerification().then(function() {
+    alert('Email de confirmation renvoyé ! Vérifiez aussi vos spams.');
+  }).catch(function(e) { alert('Erreur : ' + e.message); });
 }
 
 // ── USER INFO ──
@@ -998,6 +1032,7 @@ function handleFileSelected(input) {
 // ── CREATE TRANSFERT ──
 function handleCreateTransfert() {
   if (siteEnMaintenance) return;
+  if (!currentUserEmailVerified) return; // Bloqué si email non vérifié
   var eur = parseFloat(document.getElementById('montantEur').value);
   var errEl = document.getElementById('newError');
   errEl.style.display = 'none';
