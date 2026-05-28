@@ -675,7 +675,13 @@ function resendVerifEmail() {
 function loadUserInfo() {
   db.collection('users').doc(currentUid).get().then(function(snap) {
     if (!snap.exists) return;
-    currentUser = snap.data();
+    var data = snap.data();
+    if (data.blocked) {
+      auth.signOut();
+      window.location.href = 'auth.html?blocked=1';
+      return;
+    }
+    currentUser = data;
     currentUser.id = currentUid;
     document.getElementById('headerUser').textContent = currentUser.nom || currentUser.email || '';
     document.getElementById('userCCPDisplay').textContent = currentUser.ccp || 'Non renseigne';

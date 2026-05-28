@@ -221,7 +221,17 @@ var isRegistering = false;
 auth.onAuthStateChanged(function(user) {
   if (user && !isRegistering) {
     if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
-    window.location.href = 'app.html'; // Accès même sans email vérifié
+    // Vérifier si compte bloqué avant de rediriger
+    db.collection('users').doc(user.uid).get().then(function(snap) {
+      var data = snap.exists ? snap.data() : {};
+      if (data.blocked) {
+        auth.signOut();
+        showPanel('loginPanel');
+        showError('loginError','🚫 Votre compte a été suspendu. Contactez le support.');
+      } else {
+        window.location.href = 'app.html';
+      }
+    }).catch(function(){ window.location.href = 'app.html'; });
   }
 });
 
@@ -365,6 +375,12 @@ function handleReset() {
       setLoader('forgotLoader', false);
       showError('forgotError', 'Erreur : ' + err.message);
     });
+}
+
+// Afficher message si redirigé depuis app.html (compte bloqué)
+if (new URLSearchParams(window.location.search).get('blocked') === '1') {
+  showPanel('loginPanel');
+  showError('loginError','🚫 Votre compte a été suspendu. Contactez le support.');
 }
 
 document.addEventListener('keydown', function(e) {
