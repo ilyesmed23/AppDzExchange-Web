@@ -869,6 +869,12 @@ function chgSt(id,s){
   var wasTerminee=t&&t.statut==='terminee';
   db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
     toast('Statut → '+slbl(s),'ok');
+    // Compteur échanges terminés
+    if(s==='terminee' && !wasTerminee){
+      db.collection('config').doc('settings').set({totalEchanges:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(function(){});
+    } else if(wasTerminee && s!=='terminee'){
+      db.collection('config').doc('settings').set({totalEchanges:firebase.firestore.FieldValue.increment(-1)},{merge:true}).catch(function(){});
+    }
     // Solde EUR: décrémenter à la validation (validee), ré-incrémenter si annulation
     var wasValideeOrMore = t&&(t.statut==='validee'||t.statut==='terminee');
     var becomesValideeOrMore = (s==='validee'||s==='terminee');

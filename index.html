@@ -407,12 +407,17 @@ function calcEur(taux) {
 }
 loadTaux();
 
-// Stats
+// Stats (lecture depuis config/settings — public)
 function loadStats() {
-  db.collection('transferts').where('statut','==','terminee').get()
-    .then(function(s){ document.getElementById('statEchanges').textContent = s.size; }).catch(function(){});
-  db.collection('users').get()
-    .then(function(s){ document.getElementById('statUsers').textContent = s.size; }).catch(function(){});
+  db.collection('config').doc('settings').get().then(function(doc) {
+    if (doc.exists) {
+      var d = doc.data();
+      var echanges = typeof d.totalEchanges === 'number' ? d.totalEchanges : 0;
+      var users    = typeof d.totalUsers    === 'number' ? d.totalUsers    : 0;
+      document.getElementById('statEchanges').textContent = echanges > 0 ? echanges : '0';
+      document.getElementById('statUsers').textContent    = users    > 0 ? users    : '0';
+    }
+  }).catch(function(){});
 }
 loadStats();
 

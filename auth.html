@@ -287,6 +287,10 @@ function handleRegister() {
         nom: nom, email: email, emailPaysera: paysera, ccp: fullCcp,
         blocked: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(function() {
+        // Incrémenter compteur utilisateurs
+        db.collection('config').doc('settings').set(
+          { totalUsers: firebase.firestore.FieldValue.increment(1) }, { merge: true }
+        ).catch(function(){});
         return user.sendEmailVerification();
       }).then(function() {
         setLoader('registerLoader', false);
