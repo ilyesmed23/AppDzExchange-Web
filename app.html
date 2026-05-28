@@ -574,16 +574,12 @@ const ADMIN_EMAIL = "giftformenow@gmail.com";
       var msg = s.data().maintenanceMessage || '🚧 Site en maintenance, revenez bientôt.';
       document.body.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 100%);font-family:sans-serif;text-align:center;padding:20px;">'
         + '<div style="background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,.12);padding:48px 40px;max-width:480px;width:100%;">'
-        + '<div id="_mc" style="font-size:72px;margin-bottom:20px;cursor:default;user-select:none;">🚧</div>'
+        + '<div onclick="window._mc=(window._mc||0)+1;if(window._mc>=5){document.getElementById(\'_al\').style.display=\'block\';}" style="font-size:72px;margin-bottom:20px;cursor:pointer;">🚧</div>'
         + '<h1 style="font-size:26px;font-weight:800;color:#1a1f36;margin:0 0 12px;">Site en maintenance</h1>'
         + '<p style="font-size:15px;color:#555;line-height:1.7;margin:0 0 28px;">' + msg + '</p>'
         + '<div style="font-size:13px;color:#aaa;">Merci de votre compréhension &mdash; AppDz Exchange</div>'
         + '<a id="_al" href="admin.html" style="display:none;margin-top:20px;font-size:12px;color:#6366f1;text-decoration:none;font-weight:600;">→ Accès admin</a>'
         + '</div></div>';
-      var _c=0;
-      document.getElementById('_mc').addEventListener('click',function(){
-        _c++;if(_c>=5){document.getElementById('_al').style.display='inline-block';}
-      });
     }
   }).catch(function(){});
 })();
