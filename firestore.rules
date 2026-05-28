@@ -40,10 +40,18 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.statut == 'en_attente';
       allow update: if isAdmin()
+        // Annulation : en_attente → annulee
         || (isAuth()
             && resource.data.userId == request.auth.uid
             && resource.data.statut == 'en_attente'
-            && request.resource.data.statut == 'annulee');
+            && request.resource.data.statut == 'annulee')
+        // Envoi preuve : en_attente ou manque_info → preuve_envoyee
+        || (isAuth()
+            && resource.data.userId == request.auth.uid
+            && (resource.data.statut == 'en_attente' || resource.data.statut == 'manque_info')
+            && request.resource.data.statut == 'preuve_envoyee'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['statut','preuveUserUrl','preuveUpdatedAt']));
       allow delete: if isAdmin();
     }
 
