@@ -1072,7 +1072,7 @@ function handleFileSelected(input) {
 // ── CREATE TRANSFERT ──
 function handleCreateTransfert() {
   if (siteEnMaintenance) return;
-  if (!currentUserEmailVerified) return; // Bloqué si email non vérifié
+  if (!currentUserEmailVerified) return;
   var eur = parseFloat(document.getElementById('montantEur').value);
   var errEl = document.getElementById('newError');
   errEl.style.display = 'none';
@@ -1081,6 +1081,13 @@ function handleCreateTransfert() {
     errEl.style.display = 'block'; return;
   }
   if (!currentUser) { errEl.textContent = 'Donnees utilisateur non chargees. Rechargez la page.'; errEl.style.display='block'; return; }
+  // ── Vérif : pas de demande active déjà en cours ──
+  var actifs = ['en_attente','preuve_envoyee','manque_info'];
+  var demandeActive = transferts.find(function(t){ return actifs.indexOf(t.statut) !== -1; });
+  if (demandeActive) {
+    errEl.textContent = '⚠️ Vous avez déjà une demande en cours. Attendez sa clôture avant d\'en soumettre une nouvelle.';
+    errEl.style.display = 'block'; return;
+  }
   var dzd = Math.round(eur * currentTaux);
   document.getElementById('newLoader').style.display = 'block';
   db.collection('transferts').add({
