@@ -321,12 +321,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <div id="maintStatusMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
-      <!-- NOTIFICATIONS EMAIL -->
+      <!-- WEB3FORMS : NOTIFICATIONS ADMIN -->
       <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">🔔 Notifications Email</div>
+        <div class="s-title">🔔 Notifications Admin (Web3Forms)</div>
         <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Active ou désactive les emails de notification (Web3Forms · 250/mois).
-          Désactivez pendant les tests pour économiser le quota.
+          Emails envoyés <strong>à toi</strong> quand un utilisateur s'inscrit ou crée un transfert (Web3Forms · 250/mois).
+          Désactive pendant les tests pour économiser le quota.
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e0e8f5;">
           <div>
@@ -341,27 +341,42 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <div id="notifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
-      <!-- EMAILJS CONFIG -->
+      <!-- EMAILJS : NOTIFICATIONS UTILISATEURS -->
       <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">📧 EmailJS — Notifications automatiques</div>
+        <div class="s-title">📧 Notifications Utilisateurs (EmailJS)</div>
         <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Crée un compte gratuit sur <a href="https://www.emailjs.com" target="_blank" style="color:#1254a0;">emailjs.com</a>
-          (200 emails/mois gratuits), configure un template avec les variables indiquées, puis remplis les champs ci-dessous.
-          <br><br>
-          <strong>Variables du template :</strong><br>
-          <code style="font-size:11px;background:#f0f4fa;padding:2px 6px;border-radius:4px;">
-            {{to_name}}, {{to_email}}, {{statut_label}}, {{montant_eur}}, {{montant_dzd}},
-            {{email_paysera}}, {{motif}}, {{date}}
-          </code>
+          Emails envoyés <strong>aux utilisateurs</strong> via le bouton 📧 Notifier ou à la création d'un transfert (EmailJS · 200/mois).
+          Désactive pendant les tests pour économiser le quota.
         </div>
-        <label class="s-lbl">PUBLIC KEY (Account → API Keys)</label>
-        <input class="s-input" id="sEjKey" type="text" placeholder="ex: XXXXXXXXXXXXXXXX">
-        <label class="s-lbl">SERVICE ID</label>
-        <input class="s-input" id="sEjSvc" type="text" placeholder="ex: service_xxxxxxx">
-        <label class="s-lbl">TEMPLATE ID</label>
-        <input class="s-input" id="sEjTpl" type="text" placeholder="ex: template_xxxxxxx">
-        <button class="s-btn" onclick="saveEmailJSConfig()">💾 Enregistrer la config EmailJS</button>
-        <div id="ejMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:12px;padding:14px 16px;border:1.5px solid #e0e8f5;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1a1f36;" id="ejNotifLabel">⏳ Chargement...</div>
+            <div style="font-size:12px;color:#888;margin-top:2px;" id="ejNotifSub"></div>
+          </div>
+          <button id="ejNotifToggleBtn" onclick="toggleEjNotif()"
+            style="padding:10px 20px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;">
+            ...
+          </button>
+        </div>
+        <div id="ejNotifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+
+        <!-- Config clés EmailJS -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e0e8f5;">
+          <div style="font-size:12px;color:#666;margin-bottom:10px;">
+            <strong>Variables du template :</strong>
+            <code style="font-size:11px;background:#f0f4fa;padding:2px 6px;border-radius:4px;display:block;margin-top:4px;">
+              {{to_name}}, {{to_email}}, {{statut_label}}, {{montant_eur}}, {{montant_dzd}}, {{email_paysera}}, {{motif}}, {{date}}
+            </code>
+          </div>
+          <label class="s-lbl">PUBLIC KEY (Account → API Keys)</label>
+          <input class="s-input" id="sEjKey" type="text" placeholder="ex: XXXXXXXXXXXXXXXX">
+          <label class="s-lbl">SERVICE ID</label>
+          <input class="s-input" id="sEjSvc" type="text" placeholder="ex: service_xxxxxxx">
+          <label class="s-lbl">TEMPLATE ID</label>
+          <input class="s-input" id="sEjTpl" type="text" placeholder="ex: template_xxxxxxx">
+          <button class="s-btn" onclick="saveEmailJSConfig()">💾 Enregistrer la config EmailJS</button>
+          <div id="ejMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+        </div>
       </div>
 
       <!-- SOLDE EUR -->
@@ -616,6 +631,9 @@ function initListeners(){
       document.getElementById('sAnnouncement').value=d.announcement||'';
       notifPaused=d.notifPaused===true;
       renderNotifBtn();
+      ejNotifPaused=d.ejNotifPaused===true;
+      notifPaused=ejNotifPaused; // sendEmailNotif utilise notifPaused
+      renderEjNotifBtn();
       maintenanceMode=d.maintenanceMode===true;
       document.getElementById('sMaintMsg').value=d.maintenanceMessage||'';
       renderMaintBtn();
@@ -671,6 +689,47 @@ function toggleNotif() {
     })
     .catch(function(e) {
       var msg = document.getElementById('notifMsg');
+      msg.textContent = 'Erreur : ' + e.message;
+      msg.style.color = '#dc2626';
+    });
+}
+
+// ── EMAILJS NOTIF TOGGLE ──
+var ejNotifPaused = false;
+
+function renderEjNotifBtn() {
+  var label = document.getElementById('ejNotifLabel');
+  var sub   = document.getElementById('ejNotifSub');
+  var btn   = document.getElementById('ejNotifToggleBtn');
+  if(!label) return;
+  if (ejNotifPaused) {
+    label.textContent = '🔕 EmailJS désactivé';
+    sub.textContent   = 'Aucun email ne sera envoyé aux utilisateurs';
+    btn.textContent   = '▶ Activer';
+    btn.style.background = '#d1fae5';
+    btn.style.color      = '#065f46';
+  } else {
+    label.textContent = '📧 EmailJS activé';
+    sub.textContent   = 'Emails envoyés aux utilisateurs';
+    btn.textContent   = '⏸ Mettre en pause';
+    btn.style.background = '#fef3c7';
+    btn.style.color      = '#92400e';
+  }
+}
+
+function toggleEjNotif() {
+  ejNotifPaused = !ejNotifPaused;
+  notifPaused = ejNotifPaused; // sync avec la variable utilisée par sendEmailNotif
+  db.collection('config').doc('settings').set({ ejNotifPaused: ejNotifPaused }, { merge: true })
+    .then(function() {
+      renderEjNotifBtn();
+      var msg = document.getElementById('ejNotifMsg');
+      msg.textContent = ejNotifPaused ? '✓ EmailJS mis en pause' : '✓ EmailJS réactivé';
+      msg.style.color = '#059669';
+      setTimeout(function(){ msg.textContent=''; }, 3000);
+    })
+    .catch(function(e) {
+      var msg = document.getElementById('ejNotifMsg');
       msg.textContent = 'Erreur : ' + e.message;
       msg.style.color = '#dc2626';
     });
