@@ -283,6 +283,27 @@ function handleRegister() {
   if (ccp && (!/^\d{9}$/.test(ccp))) { showError('registerError','Le numero CCP doit contenir exactement 9 chiffres apres le prefixe.'); return; }
   setLoader('registerLoader', true);
   isRegistering = true;
+  // Vérifier listes bloquées
+  db.collection('config').doc('settings').get().then(function(doc) {
+    var bEmails = (doc.exists && doc.data().blockedEmails) || [];
+    var bPays   = (doc.exists && doc.data().blockedPayseraEmails) || [];
+    if (bEmails.indexOf(email.toLowerCase()) > -1) {
+      isRegistering = false; setLoader('registerLoader', false);
+      showError('registerError','Cette adresse email est bloquée. Contactez le support.'); return;
+    }
+    if (paysera && bPays.indexOf(paysera.toLowerCase()) > -1) {
+      isRegistering = false; setLoader('registerLoader', false);
+      showError('registerError','Cet email Paysera est bloqué. Contactez le support.'); return;
+    }
+    doRegister();
+  }).catch(function(){ doRegister(); }); // si erreur lecture → continuer quand même
+}
+function doRegister() {
+  var email    = document.getElementById('regEmail').value.trim().toLowerCase();
+  var pass     = document.getElementById('regPassword').value;
+  var nom      = document.getElementById('regNom').value.trim();
+  var paysera  = document.getElementById('regEmailPaysera').value.trim();
+  var ccp      = document.getElementById('regCCP').value.trim();
   auth.createUserWithEmailAndPassword(email, pass)
     .then(function(cred) {
       var user = cred.user;

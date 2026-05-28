@@ -56,6 +56,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 .b-en_attente{background:#fef3c7;color:#92400e;}.b-preuve_envoyee{background:#dbeafe;color:#1e40af;}.b-validee{background:#ede9fe;color:#5b21b6;}.b-terminee{background:#d1fae5;color:#065f46;}.b-rejetee{background:#fee2e2;color:#991b1b;}.b-annulee{background:#f3f4f6;color:#6b7280;}.b-manque_info{background:#fff7ed;color:#c2410c;}
 .user-row{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:.15s;}
 .user-row:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);}
+.user-row.blocked{background:#fff5f5;border:1.5px solid #fecaca;}
+.a-block{background:#fee2e2;color:#dc2626;}
+.a-unblock{background:#d1fae5;color:#065f46;}
+.a-del-user{background:#f3f4f6;color:#6b7280;}
 .u-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1254a0,#0097a7);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
 .u-info{flex:1;}
 .u-name{font-size:13px;font-weight:700;color:#1a1f36;}
@@ -533,6 +537,8 @@ function initListeners(){
   db.collection('users').onSnapshot(function(snap){
     allUsers=snap.docs.map(function(d){var x=d.data();x.id=d.id;return x;});
     renderUsers();
+    // Sync compteur totalUsers automatiquement
+    db.collection('config').doc('settings').set({totalUsers:snap.size},{merge:true}).catch(function(){});
   });
 
   db.collection('config').doc('settings').onSnapshot(function(s){
@@ -994,18 +1000,66 @@ function renderUsers(){
     var init=(u.nom||u.email||'?').charAt(0).toUpperCase();
     var lastTx=allTx.filter(function(t){return t.userId===u.id;}).sort(function(a,b){return b._ts-a._ts;})[0];
     var lvl = getAdminBadge(u.id);
-    var avatarStyle = lvl.label==='VIP'?'background:linear-gradient(135deg,#f59e0b,#d97706);':lvl.label==='Or'?'background:linear-gradient(135deg,#d97706,#b45309);':'';
-    return '<div class="user-row" onclick="showUserTx(\''+u.id+'\')">'+
+    var isBlocked = !!u.blocked;
+    var avatarStyle = isBlocked?'background:#ef4444;':lvl.label==='VIP'?'background:linear-gradient(135deg,#f59e0b,#d97706);':lvl.label==='Or'?'background:linear-gradient(135deg,#d97706,#b45309);':'';
+    var blockedBadge = isBlocked?'<span class="badge" style="margin-left:7px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;">🚫 Bloqué</span>':'';
+    var blockBtn = isBlocked
+      ? '<button class="abtn a-unblock" onclick="event.stopPropagation();unblockUser(\''+u.id+'\')">✅ Débloquer</button>'
+      : '<button class="abtn a-block"   onclick="event.stopPropagation();blockUser(\''+u.id+'\')">🚫 Bloquer</button>';
+    return '<div class="user-row'+(isBlocked?' blocked':'')+'" onclick="showUserTx(\''+u.id+'\')">'+
       '<div class="u-av" style="'+avatarStyle+'">'+init+'</div>'+
       '<div class="u-info">'+
-        '<div class="u-name">'+(u.nom||'—')+'<span class="badge '+lvl.cls+'" style="margin-left:7px;">'+lvl.ico+' '+lvl.label+'</span></div>'+
+        '<div class="u-name">'+(u.nom||'—')+'<span class="badge '+lvl.cls+'" style="margin-left:7px;">'+lvl.ico+' '+lvl.label+'</span>'+blockedBadge+'</div>'+
         '<div class="u-email">'+(u.email||'—')+'</div>'+
         '<div class="u-meta">Paysera: '+(u.emailPaysera||'—')+' · CCP: '+(u.ccp||'—')+'</div>'+
         '<div class="u-meta">'+txN+' transfert(s) · '+lvl.done+' terminé(s)'+(lastTx?' · Dernier: '+lastTx.dateStr:'')+'</div>'+
       '</div>'+
-      '<button class="abtn a-view" onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">Voir transferts</button>'+
+      '<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">'+
+        '<button class="abtn a-view"     onclick="event.stopPropagation();showUserTx(\''+u.id+'\')">👁 Transferts</button>'+
+        blockBtn+
+        '<button class="abtn a-del-user" onclick="event.stopPropagation();deleteUser(\''+u.id+'\')">🗑 Supprimer</button>'+
+      '</div>'+
     '</div>';
   }).join('');
+}
+
+function blockUser(uid){
+  var u=allUsers.find(function(x){return x.id===uid;});if(!u)return;
+  showCModal('🚫','Bloquer '+escH(u.nom||u.email||'cet utilisateur')+'?',
+    'Son accès sera bloqué. Email et email Paysera seront blacklistés.',
+    'Bloquer',true,function(){
+      var email=(u.email||'').toLowerCase();
+      var pays=(u.emailPaysera||'').toLowerCase();
+      db.collection('users').doc(uid).update({blocked:true}).then(function(){
+        var up={blockedEmails:firebase.firestore.FieldValue.arrayUnion(email)};
+        if(pays)up.blockedPayseraEmails=firebase.firestore.FieldValue.arrayUnion(pays);
+        return db.collection('config').doc('settings').set(up,{merge:true});
+      }).then(function(){toast('Utilisateur bloqué','ok');})
+      .catch(function(e){toast('Erreur: '+e.message,'err');});
+  });
+}
+
+function unblockUser(uid){
+  var u=allUsers.find(function(x){return x.id===uid;});if(!u)return;
+  var email=(u.email||'').toLowerCase();
+  var pays=(u.emailPaysera||'').toLowerCase();
+  db.collection('users').doc(uid).update({blocked:false}).then(function(){
+    var up={blockedEmails:firebase.firestore.FieldValue.arrayRemove(email)};
+    if(pays)up.blockedPayseraEmails=firebase.firestore.FieldValue.arrayRemove(pays);
+    return db.collection('config').doc('settings').set(up,{merge:true});
+  }).then(function(){toast('Utilisateur débloqué','ok');})
+  .catch(function(e){toast('Erreur: '+e.message,'err');});
+}
+
+function deleteUser(uid){
+  var u=allUsers.find(function(x){return x.id===uid;});if(!u)return;
+  showCModal('🗑','Supprimer '+escH(u.nom||u.email||'cet utilisateur')+'?',
+    'Suppression irréversible du profil. L\'utilisateur pourra se réinscrire.',
+    'Supprimer',true,function(){
+      db.collection('users').doc(uid).delete()
+      .then(function(){toast('Utilisateur supprimé','ok');})
+      .catch(function(e){toast('Erreur: '+e.message,'err');});
+  });
 }
 
 function showUserTx(uid){
