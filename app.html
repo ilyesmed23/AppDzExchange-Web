@@ -1083,6 +1083,30 @@ function handleCreateTransfert() {
   if (!currentUser) { errEl.textContent = 'Donnees utilisateur non chargees. Rechargez la page.'; errEl.style.display='block'; return; }
   var dzd = Math.round(eur * currentTaux);
   document.getElementById('newLoader').style.display = 'block';
+  // ── Vérification : pas de demande active en cours ──
+  db.collection('transferts')
+    .where('userId', '==', currentUid)
+    .where('statut', 'in', ['en_attente', 'preuve_envoyee', 'manque_info'])
+    .limit(1)
+    .get()
+    .then(function(snap) {
+      if (!snap.empty) {
+        document.getElementById('newLoader').style.display = 'none';
+        errEl.textContent = '⚠️ Vous avez déjà une demande en cours de traitement. Veuillez attendre sa clôture avant d\'en soumettre une nouvelle.';
+        errEl.style.display = 'block';
+        return;
+      }
+      // Aucune demande active → on crée
+      _doCreateTransfert(eur, dzd);
+    })
+    .catch(function(err) {
+      document.getElementById('newLoader').style.display = 'none';
+      errEl.textContent = 'Erreur : ' + err.message;
+      errEl.style.display = 'block';
+    });
+}
+function _doCreateTransfert(eur, dzd) {
+  var errEl = document.getElementById('newError');
   db.collection('transferts').add({
     userId: currentUid,
     nomUser: currentUser.nom || '',
@@ -1468,26 +1492,4 @@ function thumbHtml(url, label) {
   return '<div style="margin-bottom:12px;">' +
     '<div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px;">' + (label||'Preuve') + ' <span style="color:#aaa;">(cliquez pour agrandir)</span></div>' +
     '<img src="'+url+'" onclick="openImgViewer(\''+url+'\')" ' +
-    'style="width:110px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #e0e8f5;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:.15s;" ' +
-    'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
-    '</div>';
-}
-
-function openImgViewer(url) {
-  document.getElementById('imgViewerSrc').src = url;
-  document.getElementById('imgViewer').classList.add('open');
-}
-function closeImgViewer() {
-  document.getElementById('imgViewer').classList.remove('open');
-  document.getElementById('imgViewerSrc').src = '';
-}
-function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-</script>
-<div style="text-align:center;padding:18px;font-size:11px;color:#aaa;margin-top:10px;">
-  <a href="legal.html" style="color:#aaa;text-decoration:none;margin:0 8px;">CGU</a> ·
-  <a href="privacy.html" style="color:#aaa;text-decoration:none;margin:0 8px;">Confidentialité</a>
-</div>
-</body>
-</html>
+    'style="width:110px;height:80px;object-fit:cover;border-radius:10px;border:
