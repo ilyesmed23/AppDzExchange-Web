@@ -19,10 +19,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   justify-content:space-between; }
 .taux-label { font-size:11px; opacity:.8; }
 .taux-value { font-size:14px; font-weight:800; }
-.content { flex:1; padding:14px 14px 80px; overflow-y:auto; }
+.content { flex:1; padding:14px 14px calc(80px + env(safe-area-inset-bottom)); overflow-y:auto; }
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:#fff;
   display:flex; border-top:1px solid #e5eaf2;
-  box-shadow:0 -4px 16px rgba(0,0,0,.08); z-index:100; }
+  box-shadow:0 -4px 16px rgba(0,0,0,.08); z-index:100;
+  padding-bottom: env(safe-area-inset-bottom); }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center;
   justify-content:center; padding:8px 4px; cursor:pointer;
   color:#aaa; transition:.15s; border:none; background:none; }
@@ -86,7 +87,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .field label { font-size:11px; color:#666; font-weight:700;
   display:block; margin-bottom:4px; letter-spacing:.4px; }
 .field input { width:100%; padding:12px 13px; border:1.5px solid #e0e8f5;
-  border-radius:11px; font-size:15px; color:#333; outline:none;
+  border-radius:11px; font-size:16px; color:#333; outline:none;
   background:#f8fafc; transition:.2s; }
 .field input:focus { border-color:#1254a0; background:#fff; }
 .field .hint { font-size:11px; color:#aaa; margin-top:4px; }
@@ -116,7 +117,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .bubble-user  { align-self:flex-end; background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff; border-bottom-right-radius:4px; }
 .bubble-admin { align-self:flex-start; background:#fff; color:#222; border:1px solid #e0e8f5; border-bottom-left-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
 .bubble-time  { font-size:10px; opacity:.6; margin-top:4px; }
-.chat-input-bar { position:fixed; bottom:64px; left:0; right:0; background:#fff;
+.chat-input-bar { position:fixed; bottom:calc(64px + env(safe-area-inset-bottom)); left:0; right:0; background:#fff;
   border-top:1px solid #e5eaf2; padding:10px 12px; display:flex; gap:8px; z-index:99; }
 .chat-input { flex:1; border:1.5px solid #e0e8f5; border-radius:22px; padding:10px 14px;
   font-size:13px; outline:none; background:#f8fafc; }
