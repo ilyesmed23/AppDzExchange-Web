@@ -1,0 +1,51 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1254a0"/>
+      <stop offset="100%" style="stop-color:#0097a7"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.12)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.05)"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Fond dégradé -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Cercles décoratifs -->
+  <circle cx="1100" cy="80" r="200" fill="rgba(255,255,255,0.04)"/>
+  <circle cx="1050" cy="600" r="300" fill="rgba(255,255,255,0.03)"/>
+  <circle cx="-50" cy="400" r="250" fill="rgba(0,0,0,0.08)"/>
+  
+  <!-- Card centrale -->
+  <rect x="80" y="80" width="1040" height="470" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  
+  <!-- Logo icônes -->
+  <text x="120" y="200" font-size="72" font-family="Segoe UI Emoji,Arial">🏠</text>
+  <text x="210" y="188" font-size="48" font-family="Arial" font-weight="900" fill="rgba(255,255,255,0.9)">⇄</text>
+  <text x="270" y="200" font-size="72" font-family="Segoe UI Emoji,Arial">💳</text>
+  
+  <!-- Titre principal -->
+  <text x="120" y="270" font-size="58" font-family="Segoe UI,Arial" font-weight="900" fill="white">AppDz Exchange</text>
+  
+  <!-- Sous-titre -->
+  <text x="120" y="330" font-size="28" font-family="Segoe UI,Arial" font-weight="400" fill="rgba(255,255,255,0.85)">BaridiMob → Paysera · Échange DZD/EUR</text>
+  
+  <!-- Badges avantages -->
+  <rect x="120" y="370" width="220" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="230" y="399" font-size="20" font-family="Segoe UI,Arial" font-weight="700" fill="white" text-anchor="middle">🎁 Sans frais</text>
+  
+  <rect x="360" y="370" width="280" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="500" y="399" font-size="20" font-family="Segoe UI,Arial" font-weight="700" fill="white" text-anchor="middle">⚡ Traitement 24-48h</text>
+  
+  <rect x="660" y="370" width="300" height="44" rx="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="810" y="399" font-size="20" font-family="Segoe UI,Arial" font-weight="700" fill="white" text-anchor="middle">📊 Taux compétitif</text>
+  
+  <!-- URL -->
+  <text x="120" y="500" font-size="24" font-family="Segoe UI,Arial" font-weight="600" fill="rgba(255,255,255,0.6)">appdzexchange.com</text>
+  
+  <!-- Point live -->
+  <circle cx="1060" cy="500" r="8" fill="#4ade80"/>
+  <text x="1080" y="507" font-size="20" font-family="Segoe UI,Arial" font-weight="700" fill="#4ade80">LIVE</text>
+</svg>
