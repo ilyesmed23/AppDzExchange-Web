@@ -19,7 +19,7 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .nav-logo{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;}
 .nav-logo-icons{font-size:20px;}
 .nav-logo-text{font-size:18px;font-weight:800;}
-.nav-links{display:flex;align-items:center;gap:12px;}
+.nav-links{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;}
 .btn-nav-contact{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);
   color:#fff;padding:8px 20px;border-radius:22px;font-weight:700;font-size:14px;
   cursor:pointer;text-decoration:none;transition:.2s;}
@@ -30,6 +30,16 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .btn-nav-login:hover{background:rgba(255,255,255,.28);}
 .btn-nav-register{background:#fff;color:var(--blue);padding:8px 20px;border-radius:22px;
   font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;border:none;display:inline-block;}
+@media(max-width:520px){
+  nav{padding:0 3%;height:56px;}
+  .nav-logo-text{font-size:14px;}
+  .nav-logo-icons{font-size:16px;}
+  .nav-links{gap:5px;}
+  .btn-nav-contact{display:none;}
+  .btn-nav-login,.btn-nav-register{padding:6px 11px;font-size:12px;}
+  .lang-switcher{gap:2px;padding:2px;}
+  .lang-btn{padding:3px 7px;font-size:11px;}
+}
 .btn-nav-register:hover{background:#e8f0fd;}
 /* Lang switcher */
 .lang-switcher{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);
