@@ -1497,7 +1497,7 @@ function sendAdminMsg(){
 
 function adminCloseTicket(){
   if(!curTicketId)return;
-  showCModal('✅','Clôturer ce ticket ?','Le ticket sera marqué comme clôturé. L'utilisateur ne pourra plus y répondre.','Clôturer',false,function(){
+  showCModal('✅','Clôturer ce ticket ?',"Le ticket sera marqué comme clôturé. L'utilisateur ne pourra plus y répondre.",'Clôturer',false,function(){
     doAdminCloseTicket();
   });
 }
