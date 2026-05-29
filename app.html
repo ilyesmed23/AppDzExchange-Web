@@ -280,8 +280,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   .card { padding: 20px 24px; }
 
   /* ── Grille 2 colonnes pour les transferts ── */
-  #txList { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
-  #txList .tx-item { margin-bottom: 0; }
+  #txList { display: block; max-width: 680px; }
 
   /* ── Section taux dans le header ── */
   .taux-bar { max-width: 500px; }
