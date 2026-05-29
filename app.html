@@ -843,96 +843,66 @@ function renderTxList() {
   var termines = transferts.filter(function(t){ return t.statut === 'terminee'; });
   var autres   = transferts.filter(function(t){ return ['rejetee','annulee'].indexOf(t.statut) >= 0; });
 
+  // Config visuelle par statut
+  var statusCfg = {
+    en_attente:     { ico:'⏳', bg:'#fff8e6', dot:'#f59e0b', label:'En attente' },
+    preuve_envoyee: { ico:'📸', bg:'#eff6ff', dot:'#3b82f6', label:'Preuve envoyée' },
+    validee:        { ico:'✅', bg:'#f0fdf4', dot:'#8b5cf6', label:'Validé' },
+    manque_info:    { ico:'⚠️', bg:'#fff7ed', dot:'#f97316', label:'Info manquante' },
+    terminee:       { ico:'🎉', bg:'#f0fdf4', dot:'#10b981', label:'Terminé' },
+    rejetee:        { ico:'❌', bg:'#fff1f2', dot:'#ef4444', label:'Rejeté' },
+    annulee:        { ico:'↩️', bg:'#f9fafb', dot:'#9ca3af', label:'Annulé' },
+  };
+
+  function txRow(tx, faded) {
+    var cfg = statusCfg[tx.statut] || { ico:'🔄', bg:'#f9fafb', dot:'#9ca3af', label: tx.statut };
+    var opacity = faded ? 'opacity:.65;' : '';
+    return '<div onclick="openDetail(\''+tx.id+'\')" style="'+opacity+'background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);border:1.5px solid #f0f4fa;cursor:pointer;transition:.15s;" onmouseover="this.style.boxShadow=\'0 4px 16px rgba(18,84,160,.12)\';this.style.borderColor=\'#c7d8f0\'" onmouseout="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,.05)\';this.style.borderColor=\'#f0f4fa\'">' +
+      '<div style="width:42px;height:42px;border-radius:14px;background:'+cfg.bg+';display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+cfg.ico+'</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:15px;font-weight:800;color:#1a1a2e;">'+tx.montantEur+' EUR</div>' +
+        '<div style="font-size:12px;color:#888;margin-top:1px;">'+(tx.montantDzd ? '≈ '+Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD' : '')+'</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;">' +
+        '<div style="display:inline-flex;align-items:center;gap:5px;background:'+cfg.bg+';border-radius:20px;padding:3px 10px;margin-bottom:4px;">' +
+          '<div style="width:6px;height:6px;border-radius:50%;background:'+cfg.dot+';flex-shrink:0;"></div>' +
+          '<span style="font-size:11px;font-weight:700;color:'+cfg.dot+';">'+cfg.label+'</span>' +
+        '</div>' +
+        '<div style="font-size:10px;color:#bbb;">'+tx.dateStr+'</div>' +
+      '</div>' +
+      '<div style="color:#c7d8f0;font-size:16px;flex-shrink:0;">›</div>' +
+    '</div>';
+  }
+
+  function sectionHeader(dot, label, count, countBg, countColor) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;">' +
+      '<div style="display:flex;align-items:center;gap:7px;">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0;'+(dot==='#1254a0'?'animation:pulse 2s infinite;':'')+' "></div>' +
+        '<span style="font-size:11px;font-weight:800;color:'+dot+';letter-spacing:.8px;">'+label+'</span>' +
+      '</div>' +
+      (count !== null ? '<span style="background:'+countBg+';color:'+countColor+';font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">'+count+'</span>' : '') +
+    '</div>';
+  }
+
   var html = '';
 
-  // ─── En cours ───
   if (actifs.length) {
-    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
-      '<div style="width:8px;height:8px;border-radius:50%;background:#1254a0;animation:pulse 2s infinite;flex-shrink:0;"></div>' +
-      '<span style="font-size:12px;font-weight:800;color:#1254a0;letter-spacing:.8px;">EN COURS</span></div>';
-
-    actifs.forEach(function(tx) {
-      var steps  = ['en_attente','preuve_envoyee','validee','terminee'];
-      var labels = ['Demande','Preuve','Validé','Terminé'];
-      var idx = steps.indexOf(tx.statut);
-      if(idx < 0) idx = 0;
-
-      var stepsHtml = '<div style="display:flex;align-items:center;gap:0;margin:14px 0 6px;">';
-      for (var i = 0; i < steps.length; i++) {
-        var done = i < idx, active = i === idx;
-        var circleBg = done ? '#10b981' : (active ? 'linear-gradient(135deg,#1254a0,#0097a7)' : '#e5eaf2');
-        var circleColor = (done||active) ? '#fff' : '#bbb';
-        var labelColor  = done ? '#10b981' : (active ? '#1254a0' : '#bbb');
-        var circleStyle = 'width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+circleColor+';flex-shrink:0;' + (active ? 'box-shadow:0 2px 8px rgba(18,84,160,.3);' : '');
-        if (done) circleStyle += 'background:#10b981;';
-        else if (active) circleStyle += 'background:linear-gradient(135deg,#1254a0,#0097a7);';
-        else circleStyle += 'background:#e5eaf2;';
-
-        stepsHtml += '<div style="display:flex;flex-direction:column;align-items:center;flex:1;">' +
-          '<div style="'+circleStyle+'">'+(done?'✓':(i+1))+'</div>' +
-          '<div style="font-size:9px;font-weight:700;color:'+labelColor+';margin-top:4px;text-align:center;white-space:nowrap;">'+labels[i]+'</div></div>';
-        if (i < steps.length-1) {
-          stepsHtml += '<div style="flex:2;height:3px;border-radius:2px;background:'+(i<idx?'#10b981':'#e5eaf2')+';margin-bottom:16px;"></div>';
-        }
-      }
-      stepsHtml += '</div>';
-
-      // Icone statut
-      var ico = {'en_attente':'⏳','preuve_envoyee':'📸','validee':'✅','manque_info':'⚠️'}[tx.statut] || '🔄';
-
-      html += '<div onclick="openDetail(\''+tx.id+'\')" style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 4px 20px rgba(18,84,160,.1);border:2px solid #1254a0;cursor:pointer;transition:.15s;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">' +
-          '<div>' +
-            '<div style="font-size:26px;font-weight:900;color:#1254a0;line-height:1;">'+tx.montantEur+' <span style="font-size:16px;">EUR</span></div>' +
-            '<div style="font-size:13px;color:#0097a7;font-weight:700;margin-top:2px;">'+(tx.montantDzd?'≈ '+Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>' +
-          '</div>' +
-          '<span class="tx-badge badge-'+tx.statut+'" style="font-size:11px;">'+ico+' '+statutLabel(tx.statut)+'</span>' +
-        '</div>' +
-        stepsHtml +
-        '<div style="font-size:10px;color:#bbb;text-align:right;margin-top:2px;">'+tx.dateStr+'</div>' +
-      '</div>';
-    });
+    html += sectionHeader('#1254a0','EN COURS', null, '', '');
+    actifs.forEach(function(tx){ html += txRow(tx, false); });
   }
 
-  // ─── Terminés ───
   if (termines.length) {
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px;">' +
-      '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;"></div>' +
-        '<span style="font-size:12px;font-weight:800;color:#10b981;letter-spacing:.8px;">TERMINÉS</span></div>' +
-      '<span style="background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">'+termines.length+'</span></div>';
-
-    termines.forEach(function(tx) {
-      html += '<div onclick="openDetail(\''+tx.id+'\')" style="background:#fff;border-radius:14px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);border:1.5px solid #d1fae5;cursor:pointer;transition:.15s;" onmouseover="this.style.backgroundColor=\'#f0fdf4\'" onmouseout="this.style.backgroundColor=\'#fff\'">' +
-        '<div style="width:36px;height:36px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✅</div>' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:15px;font-weight:800;color:#1254a0;">'+tx.montantEur+' EUR</div>' +
-          '<div style="font-size:12px;color:#888;">'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>' +
-        '</div>' +
-        '<div style="font-size:10px;color:#bbb;text-align:right;white-space:nowrap;">'+tx.dateStr+'</div>' +
-      '</div>';
-    });
+    html += '<div style="margin-top:'+(actifs.length?'16px':'0')+';">';
+    html += sectionHeader('#10b981','TERMINÉS', termines.length, '#d1fae5', '#065f46');
+    termines.forEach(function(tx){ html += txRow(tx, false); });
+    html += '</div>';
   }
 
-  // ─── Annulés / Rejetés ───
   if (autres.length) {
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px;">' +
-      '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:#9ca3af;flex-shrink:0;"></div>' +
-        '<span style="font-size:12px;font-weight:800;color:#9ca3af;letter-spacing:.8px;">ANNULÉS / REJETÉS</span></div>' +
-      '<span style="background:#f3f4f6;color:#6b7280;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;">'+autres.length+'</span></div>';
-
-    autres.forEach(function(tx) {
-      var ico = tx.statut === 'rejetee' ? '❌' : '↩️';
-      html += '<div onclick="openDetail(\''+tx.id+'\')" style="background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1.5px solid #f3f4f6;cursor:pointer;opacity:.85;transition:.15s;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'.85\'">' +
-        '<div style="width:34px;height:34px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">'+ico+'</div>' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:14px;font-weight:800;color:#555;">'+tx.montantEur+' EUR</div>' +
-          '<div style="font-size:11px;color:#9ca3af;">'+statutLabel(tx.statut)+'</div>' +
-        '</div>' +
-        '<div style="font-size:10px;color:#bbb;text-align:right;white-space:nowrap;">'+tx.dateStr+'</div>' +
-      '</div>';
-    });
+    html += '<div style="margin-top:'+(termines.length||actifs.length?'16px':'0')+';">';
+    html += sectionHeader('#9ca3af','ANNULÉS / REJETÉS', autres.length, '#f3f4f6', '#6b7280');
+    autres.forEach(function(tx){ html += txRow(tx, true); });
+    html += '</div>';
   }
 
   list.innerHTML = html;
