@@ -1497,7 +1497,11 @@ function sendAdminMsg(){
 
 function adminCloseTicket(){
   if(!curTicketId)return;
-  if(!confirm('Clôturer ce ticket ?'))return;
+  showCModal('✅','Clôturer ce ticket ?','Le ticket sera marqué comme clôturé. L'utilisateur ne pourra plus y répondre.','Clôturer',false,function(){
+    doAdminCloseTicket();
+  });
+}
+function doAdminCloseTicket(){
   db.collection('tickets').doc(curTicketId).update({
     statut:'cloture',updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
     unreadUser:firebase.firestore.FieldValue.increment(1)
