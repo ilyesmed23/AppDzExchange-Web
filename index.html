@@ -49,6 +49,9 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
 .lang-btn.active{background:rgba(255,255,255,.9);color:var(--blue);}
 .lang-btn:hover:not(.active){background:rgba(255,255,255,.2);}
 .hero{background:var(--grad);color:#fff;padding:70px 5% 60px;text-align:center;}
+.hero-badge-pill{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.35);
+  color:#fff;padding:7px 16px;border-radius:22px;font-size:13px;font-weight:700;
+  backdrop-filter:blur(6px);white-space:nowrap;}
 .hero-badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
   padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.8px;margin-bottom:20px;}
 .hero h1{font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.15;margin-bottom:16px;}
@@ -185,6 +188,12 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
   <div class="hero-cta">
     <a href="auth.html" class="btn-hero-primary" data-i18n="hero_btn1">🚀 Commencer gratuitement</a>
     <a href="#comment" class="btn-hero-secondary" data-i18n="hero_btn2">Comment ça marche ↓</a>
+  </div>
+  <!-- Badges avantages -->
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px;">
+    <span class="hero-badge-pill" data-i18n="badge_no_fee">🎁 Sans frais · Sans commission</span>
+    <span class="hero-badge-pill" data-i18n="badge_rate">📊 Taux compétitif garanti</span>
+    <span class="hero-badge-pill" style="opacity:.8;" data-i18n="badge_wise">🏦 Wise — Bientôt disponible</span>
   </div>
 </div>
 
@@ -476,6 +485,9 @@ var T = {
     footer_login: 'Se connecter',
     footer_register: "S'inscrire",
     footer_copy: '© 2025 AppDz Exchange — Tous droits réservés',
+    badge_no_fee: '🎁 Sans frais · Sans commission',
+    badge_rate: '📊 Taux compétitif garanti',
+    badge_wise: '🏦 Wise — Bientôt disponible',
     err_nom: 'Veuillez entrer votre nom.',
     err_email: 'Email invalide.',
     err_msg: 'Veuillez écrire un message.',
@@ -549,6 +561,9 @@ var T = {
     footer_login: 'تسجيل الدخول',
     footer_register: 'إنشاء حساب',
     footer_copy: '© 2025 AppDz Exchange — جميع الحقوق محفوظة',
+    badge_no_fee: '🎁 بدون رسوم · بدون عمولة',
+    badge_rate: '📊 سعر صرف تنافسي مضمون',
+    badge_wise: '🏦 Wise — قريباً',
     err_nom: 'الرجاء إدخال اسمك.',
     err_email: 'البريد الإلكتروني غير صالح.',
     err_msg: 'الرجاء كتابة رسالة.',

@@ -321,6 +321,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         <input class="s-input" id="sCCP" type="text" placeholder="00799999000...">
         <label class="s-lbl">EMAIL PAYSERA ADMIN</label>
         <input class="s-input" id="sPaysera" type="email" placeholder="admin@paysera.com">
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <div style="flex:1;">
+            <label class="s-lbl">MONTANT MINIMUM (EUR)</label>
+            <input class="s-input" id="sMinMontant" type="number" min="1" placeholder="20">
+          </div>
+          <div style="flex:1;">
+            <label class="s-lbl">MONTANT MAXIMUM (EUR)</label>
+            <input class="s-input" id="sMaxMontant" type="number" min="1" placeholder="1000">
+          </div>
+        </div>
         <button class="s-btn" onclick="saveSettings()">💾 Enregistrer</button>
         <div id="settingsMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
@@ -665,6 +675,8 @@ function initListeners(){
       document.getElementById('sTaux').value=d.taux||275;
       document.getElementById('sCCP').value=d.ccpAdmin||'';
       document.getElementById('sPaysera').value=d.payseraAdmin||'';
+      document.getElementById('sMinMontant').value=d.minMontant||20;
+      document.getElementById('sMaxMontant').value=d.maxMontant||1000;
       soldeEur=typeof d.soldeEur==='number'?d.soldeEur:0;
       document.getElementById('sSolde').value=soldeEur;
       alertThreshold=typeof d.alertThreshold==='number'?d.alertThreshold:500;
@@ -1292,8 +1304,11 @@ function saveSettings(){
   var t=parseFloat(document.getElementById('sTaux').value);
   var c=document.getElementById('sCCP').value.trim();
   var p=document.getElementById('sPaysera').value.trim();
+  var mn=parseFloat(document.getElementById('sMinMontant').value)||20;
+  var mx=parseFloat(document.getElementById('sMaxMontant').value)||1000;
   if(!t){document.getElementById('settingsMsg').textContent='Taux invalide.';return;}
-  db.collection('config').doc('settings').set({taux:t,ccpAdmin:c,payseraAdmin:p},{merge:true})
+  if(mn>=mx){document.getElementById('settingsMsg').textContent='Le minimum doit être inférieur au maximum.';return;}
+  db.collection('config').doc('settings').set({taux:t,ccpAdmin:c,payseraAdmin:p,minMontant:mn,maxMontant:mx},{merge:true})
     .then(function(){document.getElementById('settingsMsg').textContent='✓ Enregistré';document.getElementById('settingsMsg').style.color='#059669';toast('Paramètres sauvegardés','ok');})
     .catch(function(e){document.getElementById('settingsMsg').textContent='Erreur: '+e.message;document.getElementById('settingsMsg').style.color='#dc2626';});
 }

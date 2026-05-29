@@ -369,7 +369,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
         <label data-i18n="new_montant_label">MONTANT EN EUROS *</label>
         <input type="number" id="montantEur" placeholder="ex: 100" min="20" max="1000"
           inputmode="decimal" oninput="calcDzd()">
-        <div class="hint" data-i18n="new_montant_hint">Minimum 20 EUR - Maximum 1 000 EUR</div>
+        <div class="hint" id="montantHint" data-i18n="new_montant_hint">Minimum 20 EUR - Maximum 1 000 EUR</div>
       </div>
       <div class="field">
         <label data-i18n="new_dzd_label">EQUIVALENT EN DZD</label>
@@ -381,6 +381,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
         <div class="info-row"><label data-i18n="lbl_paysera">Email Paysera</label><b id="userPayseraDisplay">--</b></div>
       </div>
       <div id="newLoader" class="loader" data-i18n="loader_create">Creation de la demande...</div>
+      <!-- Rappel compte Paysera vérifié -->
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">✅</span>
+        <div style="font-size:12px;color:#1e40af;line-height:1.5;" data-i18n="paysera_reminder">Assurez-vous que votre compte Paysera est <b>validé et vérifié</b> avant de soumettre votre demande, afin d'éviter tout problème lors de la réception de votre virement.</div>
+      </div>
       <div id="maintBanner" style="display:none;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#92400e;text-align:center;">
         🚧 Les nouvelles demandes sont temporairement suspendues. Revenez bientôt.
       </div>
@@ -746,6 +751,8 @@ var currentTaux  = 0;
 var adminCCP     = ADMIN_CCP_DEFAULT;
 var transferts   = [];
 var currentTxId  = null;
+var minMontant   = 20;
+var maxMontant   = 1000;
 var messagesListener   = null; // legacy - remplacé par tickets
 var transfertsListener = null;
 
@@ -855,18 +862,28 @@ function renderProfile() {
 // ── TAUX ──
 function loadTaux() {
   db.collection('config').doc('settings').get().then(function(snap) {
-    if (snap.exists && snap.data().taux) {
-      currentTaux = parseFloat(snap.data().taux) || 275;
+    if (snap.exists) {
+      var d = snap.data();
+      currentTaux = parseFloat(d.taux) || 275;
+      minMontant  = parseFloat(d.minMontant) || 20;
+      maxMontant  = parseFloat(d.maxMontant) || 1000;
     } else {
-      currentTaux = 275; // Taux par défaut si non défini
+      currentTaux = 275;
     }
     document.getElementById('tauxValue').textContent = currentTaux.toLocaleString('fr-DZ') + ' DZD';
+    updateMontantLimits();
     calcDzd();
   }).catch(function() {
     currentTaux = 275;
     document.getElementById('tauxValue').textContent = '275 DZD';
     calcDzd();
   });
+}
+function updateMontantLimits() {
+  var inp = document.getElementById('montantEur');
+  if (inp) { inp.min = minMontant; inp.max = maxMontant; }
+  var hint = document.getElementById('montantHint');
+  if (hint) hint.textContent = t('new_montant_hint_dyn').replace('{min}', minMontant).replace('{max}', maxMontant.toLocaleString('fr-DZ'));
 }
 
 // ── ADMIN CCP ──
@@ -1206,8 +1223,8 @@ function handleCreateTransfert() {
   var eur = parseFloat(document.getElementById('montantEur').value);
   var errEl = document.getElementById('newError');
   errEl.style.display = 'none';
-  if (!eur || eur < 20 || eur > 1000) {
-    errEl.textContent = t('err_montant');
+  if (!eur || eur < minMontant || eur > maxMontant) {
+    errEl.textContent = t('err_montant').replace('{min}', minMontant).replace('{max}', maxMontant.toLocaleString('fr-DZ'));
     errEl.style.display = 'block'; return;
   }
   if (!currentUser) { errEl.textContent = t('err_user'); errEl.style.display='block'; return; }
@@ -1796,6 +1813,9 @@ var T = {
     new_ccp_hint: 'Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.',
     new_montant_label: 'MONTANT EN EUROS *',
     new_montant_hint: 'Minimum 20 EUR - Maximum 1 000 EUR',
+    new_montant_hint_dyn: 'Minimum {min} EUR - Maximum {max} EUR',
+    err_montant_dyn: 'Montant invalide. Entre {min} et {max} EUR.',
+    paysera_reminder: 'Assurez-vous que votre compte Paysera est <b>validé et vérifié</b> avant de soumettre votre demande, afin d\'éviter tout problème lors de la réception de votre virement.',
     new_dzd_label: 'EQUIVALENT EN DZD',
     new_info_title: 'VOS INFORMATIONS ENREGISTREES',
     lbl_ccp: 'CCP (Baridimob)', lbl_paysera: 'Email Paysera',
@@ -1882,6 +1902,9 @@ var T = {
     new_ccp_hint: 'يرجى إجراء التحويل للمبلغ المطلوب إلى رقم CCP / بريدي موب هذا، ثم قدّم طلبك وأرسل إثبات التحويل.',
     new_montant_label: 'المبلغ بالأورو *',
     new_montant_hint: 'الحد الأدنى 20 EUR - الحد الأقصى 1000 EUR',
+    new_montant_hint_dyn: 'الحد الأدنى {min} EUR - الحد الأقصى {max} EUR',
+    err_montant_dyn: 'مبلغ غير صالح. بين {min} و {max} يورو.',
+    paysera_reminder: 'تأكد من أن حسابك على Paysera <b>موثق ومُفعَّل</b> قبل تقديم طلبك، لتجنب أي مشكلة عند استلام تحويلك.',
     new_dzd_label: 'المعادل بالدينار الجزائري',
     new_info_title: 'معلوماتك المسجلة',
     lbl_ccp: 'CCP (بريدي موب)', lbl_paysera: 'بريد Paysera',
