@@ -305,10 +305,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <div class="header">
   <div class="header-top">
     <div class="header-logo">AppDz Exchange</div>
-    <div style="display:flex;gap:5px;margin-left:6px;">
-      <button id="btnLangFr" class="lang-btn active" onclick="setLang('fr')">FR</button>
-      <button id="btnLangAr" class="lang-btn" onclick="setLang('ar')">AR</button>
-    </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
       <div style="display:flex;align-items:center;gap:6px;">
         <div class="header-user" id="headerUser">Chargement...</div>
@@ -538,13 +534,13 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <!-- MODAL ANNULATION -->
 <div id="modalCancel" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-title">Annuler le transfert</div>
-    <div class="modal-msg">Voulez-vous vraiment annuler cette demande ? Cette action est irreversible.</div>
+    <div class="modal-title" data-i18n="modal_cancel_title">Annuler le transfert</div>
+    <div class="modal-msg" data-i18n="modal_cancel_msg">Voulez-vous vraiment annuler cette demande ? Cette action est irreversible.</div>
     <div id="cancelLoader" class="loader" style="display:none;">Annulation...</div>
     <div id="cancelError" class="error-box"></div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()">Retour</button>
-      <button class="modal-btn modal-btn-confirm" style="background:#dc2626;" onclick="confirmCancel()">Annuler le transfert</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeCancelModal()" data-i18n="btn_annuler">Retour</button>
+      <button class="modal-btn modal-btn-confirm" style="background:#dc2626;" onclick="confirmCancel()" data-i18n="btn_cancel">Annuler le transfert</button>
     </div>
   </div>
 </div>
@@ -586,8 +582,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
     <div class="modal-title" data-i18n="modal_logout_title">Deconnexion</div>
     <div class="modal-msg" data-i18n="modal_logout_msg">Voulez-vous vraiment vous deconnecter ?</div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">Annuler</button>
-      <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">Deconnecter</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()" data-i18n="btn_annuler">Annuler</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()" data-i18n="btn_logout">Deconnecter</button>
     </div>
   </div>
 </div>
@@ -595,11 +591,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <!-- MODAL CLOTURE TICKET -->
 <div id="modalCloseTicket" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-title">Clôturer le ticket</div>
-    <div class="modal-msg">Voulez-vous vraiment clôturer ce ticket ? Vous ne pourrez plus y répondre.</div>
+    <div class="modal-title" data-i18n="modal_cloture_title">Clôturer le ticket</div>
+    <div class="modal-msg" data-i18n="modal_cloture_msg">Voulez-vous vraiment clôturer ce ticket ? Vous ne pourrez plus y répondre.</div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeCloseTicketModal()">Annuler</button>
-      <button class="modal-btn modal-btn-confirm" onclick="confirmCloseTicket()">Clôturer</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeCloseTicketModal()" data-i18n="btn_annuler">Annuler</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmCloseTicket()" data-i18n="tk_cloture_confirm">Clôturer</button>
     </div>
   </div>
 </div>
@@ -607,8 +603,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <!-- MODAL TICKET DEJA ACTIF -->
 <div id="modalTicketActif" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-title">Ticket en cours</div>
-    <div class="modal-msg">Vous avez déjà un ticket ouvert. Vous devez le clôturer avant d'en ouvrir un nouveau.</div>
+    <div class="modal-title" data-i18n="modal_ticket_actif_title">Ticket en cours</div>
+    <div class="modal-msg" data-i18n="modal_ticket_actif_msg">Vous avez déjà un ticket ouvert. Vous devez le clôturer avant d'en ouvrir un nouveau.</div>
     <div class="modal-actions" style="flex-direction:column;gap:8px;">
       <button class="modal-btn modal-btn-confirm" style="background:linear-gradient(135deg,#1254a0,#0097a7);" onclick="document.getElementById('modalTicketActif').classList.remove('open');openActiveTicket()">Voir mon ticket en cours</button>
       <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('modalTicketActif').classList.remove('open')">Fermer</button>
@@ -1827,6 +1823,7 @@ var T = {
     detail_preuve_admin: '✓ Preuve du virement Paysera :',
     btn_cancel: 'Annuler ce transfert',
     btn_annuler: 'Annuler', btn_confirmer: 'Confirmer',
+    btn_close_ticket: 'Clôturer',
     upload_titre: 'ENVOYER LA PREUVE DE VIREMENT',
     upload_hint: 'Cliquez pour choisir une image',
     upload_sub: 'JPG, PNG',
@@ -1908,6 +1905,7 @@ var T = {
     detail_preuve_admin: '✓ إثبات التحويل عبر Paysera :',
     btn_cancel: 'إلغاء هذا الطلب',
     btn_annuler: 'إلغاء', btn_confirmer: 'تأكيد',
+    btn_close_ticket: 'إغلاق',
     upload_titre: 'إرسال إثبات التحويل',
     upload_hint: 'انقر لاختيار صورة',
     upload_sub: 'JPG, PNG',
@@ -1934,7 +1932,7 @@ var T = {
     tk_retour: 'رجوع →',
     tk_reply_ph: 'ردّك...',
     tk_empty: 'لا توجد تذاكر بعد. اضغط على + تذكرة جديدة للتواصل مع الدعم.',
-    tk_cloture_confirm: 'إغلاق هذه التذكرة',
+    tk_cloture_confirm: 'إغلاق',  // bouton modal cloture
     tk_ouvert: 'مفتوح', tk_en_cours: 'قيد المعالجة', tk_cloture: 'مغلق',
     modal_cancel_title: 'إلغاء الطلب',
     modal_cancel_msg: 'هل تريد فعلاً إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.',
@@ -1954,10 +1952,7 @@ function setLang(lang) {
   localStorage.setItem('lang', lang);
   document.documentElement.lang = lang;
   document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  var btnFr = document.getElementById('btnLangFr');
-  var btnAr = document.getElementById('btnLangAr');
-  if (btnFr) btnFr.classList.toggle('active', lang === 'fr');
-  if (btnAr) btnAr.classList.toggle('active', lang === 'ar');
+
   // Éléments statiques
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
