@@ -73,6 +73,12 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 .detail-overlay { position:fixed; inset:0; background:#f0f4fa; z-index:200;
   display:none; flex-direction:column; overflow-y:auto; }
 .detail-overlay.open { display:flex; }
+.ticket-sheet { position:fixed; left:0; right:0; bottom:0; max-height:88vh; background:#fff;
+  z-index:300; border-radius:20px 20px 0 0; display:none; flex-direction:column;
+  box-shadow:0 -4px 30px rgba(0,0,0,.18); overflow:hidden; }
+.ticket-sheet.open { display:flex; }
+.ticket-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:299; display:none; }
+.ticket-sheet-overlay.open { display:block; }
 .detail-header { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff;
   padding:14px 16px; display:flex; align-items:center; gap:10px; flex-shrink:0; }
 .back-btn { background:rgba(255,255,255,.2); border:none; color:#fff;
@@ -582,6 +588,30 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   </div>
 </div>
 
+<!-- MODAL CLOTURE TICKET -->
+<div id="modalCloseTicket" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-title">Clôturer le ticket</div>
+    <div class="modal-msg">Voulez-vous vraiment clôturer ce ticket ? Vous ne pourrez plus y répondre.</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeCloseTicketModal()">Annuler</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmCloseTicket()">Clôturer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TICKET DEJA ACTIF -->
+<div id="modalTicketActif" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-title">Ticket en cours</div>
+    <div class="modal-msg">Vous avez déjà un ticket ouvert. Vous devez le clôturer avant d'en ouvrir un nouveau.</div>
+    <div class="modal-actions" style="flex-direction:column;gap:8px;">
+      <button class="modal-btn modal-btn-confirm" style="background:linear-gradient(135deg,#1254a0,#0097a7);" onclick="document.getElementById('modalTicketActif').classList.remove('open');openActiveTicket()">Voir mon ticket en cours</button>
+      <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('modalTicketActif').classList.remove('open')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL OVERLAY -->
 <div id="detailOverlay" class="detail-overlay">
   <div class="detail-header">
@@ -591,45 +621,50 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   <div class="detail-body" id="detailBody"></div>
 </div>
 
-<!-- TICKET DETAIL OVERLAY -->
-<div id="ticketDetailOverlay" class="detail-overlay">
-  <div class="detail-header">
-    <button class="back-btn" onclick="closeTicketDetail()">Retour</button>
-    <span class="detail-title">Ticket Support</span>
-  </div>
-  <div style="display:flex;flex-direction:column;height:calc(100% - 56px);">
-    <!-- Info ticket -->
-    <div id="tdHeader" style="padding:14px 16px;background:#fff;border-bottom:1px solid #e0e8f5;flex-shrink:0;">
+<!-- TICKET SHEET OVERLAY (fond) -->
+<div id="ticketSheetBg" class="ticket-sheet-overlay" onclick="closeTicketDetail()"></div>
+
+<!-- TICKET DETAIL BOTTOM SHEET -->
+<div id="ticketDetailOverlay" class="ticket-sheet">
+  <!-- Poignée + header -->
+  <div style="flex-shrink:0;">
+    <div style="text-align:center;padding:10px 0 4px;">
+      <div style="width:36px;height:4px;border-radius:2px;background:#e0e8f5;margin:0 auto;"></div>
+    </div>
+    <div style="padding:10px 16px 12px;border-bottom:1px solid #e0e8f5;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
         <div style="flex:1;">
           <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.5px;">TICKET SUPPORT</div>
           <div id="tdObjet" style="font-size:14px;font-weight:800;color:#1254a0;margin-top:3px;"></div>
         </div>
-        <span id="tdBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;"></span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="tdBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;"></span>
+          <button onclick="closeTicketDetail()" style="background:none;border:none;font-size:20px;color:#aaa;cursor:pointer;padding:0;line-height:1;">×</button>
+        </div>
       </div>
       <div id="tdCloseBtn" style="margin-top:10px;display:none;">
-        <button onclick="closeTicket()"
+        <button onclick="openCloseTicketModal()"
           style="width:100%;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;">
           Clôturer ce ticket
         </button>
       </div>
     </div>
-    <!-- Thread messages -->
-    <div id="tdThread" class="chat-thread" style="flex:1;overflow-y:auto;padding:14px;background:#f8fafc;"></div>
-    <!-- Zone réponse -->
-    <div id="tdReplyArea" style="flex-shrink:0;background:#fff;border-top:1px solid #e0e8f5;padding:10px 12px;">
-      <div id="tdFileAttach" style="display:none;padding:6px 0;font-size:12px;color:#1254a0;align-items:center;justify-content:space-between;margin-bottom:6px;"></div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="document.getElementById('ticketReplyFile').click()"
-          style="background:none;border:none;font-size:20px;cursor:pointer;padding:0;color:#9ca3af;flex-shrink:0;">📎</button>
-        <input type="file" id="ticketReplyFile" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleReplyFileSelect(this)">
-        <input id="ticketReplyInput" type="text" placeholder="Votre réponse..." maxlength="1000"
-          style="flex:1;padding:9px 13px;border:1.5px solid #e0e8f5;border-radius:22px;font-size:14px;outline:none;background:#f8fafc;"
-          onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"
-          onkeydown="if(event.key==='Enter')sendTicketReply()">
-        <button onclick="sendTicketReply()"
-          style="background:linear-gradient(135deg,#1254a0,#0097a7);border:none;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
-      </div>
+  </div>
+  <!-- Thread messages -->
+  <div id="tdThread" class="chat-thread" style="flex:1;overflow-y:auto;padding:14px;background:#f8fafc;"></div>
+  <!-- Zone réponse -->
+  <div id="tdReplyArea" style="flex-shrink:0;background:#fff;border-top:1px solid #e0e8f5;padding:10px 12px;">
+    <div id="tdFileAttach" style="display:none;padding:6px 0;font-size:12px;color:#1254a0;align-items:center;justify-content:space-between;margin-bottom:6px;"></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="document.getElementById('ticketReplyFile').click()"
+        style="background:none;border:none;font-size:20px;cursor:pointer;padding:0;color:#9ca3af;flex-shrink:0;">📎</button>
+      <input type="file" id="ticketReplyFile" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleReplyFileSelect(this)">
+      <input id="ticketReplyInput" type="text" placeholder="Votre réponse..." maxlength="1000"
+        style="flex:1;padding:9px 13px;border:1.5px solid #e0e8f5;border-radius:22px;font-size:14px;outline:none;background:#f8fafc;"
+        onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"
+        onkeydown="if(event.key==='Enter')sendTicketReply()">
+      <button onclick="sendTicketReply()"
+        style="background:linear-gradient(135deg,#1254a0,#0097a7);border:none;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
     </div>
   </div>
 </div>
@@ -1497,11 +1532,13 @@ function openTicketDetail(id) {
     renderTicketList();
   }
   document.getElementById('ticketDetailOverlay').classList.add('open');
+  document.getElementById('ticketSheetBg').classList.add('open');
   loadTicketMessages(id);
 }
 
 function closeTicketDetail() {
   document.getElementById('ticketDetailOverlay').classList.remove('open');
+  document.getElementById('ticketSheetBg').classList.remove('open');
   if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
   curTicketId   = null;
   replyFileData = null;
@@ -1554,10 +1591,17 @@ function loadTicketMessages(ticketId) {
 
 function showNewTicketForm() {
   var active = ticketsData.find(function(t) { return t.statut === 'ouvert' || t.statut === 'en_cours'; });
-  if (active) { openTicketDetail(active.id); return; }
+  if (active) {
+    document.getElementById('modalTicketActif').classList.add('open');
+    return;
+  }
   document.getElementById('ticketListView').style.display = 'none';
   document.getElementById('ticketNewView').style.display  = 'block';
   document.getElementById('btnNewTicket').style.display   = 'none';
+}
+function openActiveTicket() {
+  var active = ticketsData.find(function(t) { return t.statut === 'ouvert' || t.statut === 'en_cours'; });
+  if (active) openTicketDetail(active.id);
 }
 
 function hideNewTicketForm() {
@@ -1682,9 +1726,18 @@ function sendTicketReply() {
   });
 }
 
+function openCloseTicketModal() {
+  document.getElementById('modalCloseTicket').classList.add('open');
+}
+function closeCloseTicketModal() {
+  document.getElementById('modalCloseTicket').classList.remove('open');
+}
+function confirmCloseTicket() {
+  closeCloseTicketModal();
+  closeTicket();
+}
 function closeTicket() {
   if (!curTicketId) return;
-  if (!confirm('Cloture ce ticket ?')) return;
   db.collection('tickets').doc(curTicketId).update({
     statut: 'cloture',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1697,6 +1750,24 @@ function closeTicket() {
     document.getElementById('tdCloseBtn').style.display  = 'none';
     document.getElementById('tdReplyArea').style.display = 'none';
   }).catch(function(e) { alert('Erreur : ' + e.message); });
+}
+
+// ── LOGOUT ──
+function handleLogout() {
+  document.getElementById('modalLogout').classList.add('open');
+}
+function openLogoutModal() {
+  document.getElementById('modalLogout').classList.add('open');
+}
+function closeLogoutModal() {
+  document.getElementById('modalLogout').classList.remove('open');
+}
+function confirmLogout() {
+  auth.signOut().then(function() {
+    window.location.href = 'auth.html';
+  }).catch(function(e) {
+    alert('Erreur : ' + e.message);
+  });
 }
 
 function escHtml(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
