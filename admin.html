@@ -1424,7 +1424,6 @@ function loadAdminTicketMessages(ticketId){
       });
       var thread=document.getElementById('chatThread');if(!thread)return;
       if(!msgs.length){thread.innerHTML='<div class="empty" style="padding:20px;text-align:center;color:#aaa;">Aucun message</div>';return;}
-      // Résoudre l'utilisateur dans le callback pour éviter les problèmes de scope
       var tkt=allTickets.find(function(x){return x.id===ticketId;})||{};
       var u=allUsers.find(function(x){return x.id===tkt.userId;})||{};
       thread.innerHTML=msgs.map(function(m){
@@ -1439,7 +1438,7 @@ function loadAdminTicketMessages(ticketId){
         }
         return '<div class="msg-wrap from-'+(isAdmin?'admin':'user')+'">'+
           '<div class="bubble bubble-'+(isAdmin?'admin':'user')+'">'+escH(m.text||'')+fileHtml+'</div>'+
-          '<div class="msg-time">'+(isAdmin?'Vous':(u.nom||'Utilisateur'))+' · '+timeStr+'</div>'+
+          '<div class="msg-time">'+(isAdmin?'Vous · ':u.nom||'User')+' · '+timeStr+'</div>'+
         '</div>';
       }).join('');
       setTimeout(function(){thread.scrollTop=thread.scrollHeight;},60);
@@ -1810,4 +1809,54 @@ function bulkDelete(){
 // ── SOLDE EUR ──
 function saveSoldeEur(){
   var v=parseFloat(document.getElementById('sSolde').value);
-  if(isNaN(v)||v<0){document.getElementById('soldeMsg').textConte
+  if(isNaN(v)||v<0){document.getElementById('soldeMsg').textContent='Valeur invalide.';document.getElementById('soldeMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({soldeEur:v},{merge:true}).then(function(){
+    soldeEur=v;renderDash();
+    document.getElementById('soldeMsg').textContent='✓ Solde mis à jour : '+v.toFixed(2)+' €';
+    document.getElementById('soldeMsg').style.color='#059669';
+    toast('Solde EUR enregistré','ok');
+    setTimeout(function(){document.getElementById('soldeMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('soldeMsg').textContent='Erreur: '+e.message;document.getElementById('soldeMsg').style.color='#dc2626';});
+}
+
+// ── ALERT THRESHOLD ──
+function saveAlertThreshold(){
+  var v=parseFloat(document.getElementById('sAlertThreshold').value);
+  if(isNaN(v)||v<0){document.getElementById('alertMsg').textContent='Valeur invalide.';document.getElementById('alertMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({alertThreshold:v},{merge:true}).then(function(){
+    alertThreshold=v;renderDash();renderTxList();
+    document.getElementById('alertMsg').textContent='✓ Seuil enregistré : '+v+' EUR';
+    document.getElementById('alertMsg').style.color='#059669';
+    toast('Seuil alerte enregistré','ok');
+    setTimeout(function(){document.getElementById('alertMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('alertMsg').textContent='Erreur: '+e.message;document.getElementById('alertMsg').style.color='#dc2626';});
+}
+
+// ── ANNOUNCEMENT ──
+function saveAnnouncement(){
+  var v=document.getElementById('sAnnouncement').value.trim();
+  if(v){
+    // Lire les notifs existantes, ajouter la nouvelle en tête, garder max 30
+    db.collection('config').doc('settings').get().then(function(doc){
+      var existing=(doc.exists&&doc.data().recentNotifications)||[];
+      var newNotif={id:Date.now().toString(),message:v,type:'announcement',createdAt:Date.now()};
+      var updated=[newNotif].concat(existing).slice(0,30);
+      db.collection('config').doc('settings').set({announcement:v,recentNotifications:updated},{merge:true}).then(function(){
+        document.getElementById('announceMsg').textContent='✓ Annonce publiée + notification envoyée à tous les utilisateurs';
+        document.getElementById('announceMsg').style.color='#059669';
+        toast('📢 Annonce + notification envoyées','ok');
+        setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
+      }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  } else {
+    db.collection('config').doc('settings').set({announcement:''},{merge:true}).then(function(){
+      document.getElementById('announceMsg').textContent='✓ Annonce désactivée';
+      document.getElementById('announceMsg').style.color='#059669';
+      toast('Annonce désactivée','ok');
+      setTimeout(function(){document.getElementById('announceMsg').textContent='';},3000);
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  }
+}
+</script>
+</body>
+</html>
