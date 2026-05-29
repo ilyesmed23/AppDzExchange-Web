@@ -1399,4 +1399,308 @@ function markAllNotifsRead() {
   var now = Date.now();
   lastNotifRead = now;
   var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-  if(uid) db.collection('users').doc(uid).u
+  if(uid) db.collection('users').doc(uid).update({ lastNotifRead: firebase.firestore.Timestamp.fromMillis(now) }).catch(function(){});
+  updateNotifBadge();
+  renderNotifs();
+}
+
+// ── TICKETS SUPPORT ──
+var ticketsData        = [];
+var ticketListener     = null;
+var ticketMsgsListener = null;
+var curTicketId        = null;
+var replyFileData      = null;
+var newTicketFileData  = null;
+
+function loadUnreadCount() {
+  if (ticketListener) return;
+  ticketListener = db.collection('tickets')
+    .where('userId', '==', currentUid)
+    .onSnapshot(function(snap) {
+      ticketsData = snap.docs.map(function(d) { var x = d.data(); x.id = d.id; return x; });
+      var unread = ticketsData.reduce(function(acc, t) { return acc + (t.unreadUser || 0); }, 0);
+      var badge = document.getElementById('msgBadge');
+      if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'inline'; }
+      else badge.style.display = 'none';
+      if (document.getElementById('panelMessages').classList.contains('active')) renderTicketList();
+    }, function() {});
+}
+
+function loadTicket() {
+  renderTicketList();
+  ticketsData.forEach(function(t) {
+    if (t.unreadUser > 0) db.collection('tickets').doc(t.id).update({ unreadUser: 0 }).catch(function() {});
+  });
+  document.getElementById('msgBadge').style.display = 'none';
+}
+
+function renderTicketList() {
+  var listEl  = document.getElementById('ticketsList');
+  var emptyEl = document.getElementById('ticketListEmpty');
+  if (!ticketsData.length) {
+    listEl.innerHTML = '';
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  var sorted = ticketsData.slice().sort(function(a, b) {
+    var ta = a.updatedAt && a.updatedAt.toDate ? a.updatedAt.toDate().getTime() : 0;
+    var tb = b.updatedAt && b.updatedAt.toDate ? b.updatedAt.toDate().getTime() : 0;
+    return tb - ta;
+  });
+  var dotCfg = { ouvert: '#f59e0b', en_cours: '#3b82f6', cloture: '#10b981' };
+  var lblCfg = { ouvert: 'Ouvert', en_cours: 'En cours', cloture: 'Cloture' };
+  listEl.innerHTML = sorted.map(function(t) {
+    var color   = dotCfg[t.statut] || '#9ca3af';
+    var label   = lblCfg[t.statut] || t.statut;
+    var ts      = t.updatedAt && t.updatedAt.toDate ? t.updatedAt.toDate().getTime() : 0;
+    var timeStr = ts ? new Date(ts).toLocaleDateString('fr-DZ') : '';
+    var unreadDot = (t.unreadUser > 0)
+      ? '<span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;flex-shrink:0;">' + t.unreadUser + '</span>' : '';
+    var faded = t.statut === 'cloture' ? 'opacity:.6;' : '';
+    return '<div onclick="openTicketDetail(\'' + t.id + '\')" style="' + faded +
+      'background:#fff;border-radius:14px;border:1px solid #eef0f5;display:flex;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:.12s;" ' +
+      'onmouseover="this.style.boxShadow=\'0 3px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.boxShadow=\'none\'">' +
+      '<div style="width:4px;background:' + color + ';flex-shrink:0;"></div>' +
+      '<div style="padding:12px 14px;display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(t.objet || '') + '</div>' +
+          '<div style="font-size:11px;font-weight:600;color:' + color + ';margin-top:3px;">' + label + ' - ' + timeStr + '</div>' +
+          (t.lastMessage ? '<div style="font-size:11px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml((t.lastMessage || '').substring(0, 50)) + '</div>' : '') +
+        '</div>' +
+        unreadDot +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openTicketDetail(id) {
+  curTicketId = id;
+  var t = ticketsData.find(function(x) { return x.id === id; });
+  if (!t) return;
+  document.getElementById('tdObjet').textContent = t.objet || '';
+  var badge  = document.getElementById('tdBadge');
+  var isClos = t.statut === 'cloture';
+  badge.textContent  = t.statut === 'ouvert' ? 'Ouvert' : t.statut === 'en_cours' ? 'En cours' : 'Cloture';
+  badge.style.background = t.statut === 'ouvert' ? '#fef3c7' : t.statut === 'en_cours' ? '#dbeafe' : '#d1fae5';
+  badge.style.color      = t.statut === 'ouvert' ? '#92400e' : t.statut === 'en_cours' ? '#1e40af' : '#065f46';
+  document.getElementById('tdCloseBtn').style.display  = isClos ? 'none' : 'block';
+  document.getElementById('tdReplyArea').style.display = isClos ? 'none' : 'flex';
+  if (t.unreadUser > 0) {
+    db.collection('tickets').doc(id).update({ unreadUser: 0 }).catch(function() {});
+    t.unreadUser = 0;
+    var total = ticketsData.reduce(function(acc, x) { return acc + (x.unreadUser || 0); }, 0);
+    var mb = document.getElementById('msgBadge');
+    if (total > 0) { mb.textContent = total > 9 ? '9+' : total; mb.style.display = 'inline'; }
+    else mb.style.display = 'none';
+    renderTicketList();
+  }
+  document.getElementById('ticketDetailOverlay').classList.add('open');
+  loadTicketMessages(id);
+}
+
+function closeTicketDetail() {
+  document.getElementById('ticketDetailOverlay').classList.remove('open');
+  if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
+  curTicketId   = null;
+  replyFileData = null;
+  document.getElementById('tdFileAttach').style.display = 'none';
+  var ri = document.getElementById('ticketReplyInput');
+  if (ri) ri.value = '';
+}
+
+function loadTicketMessages(ticketId) {
+  if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
+  var thread = document.getElementById('tdThread');
+  thread.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Chargement...</div>';
+  ticketMsgsListener = db.collection('tickets').doc(ticketId).collection('messages')
+    .onSnapshot(function(snap) {
+      var msgs = snap.docs.map(function(d) { var x = d.data(); x.id = d.id; return x; });
+      msgs.sort(function(a, b) {
+        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
+        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
+        return ta - tb;
+      });
+      if (!msgs.length) {
+        thread.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Aucun message</div>';
+        return;
+      }
+      thread.innerHTML = msgs.map(function(m) {
+        var isUser  = m.from === 'user';
+        var ts      = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : 0;
+        var timeStr = ts ? new Date(ts).toLocaleTimeString('fr-DZ', {hour:'2-digit', minute:'2-digit'}) : '';
+        var fileHtml = '';
+        if (m.fileUrl) {
+          var isImg = m.fileType && m.fileType.startsWith('image');
+          fileHtml = isImg
+            ? '<br><img src="' + m.fileUrl + '" style="max-width:180px;max-height:140px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\'' + m.fileUrl + '\',\'_blank\')">'
+            : '<br><a href="' + m.fileUrl + '" target="_blank" style="color:' + (isUser ? 'rgba(255,255,255,.9)' : '#1254a0') + ';font-size:12px;text-decoration:underline;">Fichier joint</a>';
+        }
+        return '<div style="display:flex;flex-direction:column;align-items:' + (isUser ? 'flex-end' : 'flex-start') + ';margin-bottom:12px;">' +
+          '<div class="bubble bubble-' + (isUser ? 'user' : 'admin') + '">' + escHtml(m.text || '') + fileHtml + '</div>' +
+          '<div style="font-size:10px;color:#aaa;margin-top:3px;">' + (isUser ? 'Vous' : 'Support') + ' - ' + timeStr + '</div>' +
+        '</div>';
+      }).join('');
+      setTimeout(function() { thread.scrollTop = thread.scrollHeight; }, 60);
+      snap.docs.forEach(function(doc) {
+        if (doc.data().from === 'admin' && !doc.data().readByUser)
+          doc.ref.update({ readByUser: true }).catch(function() {});
+      });
+    }, function(e) {
+      thread.innerHTML = '<div style="text-align:center;padding:20px;color:#e53e3e;font-size:13px;">Erreur : ' + e.message + '</div>';
+    });
+}
+
+function showNewTicketForm() {
+  var active = ticketsData.find(function(t) { return t.statut === 'ouvert' || t.statut === 'en_cours'; });
+  if (active) { openTicketDetail(active.id); return; }
+  document.getElementById('ticketListView').style.display = 'none';
+  document.getElementById('ticketNewView').style.display  = 'block';
+  document.getElementById('btnNewTicket').style.display   = 'none';
+}
+
+function hideNewTicketForm() {
+  document.getElementById('ticketListView').style.display = 'block';
+  document.getElementById('ticketNewView').style.display  = 'none';
+  document.getElementById('btnNewTicket').style.display   = 'inline-block';
+}
+
+function showNewTicketView() { showNewTicketForm(); }
+
+function handleTicketFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Fichier trop lourd (max 5 Mo)'); input.value = ''; return; }
+  newTicketFileData = file;
+  var prev = document.getElementById('ticketFilePreview');
+  prev.style.display = 'flex';
+  prev.innerHTML = 'Fichier : ' + escHtml(file.name) + ' <button onclick="clearNewTicketFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;margin-left:auto;">x</button>';
+}
+
+function clearNewTicketFile() {
+  newTicketFileData = null;
+  document.getElementById('ticketFileInput').value = '';
+  var prev = document.getElementById('ticketFilePreview');
+  prev.style.display = 'none'; prev.innerHTML = '';
+}
+
+function handleReplyFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Fichier trop lourd (max 5 Mo)'); input.value = ''; return; }
+  replyFileData = file;
+  var att = document.getElementById('tdFileAttach');
+  att.style.display = 'flex';
+  att.innerHTML = 'Fichier : ' + escHtml(file.name) + ' <button onclick="clearReplyFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;margin-left:auto;">x</button>';
+}
+
+function clearReplyFile() {
+  replyFileData = null;
+  document.getElementById('ticketReplyFile').value = '';
+  document.getElementById('tdFileAttach').style.display = 'none';
+}
+
+function createTicket() {
+  var objet = document.getElementById('ticketObjet').value.trim();
+  var msg   = document.getElementById('ticketMsg').value.trim();
+  var errEl = document.getElementById('ticketNewError');
+  errEl.style.display = 'none';
+  if (!objet) { errEl.textContent = 'Veuillez saisir un objet.'; errEl.style.display = 'block'; return; }
+  if (!msg)   { errEl.textContent = 'Veuillez saisir un message.'; errEl.style.display = 'block'; return; }
+  var loader    = document.getElementById('ticketNewLoader');
+  loader.style.display = 'block';
+  var u         = currentUser || {};
+  var ticketRef = db.collection('tickets').doc();
+  var ticketId  = ticketRef.id;
+  function doCreate(fileUrl, fileType, fileName) {
+    return ticketRef.set({
+      userId: currentUid, nom: u.nom || '', email: u.email || '',
+      objet: objet, statut: 'ouvert',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastMessage: msg, unreadAdmin: 1, unreadUser: 0
+    }).then(function() {
+      return db.collection('tickets').doc(ticketId).collection('messages').add({
+        from: 'user', text: msg,
+        fileUrl: fileUrl || null, fileType: fileType || null, fileName: fileName || null,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        readByAdmin: false, readByUser: true
+      });
+    });
+  }
+  var p = newTicketFileData
+    ? storage.ref('tickets/' + ticketId + '/' + Date.now() + '_' + newTicketFileData.name).put(newTicketFileData)
+        .then(function(s) { return s.ref.getDownloadURL(); })
+        .then(function(url) { return doCreate(url, newTicketFileData.type, newTicketFileData.name); })
+    : doCreate(null, null, null);
+  p.then(function() {
+    loader.style.display = 'none';
+    document.getElementById('ticketObjet').value = '';
+    document.getElementById('ticketMsg').value = '';
+    clearNewTicketFile();
+    hideNewTicketForm();
+  }).catch(function(e) {
+    loader.style.display = 'none';
+    errEl.textContent = 'Erreur : ' + e.message; errEl.style.display = 'block';
+  });
+}
+
+function sendTicketReply() {
+  var input = document.getElementById('ticketReplyInput');
+  var text  = input.value.trim();
+  if ((!text && !replyFileData) || !curTicketId) return;
+  input.disabled = true;
+  var msgData = {
+    from: 'user', text: text,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    readByAdmin: false, readByUser: true,
+    fileUrl: null, fileType: null, fileName: null
+  };
+  function doSend(data) {
+    return db.collection('tickets').doc(curTicketId).collection('messages').add(data)
+      .then(function() {
+        return db.collection('tickets').doc(curTicketId).update({
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessage: text || (data.fileName || ''),
+          unreadAdmin: firebase.firestore.FieldValue.increment(1)
+        });
+      });
+  }
+  var p = replyFileData
+    ? storage.ref('tickets/' + curTicketId + '/' + Date.now() + '_' + replyFileData.name).put(replyFileData)
+        .then(function(s) { return s.ref.getDownloadURL(); })
+        .then(function(url) {
+          msgData.fileUrl = url; msgData.fileType = replyFileData.type; msgData.fileName = replyFileData.name;
+          return doSend(msgData);
+        })
+    : doSend(msgData);
+  p.then(function() {
+    input.value = ''; input.disabled = false; input.focus(); clearReplyFile();
+  }).catch(function(e) {
+    input.disabled = false; alert('Erreur : ' + e.message);
+  });
+}
+
+function closeTicket() {
+  if (!curTicketId) return;
+  if (!confirm('Cloture ce ticket ?')) return;
+  db.collection('tickets').doc(curTicketId).update({
+    statut: 'cloture',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    unreadAdmin: firebase.firestore.FieldValue.increment(1)
+  }).then(function() {
+    var t = ticketsData.find(function(x) { return x.id === curTicketId; });
+    if (t) t.statut = 'cloture';
+    var b = document.getElementById('tdBadge');
+    b.textContent = 'Cloture'; b.style.background = '#d1fae5'; b.style.color = '#065f46';
+    document.getElementById('tdCloseBtn').style.display  = 'none';
+    document.getElementById('tdReplyArea').style.display = 'none';
+  }).catch(function(e) { alert('Erreur : ' + e.message); });
+}
+
+function escHtml(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+</script>
+</body>
+</html>
