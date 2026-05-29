@@ -1057,6 +1057,16 @@ function showNav(name) {
 }
 
 // ── DETAIL ──
+function thumbHtml(url, caption) {
+  if (!url) return '';
+  var safe = url.replace(/'/g, '%27');
+  return '<div style="margin-top:10px;">' +
+    '<div style="font-size:11px;font-weight:700;color:#1254a0;margin-bottom:6px;">' + escHtml(caption) + '</div>' +
+    '<img src="' + escHtml(url) + '" onclick="openImgViewer(\'' + safe + '\')" ' +
+    'style="max-width:100%;max-height:220px;border-radius:12px;cursor:pointer;display:block;border:1.5px solid #e0e8f5;">' +
+  '</div>';
+}
+
 function openDetail(id) {
   currentTxId = id;
   var tx = transferts.find(function(t){ return t.id === id; });
