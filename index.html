@@ -65,15 +65,41 @@ nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
   padding:14px 32px;border-radius:28px;font-weight:700;font-size:16px;text-decoration:none;
   display:inline-block;transition:.2s;}
 .btn-hero-secondary:hover{background:rgba(255,255,255,.12);}
-.taux-bar{background:rgba(10,30,60,.85);}
-.taux-inner{max-width:900px;margin:0 auto;padding:16px 5%;display:flex;align-items:center;
+.taux-bar{background:linear-gradient(135deg,rgba(8,25,55,.95),rgba(0,60,80,.95));
+  border-bottom:1px solid rgba(255,255,255,.08);}
+.taux-inner{max-width:960px;margin:0 auto;padding:18px 5%;display:flex;align-items:center;
   justify-content:center;gap:24px;flex-wrap:wrap;}
 .taux-item{display:flex;align-items:center;gap:8px;color:#fff;}
-.taux-label{font-size:12px;opacity:.75;font-weight:600;letter-spacing:.4px;}
-.taux-value{font-size:20px;font-weight:900;}
-.taux-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.taux-sep{width:1px;height:28px;background:rgba(255,255,255,.2);}
+.taux-label{font-size:11px;opacity:.7;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+/* Conteneur du taux mis en valeur */
+.taux-highlight{display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+  border-radius:14px;padding:8px 18px;transition:.4s;}
+.taux-highlight.loaded{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.35);
+  box-shadow:0 0 18px rgba(74,222,128,.15);}
+.taux-value{font-size:26px;font-weight:900;letter-spacing:-.5px;
+  font-variant-numeric:tabular-nums;}
+@keyframes countUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.taux-value.animating{animation:countUp .5s ease forwards;}
+/* Live dot avec ripple */
+.live-dot-wrap{position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+.live-dot{width:9px;height:9px;background:#4ade80;border-radius:50%;position:relative;z-index:2;}
+.live-ring{position:absolute;inset:0;border-radius:50%;background:#4ade80;
+  animation:ripple 2s ease-out infinite;opacity:0;}
+.live-ring2{position:absolute;inset:0;border-radius:50%;background:#4ade80;
+  animation:ripple 2s ease-out infinite .7s;opacity:0;}
+@keyframes ripple{0%{transform:scale(.5);opacity:.6;}100%{transform:scale(2.4);opacity:0;}}
+/* Badge LIVE */
+.live-badge{font-size:10px;font-weight:900;letter-spacing:1px;color:#4ade80;
+  background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);
+  border-radius:6px;padding:2px 7px;}
+/* Badge meilleur taux */
+.best-rate-badge{font-size:11px;font-weight:800;color:#fbbf24;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);
+  border-radius:20px;padding:3px 10px;white-space:nowrap;}
+@keyframes badgeBounce{0%,100%{transform:none;}30%{transform:translateY(-3px);}60%{transform:translateY(-1px);}}
+.best-rate-badge{animation:badgeBounce 3s ease 1.5s 2;}
+.taux-sep{width:1px;height:28px;background:rgba(255,255,255,.15);}
 .section{padding:64px 5%;}
 .section-center{text-align:center;margin-bottom:40px;}
 .section-title{font-size:clamp(22px,3vw,34px);font-weight:900;color:var(--text);margin-bottom:8px;}
@@ -200,12 +226,24 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <!-- TAUX BAR -->
 <div class="taux-bar">
   <div class="taux-inner">
-    <div class="taux-item">
-      <div class="taux-dot"></div>
-      <span class="taux-label" data-i18n="taux_label">TAUX EN DIRECT</span>
-      <span class="taux-value" id="tauxLive">--</span>
-      <span style="color:rgba(255,255,255,.7);font-size:13px;" data-i18n="taux_unit">DZD = 1 EUR</span>
+    <!-- Taux animé -->
+    <div class="taux-highlight" id="tauxHighlight">
+      <div class="live-dot-wrap">
+        <div class="live-ring"></div>
+        <div class="live-ring2"></div>
+        <div class="live-dot"></div>
+      </div>
+      <span class="live-badge">LIVE</span>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.8px;margin-bottom:2px;" data-i18n="taux_label">TAUX EN DIRECT</div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span class="taux-value" id="tauxLive">--</span>
+          <span style="color:rgba(255,255,255,.7);font-size:13px;font-weight:600;" data-i18n="taux_unit">DZD = 1 EUR</span>
+        </div>
+      </div>
     </div>
+    <div class="taux-sep"></div>
+    <span class="best-rate-badge" data-i18n="best_rate_badge">🏆 Meilleur taux du marché</span>
     <div class="taux-sep"></div>
     <div class="taux-item"><span style="opacity:.65;font-size:13px;" data-i18n="taux_route">🏦 BaridiMob → Paysera</span></div>
     <div class="taux-sep"></div>
@@ -488,6 +526,7 @@ var T = {
     badge_no_fee: '🎁 Sans frais · Sans commission',
     badge_rate: '📊 Taux compétitif garanti',
     badge_wise: '🏦 Wise — Bientôt disponible',
+    best_rate_badge: '🏆 Meilleur taux du marché',
     err_nom: 'Veuillez entrer votre nom.',
     err_email: 'Email invalide.',
     err_msg: 'Veuillez écrire un message.',
@@ -564,6 +603,7 @@ var T = {
     badge_no_fee: '🎁 بدون رسوم · بدون عمولة',
     badge_rate: '📊 سعر صرف تنافسي مضمون',
     badge_wise: '🏦 Wise — قريباً',
+    best_rate_badge: '🏆 أفضل سعر في السوق',
     err_nom: 'الرجاء إدخال اسمك.',
     err_email: 'البريد الإلكتروني غير صالح.',
     err_msg: 'الرجاء كتابة رسالة.',
@@ -573,6 +613,24 @@ var T = {
 };
 
 var currentLang = 'fr';
+
+// Animation compteur : de 0 vers la valeur cible
+function animateCounter(el, target) {
+  if (!el) return;
+  var start = 0, duration = 900, startTime = null;
+  el.classList.add('animating');
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    // Easing easeOutExpo
+    var ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+    var val = Math.round(start + (target - start) * ease);
+    el.textContent = val.toLocaleString('fr-DZ');
+    if (progress < 1) requestAnimationFrame(step);
+    else { el.textContent = target; el.classList.remove('animating'); }
+  }
+  requestAnimationFrame(step);
+}
 
 function setLang(lang) {
   currentLang = lang;
@@ -614,8 +672,10 @@ function loadTaux() {
   db.collection('config').doc('settings').get().then(function(doc) {
     if (doc.exists) {
       var t = doc.data().taux || 0;
-      document.getElementById('tauxLive').textContent = t;
+      animateCounter(document.getElementById('tauxLive'), t);
       document.getElementById('tauxNote').textContent = t + (currentLang === 'ar' ? ' دج = 1 يورو' : ' DZD = 1 EUR');
+      var hl = document.getElementById('tauxHighlight');
+      if(hl) setTimeout(function(){ hl.classList.add('loaded'); }, 600);
       calcEur(t);
       document.getElementById('dzdInput').addEventListener('input', function() { calcEur(t); });
     }
