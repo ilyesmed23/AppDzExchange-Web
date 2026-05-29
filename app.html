@@ -305,6 +305,10 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <div class="header">
   <div class="header-top">
     <div class="header-logo">AppDz Exchange</div>
+    <div style="display:flex;gap:5px;margin-left:6px;">
+      <button id="btnLangFr" class="lang-btn active" onclick="setLang('fr')">FR</button>
+      <button id="btnLangAr" class="lang-btn" onclick="setLang('ar')">AR</button>
+    </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
       <div style="display:flex;align-items:center;gap:6px;">
         <div class="header-user" id="headerUser">Chargement...</div>
@@ -323,7 +327,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
     </div>
   </div>
   <div class="taux-bar">
-    <span class="taux-label">Taux EUR > DZD</span>
+    <span class="taux-label" data-i18n="taux_label">Taux EUR &gt; DZD</span>
     <span class="taux-value" id="tauxValue">-- DZD</span>
   </div>
 </div>
@@ -344,7 +348,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div style="font-size:11px;font-weight:800;color:#065f46;margin-bottom:8px;letter-spacing:.4px;">DERNIERS ECHANGES FINALISES</div>
       <div id="publicFeedList"></div>
     </div>
-    <div id="loaderAccueil" class="loader">Chargement de vos transferts...</div>
+    <div id="loaderAccueil" class="loader" data-i18n="loading">Chargement...</div>
     <div id="txList"></div>
   </div>
 
@@ -352,35 +356,35 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   <div id="panelNouveau" class="panel">
     <div class="card">
       <h3 style="font-size:16px;color:#1254a0;font-weight:800;margin-bottom:14px;">
-        Nouvelle demande de transfert
+        <span data-i18n="new_title">Nouvelle demande de transfert</span>
       </h3>
       <div id="newError" class="error-box"></div>
       <div class="info-box">
-        <div class="info-title">VIREMENT BARIDIMOB (CCP ADMIN)</div>
+        <div class="info-title" data-i18n="new_ccp_title">VIREMENT BARIDIMOB (CCP ADMIN)</div>
         <div class="info-row">
           <span>Numero CCP</span>
           <b id="adminCCPDisplay">--</b>
         </div>
         <div style="font-size:11px;color:#666;margin-top:4px;">
-          Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.
+          <span data-i18n="new_ccp_hint">Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.</span>
         </div>
       </div>
       <div class="field">
-        <label>MONTANT EN EUROS *</label>
+        <label data-i18n="new_montant_label">MONTANT EN EUROS *</label>
         <input type="number" id="montantEur" placeholder="ex: 100" min="20" max="1000"
           inputmode="decimal" oninput="calcDzd()">
-        <div class="hint">Minimum 20 EUR - Maximum 1 000 EUR</div>
+        <div class="hint" data-i18n="new_montant_hint">Minimum 20 EUR - Maximum 1 000 EUR</div>
       </div>
       <div class="field">
-        <label>EQUIVALENT EN DZD</label>
+        <label data-i18n="new_dzd_label">EQUIVALENT EN DZD</label>
         <div class="dzd-display" id="montantDzd">-- DZD</div>
       </div>
       <div class="info-box" style="margin-top:6px;">
-        <div class="info-title">VOS INFORMATIONS ENREGISTREES</div>
-        <div class="info-row"><label>CCP (Baridimob)</label><b id="userCCPDisplay">--</b></div>
-        <div class="info-row"><label>Email Paysera</label><b id="userPayseraDisplay">--</b></div>
+        <div class="info-title" data-i18n="new_info_title">VOS INFORMATIONS ENREGISTREES</div>
+        <div class="info-row"><label data-i18n="lbl_ccp">CCP (Baridimob)</label><b id="userCCPDisplay">--</b></div>
+        <div class="info-row"><label data-i18n="lbl_paysera">Email Paysera</label><b id="userPayseraDisplay">--</b></div>
       </div>
-      <div id="newLoader" class="loader">Creation de la demande...</div>
+      <div id="newLoader" class="loader" data-i18n="loader_create">Creation de la demande...</div>
       <div id="maintBanner" style="display:none;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#92400e;text-align:center;">
         🚧 Les nouvelles demandes sont temporairement suspendues. Revenez bientôt.
       </div>
@@ -389,7 +393,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
         <span style="font-size:11px;">Vérifiez aussi vos spams · <a onclick="resendVerifEmail()" style="color:#1254a0;cursor:pointer;text-decoration:underline;">Renvoyer le lien</a></span>
       </div>
       <button id="btnSubmitTransfer" class="btn btn-primary" onclick="handleCreateTransfert()">
-        Soumettre la demande
+        <span data-i18n="btn_submit">Soumettre la demande</span>
       </button>
     </div>
   </div>
@@ -403,39 +407,39 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
       <div style="text-align:center;margin-bottom:8px;"><span id="profileEmailVerifBadge" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:20px;font-size:11px;font-weight:700;padding:3px 12px;color:#92400e;">📧 Email non confirmée</span></div>
       <div class="profile-email" id="profileEmail">--</div>
       <div class="profile-row">
-        <label>EMAIL PAYSERA</label>
+        <label data-i18n="lbl_paysera_cap">EMAIL PAYSERA</label>
         <span id="profilePaysera" style="color:#1254a0;font-weight:600;">--</span>
       </div>
       <div class="profile-row">
-        <label>CCP (BARIDIMOB)</label>
+        <label data-i18n="lbl_ccp_cap">CCP (BARIDIMOB)</label>
         <span id="profileCCP" style="color:#1254a0;font-weight:600;">--</span>
       </div>
       <div class="profile-row">
-        <label>MEMBRE DEPUIS</label>
+        <label data-i18n="lbl_since">MEMBRE DEPUIS</label>
         <span id="profileDate">--</span>
       </div>
       <div class="profile-row">
-        <label>NIVEAU</label>
+        <label data-i18n="lbl_level">NIVEAU</label>
         <span id="profileLevel">--</span>
       </div>
       <div class="profile-row">
-        <label>TRANSFERTS RÉALISÉS</label>
+        <label data-i18n="lbl_tx_count">TRANSFERTS RÉALISÉS</label>
         <span id="profileTxCount" style="color:#1254a0;font-weight:700;">--</span>
       </div>
     </div>
     <button class="btn btn-primary" onclick="openEditProfile()" style="margin-top:6px;margin-bottom:8px;">
-      Modifier mon profil
+      <span data-i18n="btn_edit_profile">Modifier mon profil</span>
     </button>
     <button class="btn btn-danger" onclick="handleLogout()" style="margin-top:0;">
-      Se deconnecter
+      <span data-i18n="btn_logout">Se deconnecter</span>
     </button>
   </div>
 
   <!-- PANEL NOTIFICATIONS -->
   <div id="panelNotifications" class="panel">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-size:15px;font-weight:800;color:#1254a0;">🔔 Notifications</div>
-      <button onclick="markAllNotifsRead()" style="font-size:12px;color:#1254a0;background:none;border:none;cursor:pointer;font-weight:700;padding:4px 8px;">Tout marquer lu</button>
+      <div style="font-size:15px;font-weight:800;color:#1254a0;">🔔 <span data-i18n="notif_title">Notifications</span></div>
+      <button onclick="markAllNotifsRead()" style="font-size:12px;color:#1254a0;background:none;border:none;cursor:pointer;font-weight:700;padding:4px 8px;" data-i18n="notif_mark_read">Tout marquer lu</button>
     </div>
     <div id="notifList"><div class="notif-empty"><div class="notif-empty-ico">🔔</div><div>Chargement...</div></div></div>
   </div>
@@ -445,7 +449,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:15px;font-weight:800;color:#1254a0;">💬 Support</div>
+      <div style="font-size:15px;font-weight:800;color:#1254a0;">💬 <span data-i18n="support_title">Support</span></div>
       <button id="btnNewTicket" onclick="showNewTicketForm()"
         style="padding:7px 14px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:22px;font-size:12px;font-weight:700;cursor:pointer;">
         + Nouveau ticket
@@ -502,24 +506,24 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <nav class="bottom-nav">
   <button class="nav-item active" id="navAccueil" onclick="showNav('Accueil')">
     <span class="nav-icon">&#127968;</span>
-    <span class="nav-label">Accueil</span>
+    <span class="nav-label" data-i18n="nav_accueil">Accueil</span>
   </button>
   <button class="nav-item" id="navNouveau" onclick="showNav('Nouveau')">
     <span class="nav-icon">&#10133;</span>
-    <span class="nav-label">Nouveau</span>
+    <span class="nav-label" data-i18n="nav_nouveau">Nouveau</span>
   </button>
   <button class="nav-item" id="navProfil" onclick="showNav('Profil')">
     <span class="nav-icon">&#128100;</span>
-    <span class="nav-label">Profil</span>
+    <span class="nav-label" data-i18n="nav_profil">Profil</span>
   </button>
   <button class="nav-item" id="navNotifications" onclick="showNav('Notifications')">
     <span class="nav-icon">🔔</span>
-    <span class="nav-label">Notifs</span>
+    <span class="nav-label" data-i18n="nav_notifs">Notifs</span>
     <span id="notifBadge" class="nav-badge" style="display:none;">0</span>
   </button>
   <button class="nav-item" id="navMessages" onclick="showNav('Messages')">
     <span class="nav-icon">&#128172;</span>
-    <span class="nav-label">Support</span>
+    <span class="nav-label" data-i18n="nav_support">Support</span>
     <span id="msgBadge" class="nav-badge" style="display:none;">0</span>
   </button>
 </nav>
@@ -579,8 +583,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <!-- MODAL DECONNEXION -->
 <div id="modalLogout" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-title">Deconnexion</div>
-    <div class="modal-msg">Voulez-vous vraiment vous deconnecter ?</div>
+    <div class="modal-title" data-i18n="modal_logout_title">Deconnexion</div>
+    <div class="modal-msg" data-i18n="modal_logout_msg">Voulez-vous vraiment vous deconnecter ?</div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">Annuler</button>
       <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">Deconnecter</button>
@@ -615,8 +619,8 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
 <!-- DETAIL OVERLAY -->
 <div id="detailOverlay" class="detail-overlay">
   <div class="detail-header">
-    <button class="back-btn" onclick="closeDetail()">Retour</button>
-    <span class="detail-title">Detail du transfert</span>
+    <button class="back-btn" onclick="closeDetail()" data-i18n="btn_back">Retour</button>
+    <span class="detail-title" data-i18n="detail_title">Detail du transfert</span>
   </div>
   <div class="detail-body" id="detailBody"></div>
 </div>
@@ -961,13 +965,13 @@ function renderTxList() {
 
   // Config visuelle par statut
   var statusCfg = {
-    en_attente:     { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>', color:'#f59e0b', label:'En attente' },
-    preuve_envoyee: { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', color:'#3b82f6', label:'Preuve envoyée' },
-    validee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', color:'#8b5cf6', label:'Validé' },
-    manque_info:    { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', color:'#f97316', label:'Info manquante' },
-    terminee:       { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', color:'#10b981', label:'Terminé' },
-    rejetee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', color:'#ef4444', label:'Rejeté' },
-    annulee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>', color:'#9ca3af', label:'Annulé' },
+    en_attente:     { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>', color:'#f59e0b', get label(){ return t('st_en_attente'); } },
+    preuve_envoyee: { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', color:'#3b82f6', get label(){ return t('st_preuve_envoyee'); } },
+    validee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', color:'#8b5cf6', get label(){ return t('st_validee'); } },
+    manque_info:    { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', color:'#f97316', get label(){ return t('st_manque_info'); } },
+    terminee:       { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', color:'#10b981', get label(){ return t('st_terminee'); } },
+    rejetee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', color:'#ef4444', get label(){ return t('st_rejetee'); } },
+    annulee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>', color:'#9ca3af', get label(){ return t('st_annulee'); } },
   };
 
   function txRow(tx, faded) {
@@ -1000,20 +1004,20 @@ function renderTxList() {
   var html = '';
 
   if (actifs.length) {
-    html += sectionHeader('#1254a0','EN COURS', null, '', '');
+    html += sectionHeader('#1254a0', t('sec_en_cours'), null, '', '');
     actifs.forEach(function(tx){ html += txRow(tx, false); });
   }
 
   if (termines.length) {
     html += '<div style="margin-top:'+(actifs.length?'16px':'0')+';">';
-    html += sectionHeader('#10b981','TERMINÉS', termines.length, '#d1fae5', '#065f46');
+    html += sectionHeader('#10b981', t('sec_termines'), termines.length, '#d1fae5', '#065f46');
     termines.forEach(function(tx){ html += txRow(tx, false); });
     html += '</div>';
   }
 
   if (autres.length) {
     html += '<div style="margin-top:'+(termines.length||actifs.length?'16px':'0')+';">';
-    html += sectionHeader('#9ca3af','ANNULÉS / REJETÉS', autres.length, '#f3f4f6', '#6b7280');
+    html += sectionHeader('#9ca3af', t('sec_autres'), autres.length, '#f3f4f6', '#6b7280');
     autres.forEach(function(tx){ html += txRow(tx, true); });
     html += '</div>';
   }
@@ -1022,11 +1026,12 @@ function renderTxList() {
 }
 
 function statutLabel(s) {
-  return {
-    en_attente:'En attente', preuve_envoyee:'Preuve envoyee',
-    validee:'Valide', terminee:'Termine', rejetee:'Rejete',
-    annulee:'Annulee', manque_info:'Info manquante'
-  }[s] || s;
+  var map = {
+    en_attente:'st_en_attente', preuve_envoyee:'st_preuve_envoyee',
+    validee:'st_validee', terminee:'st_terminee', rejetee:'st_rejetee',
+    annulee:'st_annulee', manque_info:'st_manque_info'
+  };
+  return map[s] ? t(map[s]) : s;
 }
 
 // ── CALC DZD ──
@@ -1101,12 +1106,12 @@ function renderDetail(tx) {
       '<div style="font-size:15px;font-weight:900;color:#1254a0;letter-spacing:.5px;">'+adminCCP+'</div></div></div>';
   }
 
-  var recapHtml = '<div class="info-box" style="margin-bottom:14px;"><div class="info-title">RESUME DU TRANSFERT</div>' +
-    '<div class="info-row"><label>Montant</label><b>'+tx.montantEur+' EUR</b></div>' +
-    '<div class="info-row"><label>Equivalent DZD</label><b>'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'--')+'</b></div>' +
-    '<div class="info-row"><label>Taux applique</label><b>'+(tx.taux||'--')+' DZD/EUR</b></div>' +
-    '<div class="info-row"><label>Email Paysera</label><b>'+(tx.emailPaysera||'--')+'</b></div>' +
-    '<div class="info-row"><label>Date</label><b>'+tx.dateStr+'</b></div>' +
+  var recapHtml = '<div class="info-box" style="margin-bottom:14px;"><div class="info-title">'+t('detail_resume')+'</div>' +
+    '<div class="info-row"><label>'+t('detail_montant')+'</label><b>'+tx.montantEur+' EUR</b></div>' +
+    '<div class="info-row"><label>'+t('detail_dzd')+'</label><b>'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'--')+'</b></div>' +
+    '<div class="info-row"><label>'+t('detail_taux')+'</label><b>'+(tx.taux||'--')+' DZD/EUR</b></div>' +
+    '<div class="info-row"><label>'+t('detail_paysera')+'</label><b>'+(tx.emailPaysera||'--')+'</b></div>' +
+    '<div class="info-row"><label>'+t('detail_date')+'</label><b>'+tx.dateStr+'</b></div>' +
     '</div>';
 
   var uploadHtml = '';
@@ -1196,15 +1201,15 @@ function handleCreateTransfert() {
   var errEl = document.getElementById('newError');
   errEl.style.display = 'none';
   if (!eur || eur < 20 || eur > 1000) {
-    errEl.textContent = 'Montant invalide. Entre 20 et 1 000 EUR.';
+    errEl.textContent = t('err_montant');
     errEl.style.display = 'block'; return;
   }
-  if (!currentUser) { errEl.textContent = 'Donnees utilisateur non chargees. Rechargez la page.'; errEl.style.display='block'; return; }
+  if (!currentUser) { errEl.textContent = t('err_user'); errEl.style.display='block'; return; }
   // ── Vérif : pas de demande active déjà en cours ──
   var actifs = ['en_attente','preuve_envoyee','manque_info','validee'];
   var demandeActive = transferts.find(function(t){ return actifs.indexOf(t.statut) !== -1; });
   if (demandeActive) {
-    errEl.textContent = '⚠️ Vous avez déjà une demande en cours. Attendez sa clôture avant d\'en soumettre une nouvelle.';
+    errEl.textContent = t('err_demande_active');
     errEl.style.display = 'block'; return;
   }
   var dzd = Math.round(eur * currentTaux);
@@ -1404,7 +1409,7 @@ function renderNotifs() {
   var combined = allNotifs.concat(personalNotifs);
   combined.sort(function(a,b){ return b._ts - a._ts; });
   if(!combined.length){
-    el.innerHTML = '<div class="notif-empty"><div class="notif-empty-ico">🔔</div><div>Aucune notification</div></div>';
+    el.innerHTML = '<div class="notif-empty"><div class="notif-empty-ico">🔔</div><div>'+t('notif_empty')+'</div></div>';
     return;
   }
   el.innerHTML = combined.map(function(n) {
@@ -1484,7 +1489,7 @@ function renderTicketList() {
     return tb - ta;
   });
   var dotCfg = { ouvert: '#f59e0b', en_cours: '#3b82f6', cloture: '#10b981' };
-  var lblCfg = { ouvert: 'Ouvert', en_cours: 'En cours', cloture: 'Cloture' };
+  var lblCfg = { ouvert: t('tk_ouvert'), en_cours: t('tk_en_cours'), cloture: t('tk_cloture') };
   listEl.innerHTML = sorted.map(function(t) {
     var color   = dotCfg[t.statut] || '#9ca3af';
     var label   = lblCfg[t.statut] || t.statut;
@@ -1512,19 +1517,19 @@ function renderTicketList() {
 
 function openTicketDetail(id) {
   curTicketId = id;
-  var t = ticketsData.find(function(x) { return x.id === id; });
-  if (!t) return;
-  document.getElementById('tdObjet').textContent = t.objet || '';
+  var tk = ticketsData.find(function(x) { return x.id === id; });
+  if (!tk) return;
+  document.getElementById('tdObjet').textContent = tk.objet || '';
   var badge  = document.getElementById('tdBadge');
-  var isClos = t.statut === 'cloture';
-  badge.textContent  = t.statut === 'ouvert' ? 'Ouvert' : t.statut === 'en_cours' ? 'En cours' : 'Cloture';
-  badge.style.background = t.statut === 'ouvert' ? '#fef3c7' : t.statut === 'en_cours' ? '#dbeafe' : '#d1fae5';
-  badge.style.color      = t.statut === 'ouvert' ? '#92400e' : t.statut === 'en_cours' ? '#1e40af' : '#065f46';
+  var isClos = tk.statut === 'cloture';
+  badge.textContent  = tk.statut === 'ouvert' ? t('tk_ouvert') : tk.statut === 'en_cours' ? t('tk_en_cours') : t('tk_cloture');
+  badge.style.background = tk.statut === 'ouvert' ? '#fef3c7' : tk.statut === 'en_cours' ? '#dbeafe' : '#d1fae5';
+  badge.style.color      = tk.statut === 'ouvert' ? '#92400e' : tk.statut === 'en_cours' ? '#1e40af' : '#065f46';
   document.getElementById('tdCloseBtn').style.display  = isClos ? 'none' : 'block';
   document.getElementById('tdReplyArea').style.display = isClos ? 'none' : 'flex';
-  if (t.unreadUser > 0) {
+  if (tk.unreadUser > 0) {
     db.collection('tickets').doc(id).update({ unreadUser: 0 }).catch(function() {});
-    t.unreadUser = 0;
+    tk.unreadUser = 0;
     var total = ticketsData.reduce(function(acc, x) { return acc + (x.unreadUser || 0); }, 0);
     var mb = document.getElementById('msgBadge');
     if (total > 0) { mb.textContent = total > 9 ? '9+' : total; mb.style.display = 'inline'; }
@@ -1746,7 +1751,7 @@ function closeTicket() {
     var t = ticketsData.find(function(x) { return x.id === curTicketId; });
     if (t) t.statut = 'cloture';
     var b = document.getElementById('tdBadge');
-    b.textContent = 'Cloture'; b.style.background = '#d1fae5'; b.style.color = '#065f46';
+    b.textContent = t('tk_cloture'); b.style.background = '#d1fae5'; b.style.color = '#065f46';
     document.getElementById('tdCloseBtn').style.display  = 'none';
     document.getElementById('tdReplyArea').style.display = 'none';
   }).catch(function(e) { alert('Erreur : ' + e.message); });
@@ -1771,6 +1776,231 @@ function confirmLogout() {
 }
 
 function escHtml(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// ── TRADUCTION FR / AR ──
+var currentLang = localStorage.getItem('lang') || 'fr';
+
+var T = {
+  fr: {
+    taux_label: 'Taux EUR > DZD',
+    nav_accueil: 'Accueil', nav_nouveau: 'Nouveau', nav_profil: 'Profil',
+    nav_notifs: 'Notifs', nav_support: 'Support',
+    new_title: 'Nouvelle demande de transfert',
+    new_ccp_title: 'VIREMENT BARIDIMOB (CCP ADMIN)',
+    new_ccp_hint: 'Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.',
+    new_montant_label: 'MONTANT EN EUROS *',
+    new_montant_hint: 'Minimum 20 EUR - Maximum 1 000 EUR',
+    new_dzd_label: 'EQUIVALENT EN DZD',
+    new_info_title: 'VOS INFORMATIONS ENREGISTREES',
+    lbl_ccp: 'CCP (Baridimob)', lbl_paysera: 'Email Paysera',
+    lbl_ccp_cap: 'CCP (BARIDIMOB)', lbl_paysera_cap: 'EMAIL PAYSERA',
+    lbl_since: 'MEMBRE DEPUIS', lbl_level: 'NIVEAU',
+    lbl_tx_count: 'TRANSFERTS RÉALISÉS',
+    btn_submit: 'Soumettre la demande',
+    btn_edit_profile: 'Modifier mon profil',
+    btn_logout: 'Se déconnecter',
+    btn_back: 'Retour',
+    btn_new_ticket: '+ Nouveau ticket',
+    notif_title: 'Notifications', notif_mark_read: 'Tout marquer lu',
+    support_title: 'Support',
+    modal_logout_title: 'Déconnexion',
+    modal_logout_msg: 'Voulez-vous vraiment vous déconnecter ?',
+    detail_title: 'Détail du transfert',
+    loader_create: 'Création de la demande...',
+    loading: 'Chargement...',
+    // Statuts
+    st_en_attente: 'En attente', st_preuve_envoyee: 'Preuve envoyée',
+    st_validee: 'Validé', st_terminee: 'Terminé',
+    st_rejetee: 'Rejeté', st_annulee: 'Annulé', st_manque_info: 'Info manquante',
+    // Sections liste
+    sec_en_cours: 'EN COURS', sec_termines: 'TERMINÉS', sec_autres: 'ANNULÉS / REJETÉS',
+    // Nouveau transfert
+    err_montant: 'Montant invalide. Entre 20 et 1 000 EUR.',
+    err_user: 'Données utilisateur non chargées. Rechargez la page.',
+    err_demande_active: 'Vous avez déjà une demande en cours. Attendez sa clôture avant d'en soumettre une nouvelle.',
+    loader_create2: 'Envoi en cours...',
+    // Détail
+    detail_resume: 'RÉSUMÉ DU TRANSFERT',
+    detail_montant: 'Montant', detail_dzd: 'Équivalent DZD',
+    detail_taux: 'Taux appliqué', detail_paysera: 'Email Paysera', detail_date: 'Date',
+    detail_ccp_titre: 'CCP / BARIDIMOB À CRÉDITER',
+    detail_preuve_admin: '✓ Preuve du virement Paysera :',
+    btn_cancel: 'Annuler ce transfert',
+    btn_annuler: 'Annuler', btn_confirmer: 'Confirmer',
+    upload_titre: 'ENVOYER LA PREUVE DE VIREMENT',
+    upload_hint: 'Cliquez pour choisir une image',
+    upload_sub: 'JPG, PNG',
+    preuve_insuffisante: 'Preuve insuffisante',
+    preuve_hint: 'Veuillez renvoyer une meilleure photo de votre reçu de virement.',
+    modifier_preuve: 'Modifier la preuve',
+    ou_envoyer: 'OÙ ENVOYER VOTRE VIREMENT BARIDIMOB ?',
+    num_ccp: 'Numéro CCP à créditer :',
+    montant_a_envoyer: 'Montant à envoyer :',
+    // Profil
+    pr_modifier: 'Modifier le profil',
+    pr_nom: 'NOM COMPLET', pr_paysera_edit: 'EMAIL PAYSERA', pr_ccp_edit: 'NUMÉRO CCP (9 chiffres)',
+    pr_save: 'Enregistrer', pr_cancel: 'Annuler',
+    // Notifications vide
+    notif_empty: 'Aucune notification',
+    notif_loading: 'Chargement...',
+    // Tickets
+    tk_titre: 'Support',
+    tk_sous: 'Notre équipe vous répond rapidement.',
+    tk_objet_label: 'OBJET DU TICKET *',
+    tk_objet_ph: 'Ex: Problème avec mon transfert',
+    tk_msg_label: 'VOTRE MESSAGE *',
+    tk_msg_ph: 'Décrivez votre problème ou question...',
+    tk_file_label: 'FICHIER / PHOTO (optionnel · max 5 Mo)',
+    tk_file_btn: '📎 Joindre un fichier ou une photo',
+    tk_send: 'Envoyer le ticket →',
+    tk_retour: '← Retour',
+    tk_reply_ph: 'Votre réponse...',
+    tk_empty: 'Aucun ticket pour l'instant.
+Appuyez sur + Nouveau ticket pour contacter le support.',
+    tk_cloture_confirm: 'Clôturer ce ticket',
+    tk_ouvert: 'Ouvert', tk_en_cours: 'En cours', tk_cloture: 'Clôturé',
+    // Modals
+    modal_cancel_title: 'Annuler le transfert',
+    modal_cancel_msg: 'Voulez-vous vraiment annuler cette demande ? Cette action est irréversible.',
+    modal_cloture_title: 'Clôturer le ticket',
+    modal_cloture_msg: 'Voulez-vous vraiment clôturer ce ticket ? Vous ne pourrez plus y répondre.',
+    modal_ticket_actif_title: 'Ticket en cours',
+    modal_ticket_actif_msg: 'Vous avez déjà un ticket ouvert. Vous devez le clôturer avant d'en ouvrir un nouveau.',
+  },
+  ar: {
+    taux_label: 'سعر الصرف EUR > DZD',
+    nav_accueil: 'الرئيسية', nav_nouveau: 'جديد', nav_profil: 'الملف',
+    nav_notifs: 'الإشعارات', nav_support: 'الدعم',
+    new_title: 'طلب تحويل جديد',
+    new_ccp_title: 'تحويل بريدي موب (CCP الإدارة)',
+    new_ccp_hint: 'يرجى إجراء التحويل للمبلغ المطلوب إلى رقم CCP / بريدي موب هذا، ثم قدّم طلبك وأرسل إثبات التحويل.',
+    new_montant_label: 'المبلغ بالأورو *',
+    new_montant_hint: 'الحد الأدنى 20 EUR - الحد الأقصى 1000 EUR',
+    new_dzd_label: 'المعادل بالدينار الجزائري',
+    new_info_title: 'معلوماتك المسجلة',
+    lbl_ccp: 'CCP (بريدي موب)', lbl_paysera: 'بريد Paysera',
+    lbl_ccp_cap: 'CCP (بريدي موب)', lbl_paysera_cap: 'بريد PAYSERA',
+    lbl_since: 'عضو منذ', lbl_level: 'المستوى',
+    lbl_tx_count: 'التحويلات المنجزة',
+    btn_submit: 'إرسال الطلب',
+    btn_edit_profile: 'تعديل الملف الشخصي',
+    btn_logout: 'تسجيل الخروج',
+    btn_back: 'رجوع',
+    btn_new_ticket: '+ تذكرة جديدة',
+    notif_title: 'الإشعارات', notif_mark_read: 'تحديد الكل كمقروء',
+    support_title: 'الدعم',
+    modal_logout_title: 'تسجيل الخروج',
+    modal_logout_msg: 'هل تريد فعلاً تسجيل الخروج؟',
+    detail_title: 'تفاصيل التحويل',
+    loader_create: 'جارٍ الإنشاء...',
+    loading: 'جارٍ التحميل...',
+    st_en_attente: 'في الانتظار', st_preuve_envoyee: 'الإثبات مُرسَل',
+    st_validee: 'تم التحقق', st_terminee: 'مكتمل',
+    st_rejetee: 'مرفوض', st_annulee: 'ملغى', st_manque_info: 'معلومة ناقصة',
+    sec_en_cours: 'قيد المعالجة', sec_termines: 'مكتملة', sec_autres: 'ملغاة / مرفوضة',
+    err_montant: 'مبلغ غير صالح. بين 20 و 1000 يورو.',
+    err_user: 'بيانات المستخدم غير محملة. أعد تحميل الصفحة.',
+    err_demande_active: 'لديك طلب قيد المعالجة. انتظر إغلاقه قبل إرسال طلب جديد.',
+    loader_create2: 'جارٍ الإرسال...',
+    detail_resume: 'ملخص التحويل',
+    detail_montant: 'المبلغ', detail_dzd: 'المعادل بالدينار',
+    detail_taux: 'سعر الصرف المطبق', detail_paysera: 'بريد Paysera', detail_date: 'التاريخ',
+    detail_ccp_titre: 'رقم CCP / بريدي موب للإيداع',
+    detail_preuve_admin: '✓ إثبات التحويل عبر Paysera :',
+    btn_cancel: 'إلغاء هذا الطلب',
+    btn_annuler: 'إلغاء', btn_confirmer: 'تأكيد',
+    upload_titre: 'إرسال إثبات التحويل',
+    upload_hint: 'انقر لاختيار صورة',
+    upload_sub: 'JPG, PNG',
+    preuve_insuffisante: 'الإثبات غير كافٍ',
+    preuve_hint: 'يرجى إعادة إرسال صورة أوضح لإيصال التحويل.',
+    modifier_preuve: 'تعديل الإثبات',
+    ou_envoyer: 'إلى أين تُرسل تحويلك؟',
+    num_ccp: 'رقم CCP للإيداع :',
+    montant_a_envoyer: 'المبلغ المراد إرساله :',
+    pr_modifier: 'تعديل الملف', pr_nom: 'الاسم الكامل',
+    pr_paysera_edit: 'بريد PAYSERA', pr_ccp_edit: 'رقم CCP (9 أرقام)',
+    pr_save: 'حفظ', pr_cancel: 'إلغاء',
+    notif_empty: 'لا توجد إشعارات',
+    notif_loading: 'جارٍ التحميل...',
+    tk_titre: 'الدعم',
+    tk_sous: 'فريقنا يجيبك بسرعة.',
+    tk_objet_label: 'موضوع التذكرة *',
+    tk_objet_ph: 'مثال: مشكلة في التحويل',
+    tk_msg_label: 'رسالتك *',
+    tk_msg_ph: 'اشرح مشكلتك أو سؤالك...',
+    tk_file_label: 'ملف / صورة (اختياري · الحد الأقصى 5 ميغا)',
+    tk_file_btn: '📎 إرفاق ملف أو صورة',
+    tk_send: 'إرسال التذكرة ←',
+    tk_retour: 'رجوع →',
+    tk_reply_ph: 'ردّك...',
+    tk_empty: 'لا توجد تذاكر بعد.
+اضغط على + تذكرة جديدة للتواصل مع الدعم.',
+    tk_cloture_confirm: 'إغلاق هذه التذكرة',
+    tk_ouvert: 'مفتوح', tk_en_cours: 'قيد المعالجة', tk_cloture: 'مغلق',
+    modal_cancel_title: 'إلغاء الطلب',
+    modal_cancel_msg: 'هل تريد فعلاً إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.',
+    modal_cloture_title: 'إغلاق التذكرة',
+    modal_cloture_msg: 'هل تريد فعلاً إغلاق هذه التذكرة؟ لن تتمكن من الرد بعد ذلك.',
+    modal_ticket_actif_title: 'تذكرة قيد المعالجة',
+    modal_ticket_actif_msg: 'لديك تذكرة مفتوحة بالفعل. يجب إغلاقها قبل فتح تذكرة جديدة.',
+  }
+};
+
+function t(key) {
+  return (T[currentLang] && T[currentLang][key] !== undefined) ? T[currentLang][key] : (T['fr'][key] || key);
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  var btnFr = document.getElementById('btnLangFr');
+  var btnAr = document.getElementById('btnLangAr');
+  if (btnFr) btnFr.classList.toggle('active', lang === 'fr');
+  if (btnAr) btnAr.classList.toggle('active', lang === 'ar');
+  // Éléments statiques
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (T[lang] && T[lang][key] !== undefined) el.textContent = T[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-ph');
+    if (T[lang] && T[lang][key]) el.placeholder = T[lang][key];
+  });
+  // Rafraîchir le contenu dynamique
+  if (transferts && transferts.length >= 0) renderTxList();
+  if (currentUser) { renderProfile(); updateUserBadgeDisplay(); }
+  if (document.getElementById('panelMessages').classList.contains('active')) renderTicketList();
+  // Modals : mettre à jour les textes des modals
+  var mc = document.getElementById('modalCancel');
+  if (mc) {
+    var mt = mc.querySelector('.modal-title'); if (mt) mt.textContent = t('modal_cancel_title');
+    var mm = mc.querySelector('.modal-msg');   if (mm) mm.textContent = t('modal_cancel_msg');
+  }
+  var mct = document.getElementById('modalCloseTicket');
+  if (mct) {
+    var mt2 = mct.querySelector('.modal-title'); if (mt2) mt2.textContent = t('modal_cloture_title');
+    var mm2 = mct.querySelector('.modal-msg');   if (mm2) mm2.textContent = t('modal_cloture_msg');
+  }
+  var mta = document.getElementById('modalTicketActif');
+  if (mta) {
+    var mt3 = mta.querySelector('.modal-title'); if (mt3) mt3.textContent = t('modal_ticket_actif_title');
+    var mm3 = mta.querySelector('.modal-msg');   if (mm3) mm3.textContent = t('modal_ticket_actif_msg');
+  }
+}
+
+// Init langue au chargement
+(function() {
+  var lang = localStorage.getItem('lang') || 'fr';
+  // Attendre que le DOM soit prêt
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setLang(lang); });
+  } else {
+    setLang(lang);
+  }
+})();
 
 </script>
 </body>
