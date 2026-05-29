@@ -435,14 +435,94 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   </div>
 
   <!-- PANEL MESSAGES -->
+  <!-- SUPPORT / TICKETS -->
   <div id="panelMessages" class="panel">
-    <div style="font-size:15px;font-weight:800;color:#1254a0;margin-bottom:14px;">Support</div>
-    <div id="chatThread" class="chat-thread">
-      <div class="chat-empty">
-        <div style="font-size:40px;margin-bottom:10px;">&#128172;</div>
-        <div style="font-size:14px;">Posez-nous votre question,<br>nous vous repondrons rapidement.</div>
+
+    <!-- VUE : NOUVEAU TICKET -->
+    <div id="ticketNewView">
+      <div style="font-size:15px;font-weight:800;color:#1254a0;margin-bottom:4px;">Support</div>
+      <div style="font-size:13px;color:#888;margin-bottom:18px;">Notre équipe vous répond rapidement.</div>
+      <div id="ticketNewError" class="error-box"></div>
+      <div class="field">
+        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">OBJET DU TICKET *</label>
+        <input id="ticketObjet" type="text" maxlength="80" placeholder="Ex: Problème avec mon transfert"
+          style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:11px;font-size:14px;outline:none;background:#f8fafc;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'">
+      </div>
+      <div class="field">
+        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">VOTRE MESSAGE *</label>
+        <textarea id="ticketMsg" maxlength="1000" rows="4" placeholder="Décrivez votre problème ou question..."
+          style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:11px;font-size:14px;outline:none;background:#f8fafc;resize:vertical;font-family:inherit;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"></textarea>
+      </div>
+      <!-- Fichier optionnel -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">FICHIER / PHOTO (optionnel · max 5 Mo)</label>
+        <div id="ticketFilePreview" style="display:none;background:#f0f4fa;border-radius:10px;padding:8px 12px;font-size:12px;color:#1254a0;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;"></div>
+        <button onclick="document.getElementById('ticketFileInput').click()"
+          style="padding:9px 16px;border:1.5px dashed #b0c4de;border-radius:10px;background:#f8fafc;color:#666;font-size:13px;cursor:pointer;width:100%;">
+          📎 Joindre un fichier ou une photo
+        </button>
+        <input type="file" id="ticketFileInput" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleTicketFileSelect(this)">
+      </div>
+      <div id="ticketNewLoader" class="loader">Envoi en cours...</div>
+      <button onclick="createTicket()"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+        Envoyer le ticket →
+      </button>
+    </div>
+
+    <!-- VUE : TICKET EN COURS -->
+    <div id="ticketActiveView" style="display:none;display:flex;flex-direction:column;height:100%;">
+      <!-- Header ticket -->
+      <div id="ticketHeader" style="background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1.5px solid #e0e8f5;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:3px;">TICKET SUPPORT</div>
+            <div id="ticketObjetDisplay" style="font-size:14px;font-weight:800;color:#1254a0;"></div>
+          </div>
+          <span id="ticketStatutBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;"></span>
+        </div>
+        <div id="ticketCloseBtn" style="margin-top:10px;">
+          <button onclick="closeTicket()"
+            style="width:100%;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;">
+            Clôturer ce ticket
+          </button>
+        </div>
+      </div>
+      <!-- Thread messages -->
+      <div id="ticketThread" class="chat-thread" style="flex:1;overflow-y:auto;border-radius:14px;padding:10px;background:#f8fafc;min-height:200px;max-height:380px;"></div>
+      <!-- Zone de réponse -->
+      <div id="ticketReplyArea" style="margin-top:10px;background:#fff;border-radius:14px;border:1.5px solid #e0e8f5;overflow:hidden;">
+        <div id="ticketFileAttach" style="display:none;padding:6px 12px;background:#f0f4fa;font-size:12px;color:#1254a0;display:flex;align-items:center;justify-content:space-between;"></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;">
+          <button onclick="document.getElementById('ticketReplyFile').click()"
+            style="background:none;border:none;font-size:18px;cursor:pointer;padding:0;flex-shrink:0;color:#9ca3af;" title="Joindre un fichier">📎</button>
+          <input type="file" id="ticketReplyFile" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleReplyFileSelect(this)">
+          <input id="ticketReplyInput" type="text" placeholder="Votre réponse..." maxlength="1000"
+            style="flex:1;padding:9px 13px;border:1.5px solid #e0e8f5;border-radius:22px;font-size:14px;outline:none;background:#f8fafc;"
+            onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"
+            onkeydown="if(event.key==='Enter')sendTicketReply()">
+          <button onclick="sendTicketReply()"
+            style="background:linear-gradient(135deg,#1254a0,#0097a7);border:none;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
+        </div>
       </div>
     </div>
+
+    <!-- VUE : TICKET CLÔTURÉ -->
+    <div id="ticketClosedView" style="display:none;">
+      <div style="font-size:15px;font-weight:800;color:#1254a0;margin-bottom:14px;">Support</div>
+      <div id="ticketClosedHeader" style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:4px;">TICKET CLÔTURÉ</div>
+        <div id="ticketClosedObjet" style="font-size:14px;font-weight:800;color:#065f46;"></div>
+      </div>
+      <div id="ticketClosedThread" class="chat-thread" style="border-radius:14px;padding:10px;background:#f8fafc;margin-bottom:16px;max-height:300px;overflow-y:auto;"></div>
+      <button onclick="showNewTicketView()"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+        Ouvrir un nouveau ticket →
+      </button>
+    </div>
+
   </div>
 
 </div>
@@ -473,12 +553,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   </button>
 </nav>
 
-<!-- CHAT INPUT BAR -->
-<div id="chatInputBar" class="chat-input-bar" style="display:none;">
-  <input class="chat-input" id="chatInput" type="text" placeholder="Votre message..." maxlength="500"
-    onkeydown="if(event.key==='Enter')sendChatMessage()">
-  <button class="chat-send-btn" onclick="sendChatMessage()">&#10148;</button>
-</div>
 
 <!-- IMAGE VIEWER -->
 <div id="imgViewer" class="img-viewer" onclick="closeImgViewer()">
@@ -629,7 +703,7 @@ var currentTaux  = 0;
 var adminCCP     = ADMIN_CCP_DEFAULT;
 var transferts   = [];
 var currentTxId  = null;
-var messagesListener   = null;
+var messagesListener   = null; // legacy - remplacé par tickets
 var transfertsListener = null;
 
 // ── Auth Guard ──
@@ -673,7 +747,7 @@ function loadInit() {
   loadAdminCCP();
   loadPublicFeed();
   loadTransferts();
-  loadMessages(); // listener permanent → badge toujours à jour
+  loadUnreadCount(); // badge tickets
   initNotifications(currentUid); // charge lastNotifRead depuis le profil user
   updateEmailVerifUI(); // badge + blocage transfer si email non vérifié
 }
@@ -932,10 +1006,8 @@ function showNav(name) {
   });
   document.getElementById('panel'+name).classList.add('active');
   document.getElementById('nav'+name).classList.add('active');
-  var isMsg = (name === 'Messages');
-  document.getElementById('chatInputBar').style.display = isMsg ? 'flex' : 'none';
   if(name === 'Notifications') markAllNotifsRead();
-  document.querySelector('.content').style.paddingBottom = isMsg ? '140px' : '80px';
+  if(name === 'Messages') loadTicket();
   if (name === 'Accueil') loadTransferts();
   if (name === 'Profil')  renderProfile();
 }
@@ -1331,67 +1403,12 @@ function confirmLogout() {
   auth.signOut().then(function() { window.location.href = 'auth.html'; });
 }
 
-// ── CHAT ──
-function loadMessages() {
-  if (messagesListener) { messagesListener(); messagesListener = null; }
-  // Pas d'orderBy → pas d'index composite requis, tri côté client
-  messagesListener = db.collection('messages')
-    .where('userId', '==', currentUid)
-    .onSnapshot(function(snap) {
-      var msgs = snap.docs.map(function(doc){ return doc.data(); });
-      // Tri chronologique côté client
-      msgs.sort(function(a, b) {
-        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
-        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
-        return ta - tb;
-      });
-      renderChat(msgs);
-      // Marquer les messages admin comme lus
-      snap.docs.forEach(function(doc) {
-        if (doc.data().from === 'admin' && !doc.data().readByUser) {
-          doc.ref.update({ readByUser: true });
-        }
-      });
-      // Mettre à jour le badge
-      var unread = snap.docs.filter(function(d){ return d.data().from === 'admin' && !d.data().readByUser; }).length;
-      var badge = document.getElementById('msgBadge');
-      if (unread > 0) { badge.textContent = unread; badge.style.display = 'block'; }
-      else badge.style.display = 'none';
-    }, function(err) {
-      console.error('Messages error:', err);
-    });
-}
-
-function loadUnreadCount() {
-  // Utiliser onSnapshot sans orderBy ni where multiple (éviter index requis)
-  db.collection('messages')
-    .where('userId', '==', currentUid)
-    .get().then(function(snap) {
-      var count = snap.docs.filter(function(d){ return d.data().from === 'admin' && !d.data().readByUser; }).length;
-      var badge = document.getElementById('msgBadge');
-      if (count > 0) { badge.textContent = count; badge.style.display = 'block'; }
-      else badge.style.display = 'none';
-    });
-}
-
-function renderChat(messages) {
-  var thread = document.getElementById('chatThread');
-  if (!messages || !messages.length) {
-    thread.innerHTML = '<div class="chat-empty"><div style="font-size:40px;margin-bottom:10px;">&#128172;</div>' +
-      '<div style="font-size:14px;">Posez-nous votre question,<br>nous vous repondrons rapidement.</div></div>';
-    return;
-  }
-  thread.innerHTML = messages.map(function(m) {
-    var isUser = m.from === 'user';
-    return '<div style="display:flex;flex-direction:column;align-items:'+(isUser?'flex-end':'flex-start')+';width:100%;overflow:hidden;">' +
-      '<div class="bubble bubble-'+(isUser?'user':'admin')+'">'+escHtml(m.text||'')+'</div>' +
-      '<div class="bubble-time" style="text-align:'+(isUser?'right':'left')+';padding:0 4px;">' +
-        (isUser?'':'Support · ')+formatMsgTime(m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : m.timestamp) +
-      '</div></div>';
-  }).join('');
-  var c = document.querySelector('.content');
-  if (c) setTimeout(function(){ c.scrollTop = c.scrollHeight; }, 100);
-}
+// ── TICKETS SUPPORT ──
+var currentTicketId = null;
+var ticketListener  = null;
+var ticketMsgsListener = null;
+var ticketReplyFileData = null;
+var ticketNewFileData   = null;
 
 function formatMsgTime(ts) {
   if (!ts) return '';
@@ -1399,34 +1416,219 @@ function formatMsgTime(ts) {
   return d.toLocaleDateString('fr-DZ',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'});
 }
 
-function sendChatMessage() {
-  var input = document.getElementById('chatInput');
-  var text = input.value.trim();
-  if (!text) return;
-  input.value = ''; input.disabled = true;
-  db.collection('messages').add({
-    userId: currentUid,
-    from: 'user',
-    text: text,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    readByAdmin: false,
-    readByUser: true
+function loadTicket() {
+  if (ticketListener) { ticketListener(); ticketListener = null; }
+  ticketListener = db.collection('tickets')
+    .where('userId','==', currentUid)
+    .onSnapshot(function(snap) {
+      var tickets = snap.docs.map(function(d){ var x=d.data(); x.id=d.id; return x; });
+      // Chercher ticket ouvert/en_cours
+      var active = tickets.find(function(t){ return t.statut === 'ouvert' || t.statut === 'en_cours'; });
+      var closed = tickets.filter(function(t){ return t.statut === 'cloture'; })
+        .sort(function(a,b){ return (b.updatedAt&&b.updatedAt.toMillis?b.updatedAt.toMillis():0)-(a.updatedAt&&a.updatedAt.toMillis?a.updatedAt.toMillis():0); })[0];
+
+      // Badge
+      var unreadTotal = tickets.reduce(function(acc,t){ return acc + (t.unreadUser||0); }, 0);
+      var badge = document.getElementById('msgBadge');
+      if(unreadTotal>0){ badge.textContent=unreadTotal>9?'9+':unreadTotal; badge.style.display='inline'; }
+      else badge.style.display='none';
+
+      if (active) {
+        currentTicketId = active.id;
+        showTicketActiveView(active);
+        loadTicketMessages(active.id);
+      } else if (closed) {
+        currentTicketId = closed.id;
+        showTicketClosedView(closed);
+        loadTicketMessages(closed.id, true);
+      } else {
+        showNewTicketView();
+      }
+    }, function(){});
+}
+
+function showNewTicketView() {
+  document.getElementById('ticketNewView').style.display = 'block';
+  document.getElementById('ticketActiveView').style.display = 'none';
+  document.getElementById('ticketClosedView').style.display = 'none';
+}
+
+function showTicketActiveView(ticket) {
+  document.getElementById('ticketNewView').style.display = 'none';
+  document.getElementById('ticketActiveView').style.display = 'flex';
+  document.getElementById('ticketClosedView').style.display = 'none';
+  document.getElementById('ticketObjetDisplay').textContent = ticket.objet || '';
+  var badge = document.getElementById('ticketStatutBadge');
+  var isClos = ticket.statut === 'cloture';
+  badge.textContent = ticket.statut === 'ouvert' ? '🟡 Ouvert' : ticket.statut === 'en_cours' ? '🔵 En cours' : '✅ Clôturé';
+  badge.style.background = ticket.statut === 'ouvert' ? '#fef3c7' : ticket.statut === 'en_cours' ? '#dbeafe' : '#d1fae5';
+  badge.style.color = ticket.statut === 'ouvert' ? '#92400e' : ticket.statut === 'en_cours' ? '#1e40af' : '#065f46';
+  document.getElementById('ticketCloseBtn').style.display = isClos ? 'none' : 'block';
+  document.getElementById('ticketReplyArea').style.display = isClos ? 'none' : 'flex';
+  document.getElementById('ticketReplyArea').style.flexDirection = 'column';
+}
+
+function showTicketClosedView(ticket) {
+  document.getElementById('ticketNewView').style.display = 'none';
+  document.getElementById('ticketActiveView').style.display = 'none';
+  document.getElementById('ticketClosedView').style.display = 'block';
+  document.getElementById('ticketClosedObjet').textContent = ticket.objet || '';
+}
+
+function loadTicketMessages(ticketId, closed) {
+  if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
+  ticketMsgsListener = db.collection('tickets').doc(ticketId).collection('messages')
+    .onSnapshot(function(snap) {
+      var msgs = snap.docs.map(function(d){ var x=d.data(); x.id=d.id; return x; });
+      msgs.sort(function(a,b){
+        var ta=a.timestamp&&a.timestamp.toDate?a.timestamp.toDate().getTime():0;
+        var tb=b.timestamp&&b.timestamp.toDate?b.timestamp.toDate().getTime():0;
+        return ta-tb;
+      });
+      var thread = document.getElementById(closed ? 'ticketClosedThread' : 'ticketThread');
+      if (!thread) return;
+      renderTicketMessages(thread, msgs);
+      // Marquer comme lus
+      snap.docs.forEach(function(doc){
+        if(doc.data().from==='admin' && !doc.data().readByUser)
+          doc.ref.update({readByUser:true}).catch(function(){});
+      });
+      // Reset unreadUser
+      db.collection('tickets').doc(ticketId).update({unreadUser:0}).catch(function(){});
+    }, function(){});
+}
+
+function renderTicketMessages(thread, msgs) {
+  if(!msgs.length) {
+    thread.innerHTML = '<div style="text-align:center;padding:30px;color:#bbb;font-size:13px;">Aucun message pour l\'instant.</div>';
+    return;
+  }
+  thread.innerHTML = msgs.map(function(m) {
+    var isUser = m.from === 'user';
+    var ts = m.timestamp && m.timestamp.toDate ? formatMsgTime(m.timestamp.toDate().getTime()) : '';
+    var fileHtml = '';
+    if (m.fileUrl) {
+      var isImg = m.fileType && m.fileType.startsWith('image');
+      fileHtml = isImg
+        ? '<br><img src="'+m.fileUrl+'" style="max-width:200px;max-height:160px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+m.fileUrl+'\',\'_blank\')">'
+        : '<br><a href="'+m.fileUrl+'" target="_blank" style="color:'+(isUser?'#fff':'#1254a0')+';font-size:12px;text-decoration:underline;">📎 '+escHtml(m.fileName||'Fichier')+'</a>';
+    }
+    return '<div style="display:flex;flex-direction:column;align-items:'+(isUser?'flex-end':'flex-start')+';width:100%;margin-bottom:8px;">' +
+      '<div class="bubble bubble-'+(isUser?'user':'admin')+'">'+escHtml(m.text||'')+fileHtml+'</div>' +
+      '<div class="bubble-time" style="text-align:'+(isUser?'right':'left')+';padding:0 4px;">'+(isUser?'Vous':'Support · ')+ts+'</div></div>';
+  }).join('');
+  setTimeout(function(){ thread.scrollTop = thread.scrollHeight; }, 100);
+}
+
+function handleTicketFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { alert('Fichier trop lourd (max 5 Mo).'); input.value=''; return; }
+  ticketNewFileData = file;
+  var prev = document.getElementById('ticketFilePreview');
+  prev.style.display = 'flex';
+  prev.innerHTML = '📎 '+escHtml(file.name)+' ('+Math.round(file.size/1024)+' Ko) <button onclick="clearTicketFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:16px;">×</button>';
+}
+function clearTicketFile() {
+  ticketNewFileData = null;
+  document.getElementById('ticketFileInput').value = '';
+  document.getElementById('ticketFilePreview').style.display = 'none';
+}
+
+function handleReplyFileSelect(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { alert('Fichier trop lourd (max 5 Mo).'); input.value=''; return; }
+  ticketReplyFileData = file;
+  var att = document.getElementById('ticketFileAttach');
+  att.style.display = 'flex';
+  att.innerHTML = '📎 '+escHtml(file.name)+' <button onclick="clearReplyFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:16px;margin-left:auto;">×</button>';
+}
+function clearReplyFile() {
+  ticketReplyFileData = null;
+  document.getElementById('ticketReplyFile').value = '';
+  document.getElementById('ticketFileAttach').style.display = 'none';
+}
+
+function createTicket() {
+  var objet = (document.getElementById('ticketObjet').value||'').trim();
+  var msg   = (document.getElementById('ticketMsg').value||'').trim();
+  var errEl = document.getElementById('ticketNewError');
+  errEl.style.display = 'none';
+  if (!objet) { errEl.textContent='Veuillez indiquer l\'objet du ticket.'; errEl.style.display='block'; return; }
+  if (!msg)   { errEl.textContent='Veuillez écrire un message.'; errEl.style.display='block'; return; }
+  var loader = document.getElementById('ticketNewLoader');
+  loader.style.display = 'block';
+  var u = currentUser || {};
+  db.collection('tickets').add({
+    userId: currentUid, nom: u.nom||'', email: u.email||'',
+    objet: objet, statut: 'ouvert',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastMessage: msg, unreadAdmin: 1, unreadUser: 0
+  }).then(function(ref) {
+    currentTicketId = ref.id;
+    return uploadAndSendTicketMsg(ref.id, msg, 'user', ticketNewFileData);
   }).then(function() {
-    input.disabled = false;
-    // Notification email admin
-    var u = currentUser || {};
-    sendAdminEmail(
-      '💬 Nouveau message de ' + (u.nom || u.email || 'utilisateur'),
-      'Nouveau message reçu dans la messagerie :\n\n' +
-      '👤 Nom : ' + (u.nom || '—') + '\n' +
-      '📧 Email : ' + (u.email || '—') + '\n\n' +
-      '💬 Message : ' + text + '\n\n' +
-      '🔗 Répondre sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html'
-    );
-  }).catch(function(err) {
-    input.disabled = false;
-    alert('Erreur : ' + err.message);
+    loader.style.display = 'none';
+    document.getElementById('ticketObjet').value = '';
+    document.getElementById('ticketMsg').value = '';
+    clearTicketFile();
+    sendAdminEmail('🎫 Nouveau ticket : '+objet,
+      '👤 '+u.nom+' ('+u.email+')\n📋 Objet : '+objet+'\n💬 Message : '+msg+'\n\n🔗 https://appdzexchange.com/admin.html');
+  }).catch(function(e){ loader.style.display='none'; errEl.textContent='Erreur : '+e.message; errEl.style.display='block'; });
+}
+
+function sendTicketReply() {
+  var input = document.getElementById('ticketReplyInput');
+  var text = input.value.trim();
+  if (!text && !ticketReplyFileData) return;
+  if (!currentTicketId) return;
+  input.disabled = true;
+  uploadAndSendTicketMsg(currentTicketId, text, 'user', ticketReplyFileData)
+    .then(function() {
+      input.value = ''; input.disabled = false;
+      clearReplyFile();
+      db.collection('tickets').doc(currentTicketId).update({
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastMessage: text, statut: 'en_cours',
+        unreadAdmin: firebase.firestore.FieldValue.increment(1)
+      }).catch(function(){});
+    }).catch(function(e){ input.disabled=false; alert('Erreur : '+e.message); });
+}
+
+function uploadAndSendTicketMsg(ticketId, text, from, file) {
+  var msgData = {
+    from: from, text: text||'',
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    readByAdmin: from==='admin', readByUser: from==='user',
+    fileUrl: null, fileType: null, fileName: null
+  };
+  if (!file) {
+    return db.collection('tickets').doc(ticketId).collection('messages').add(msgData);
+  }
+  var ref = storage.ref('tickets/'+ticketId+'/'+Date.now()+'_'+file.name);
+  return ref.put(file).then(function(){ return ref.getDownloadURL(); }).then(function(url) {
+    msgData.fileUrl = url; msgData.fileType = file.type; msgData.fileName = file.name;
+    return db.collection('tickets').doc(ticketId).collection('messages').add(msgData);
   });
+}
+
+function closeTicket() {
+  if (!currentTicketId) return;
+  if (!confirm('Clôturer ce ticket ? Vous ne pourrez plus envoyer de messages.')) return;
+  db.collection('tickets').doc(currentTicketId).update({
+    statut: 'cloture', updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(e){ alert('Erreur : '+e.message); });
+}
+
+function loadUnreadCount() {
+  db.collection('tickets').where('userId','==',currentUid).get().then(function(snap){
+    var unread = snap.docs.reduce(function(acc,d){ return acc+(d.data().unreadUser||0); },0);
+    var badge = document.getElementById('msgBadge');
+    if(unread>0){ badge.textContent=unread>9?'9+':unread; badge.style.display='inline'; }
+    else badge.style.display='none';
+  }).catch(function(){});
 }
 
 // ── NOTIFICATION EMAIL ADMIN + ANNOUNCEMENT + NOTIFS IN-APP (temps réel) ──

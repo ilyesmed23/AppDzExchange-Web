@@ -85,5 +85,32 @@ service cloud.firestore {
       allow read, delete:   if isAdmin();
     }
 
+    // ── TICKETS SUPPORT ──
+    match /tickets/{ticketId} {
+      allow read:   if isAdmin()
+        || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.statut == 'ouvert';
+      allow update: if isAdmin()
+        || (isAuth()
+            && resource.data.userId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['statut','updatedAt','unreadAdmin','unreadUser','lastMessage','lastMessageAt'])
+            && request.resource.data.statut == 'cloture');
+      allow delete: if isAdmin();
+
+      // Messages du ticket
+      match /messages/{msgId} {
+        allow read:  if isAdmin()
+          || (isAuth() && get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid);
+        allow create: if isAuth()
+          && (isAdmin() || get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid)
+          && get(/databases/$(database)/documents/tickets/$(ticketId)).data.statut != 'cloture';
+        allow update: if isAdmin() || isAuth();
+        allow delete: if isAdmin();
+      }
+    }
+
   }
 }
