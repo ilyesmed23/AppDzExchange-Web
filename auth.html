@@ -512,9 +512,13 @@ function handleReset() {
     });
 }
 
-if (new URLSearchParams(window.location.search).get('blocked') === '1') {
+var urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('blocked') === '1') {
   showPanel('loginPanel');
   showError('loginError', T[currentLang].err_suspended);
+}
+if (urlParams.get('register') === '1') {
+  showPanel('registerPanel');
 }
 
 document.addEventListener('keydown', function(e) {

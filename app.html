@@ -357,7 +357,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
           <b id="adminCCPDisplay">--</b>
         </div>
         <div style="font-size:11px;color:#666;margin-top:4px;">
-          Effectuez d'abord votre virement vers ce CCP, puis soumettez la demande et uploadez la preuve.
+          Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.
         </div>
       </div>
       <div class="field">
@@ -933,6 +933,8 @@ function calcDzd() {
 
 // ── NAV ──
 function showNav(name) {
+  // Fermer le détail overlay si ouvert
+  document.getElementById('detailOverlay').classList.remove('open');
   ['Accueil','Nouveau','Profil','Notifications','Messages'].forEach(function(n) {
     document.getElementById('panel'+n).classList.remove('active');
     document.getElementById('nav'+n).classList.remove('active');
@@ -984,6 +986,15 @@ function renderDetail(tx) {
   else if (tx.statut === 'annulee') rejectedHtml = '<div class="error-box" style="display:block;margin-bottom:14px;background:#f9fafb;border-color:#9ca3af;color:#374151;">Demande annulee'+(tx.motifAnnulation?' : '+tx.motifAnnulation:'')+'</div>';
   else if (tx.statut === 'manque_info') rejectedHtml = '<div class="error-box" style="display:block;margin-bottom:14px;background:#fff7ed;border-color:#f97316;color:#c2410c;">Information manquante'+(tx.infoManquante?' : '+tx.infoManquante:'')+'<br><span style="font-size:11px;">Veuillez contacter le support.</span></div>';
 
+  // CCP rappel — affiché tant que le transfert n'est pas terminé/rejeté/annulé
+  var ccpRappelHtml = '';
+  if (['en_attente','preuve_envoyee','manque_info','validee'].indexOf(tx.statut) !== -1) {
+    ccpRappelHtml = '<div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">' +
+      '<span style="font-size:18px;">🏦</span>' +
+      '<div><div style="font-size:10px;font-weight:800;color:#92400e;letter-spacing:.5px;">CCP / BARIDIMOB À CRÉDITER</div>' +
+      '<div style="font-size:15px;font-weight:900;color:#1254a0;letter-spacing:.5px;">'+adminCCP+'</div></div></div>';
+  }
+
   var recapHtml = '<div class="info-box" style="margin-bottom:14px;"><div class="info-title">RESUME DU TRANSFERT</div>' +
     '<div class="info-row"><label>Montant</label><b>'+tx.montantEur+' EUR</b></div>' +
     '<div class="info-row"><label>Equivalent DZD</label><b>'+(tx.montantDzd?Number(tx.montantDzd).toLocaleString('fr-DZ')+' DZD':'--')+'</b></div>' +
@@ -1028,7 +1039,7 @@ function renderDetail(tx) {
   var cancelHtml = '';
   if (tx.statut === 'en_attente') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
 
-  document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml;
+  document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + ccpRappelHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml;
 }
 
 // ── UPLOAD PREUVE ──
