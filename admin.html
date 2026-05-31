@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -209,7 +209,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
   <button class="nav-link" id="navUsers" onclick="show('Users')"><span class="nav-icon">👥</span><span>Utilisateurs</span></button>
   <button class="nav-link" id="navMessages" onclick="show('Messages')"><span class="nav-icon">💬</span><span>Messages</span><span id="msgBadge" class="nav-badge" style="display:none;">0</span></button>
   <button class="nav-link" id="navSettings" onclick="show('Settings')"><span class="nav-icon">⚙️</span><span>Paramètres</span></button>
-  <button class="nav-link" id="navAvis" onclick="show('Avis')"><span class="nav-icon">⭐</span><span>Avis</span><span id="avisBadge" class="nav-badge" style="display:none;">0</span></button>
   <button class="nav-link" id="navStats" onclick="show('Stats')"><span class="nav-icon">📈</span><span>Statistiques</span></button>
   <div class="sidebar-footer">
     <button class="nav-link" onclick="confirmLogout()" style="color:rgba(255,255,255,.4);padding-left:0;"><span class="nav-icon">🚪</span><span>Déconnexion</span></button>
@@ -658,7 +657,6 @@ auth.onAuthStateChanged(function(u){
 });
 
 function initListeners(){
-  checkAvisBadge();
   // Badge tickets non lus au démarrage
   db.collection('tickets').onSnapshot(function(snap){
     var n=snap.docs.reduce(function(acc,d){return acc+(d.data().unreadAdmin||0);},0);
@@ -1554,16 +1552,15 @@ function useQuickReply(text) {
 function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ── NAV ──
-var pTitles={Dash:['Tableau de bord','Vue d\'ensemble'],Tx:['Transferts','Gérer toutes les demandes'],Users:['Utilisateurs','Membres inscrits'],Messages:['Messages','Conversations avec les utilisateurs'],Settings:['Paramètres','Configuration générale'],Stats:['Statistiques','Visiteurs & connexions'],Avis:['Avis clients','Modération des commentaires']};
+var pTitles={Dash:['Tableau de bord','Vue d\'ensemble'],Tx:['Transferts','Gérer toutes les demandes'],Users:['Utilisateurs','Membres inscrits'],Messages:['Messages','Conversations avec les utilisateurs'],Settings:['Paramètres','Configuration générale'],Stats:['Statistiques','Visiteurs & connexions']};
 function show(n){
-  ['Dash','Tx','Users','Messages','Settings','Stats','Avis'].forEach(function(x){document.getElementById('panel'+x).classList.remove('active');document.getElementById('nav'+x).classList.remove('active');});
+  ['Dash','Tx','Users','Messages','Settings','Stats'].forEach(function(x){document.getElementById('panel'+x).classList.remove('active');document.getElementById('nav'+x).classList.remove('active');});
   document.getElementById('panel'+n).classList.add('active');
   document.getElementById('nav'+n).classList.add('active');
   document.getElementById('pgTitle').textContent=pTitles[n][0];
   document.getElementById('pgSub').textContent=pTitles[n][1];
   if(n==='Messages')initMessages();
   if(n==='Stats')loadStats();
-  if(n==='Avis')loadAvisAdmin();
 }
 
 // ── STATISTIQUES VISITEURS & CONNEXIONS ──
@@ -1897,60 +1894,6 @@ function saveAnnouncement(){
     }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
   }
 }
-// ── AVIS CLIENTS ──
-function loadAvisAdmin() {
-  var pendingEl=document.getElementById('avisListPending');
-  var publieEl=document.getElementById('avisListPublie');
-  var countEl=document.getElementById('avisPublieCount');
-  if(!pendingEl)return;
-  pendingEl.innerHTML='Chargement...'; publieEl.innerHTML='Chargement...';
-  Promise.all([
-    db.collection('avis').where('statut','==','pending').orderBy('createdAt','desc').get(),
-    db.collection('avis').where('statut','==','publie').orderBy('createdAt','desc').get()
-  ]).then(function(res){
-    var pd=res[0].docs, pb=res[1].docs;
-    var badge=document.getElementById('avisBadge');
-    if(badge){badge.textContent=pd.length;badge.style.display=pd.length?'':'none';}
-    if(countEl)countEl.textContent='('+pb.length+'/10)';
-    if(!pd.length){pendingEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis en attente.</div>';}
-    else{
-      var html='';
-      pd.forEach(function(doc){
-        var d=doc.data(),stars='★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
-        var date=d.createdAt?new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ'):'—';
-        html+='<div style="background:#fff;border:1.5px solid #e0e8f5;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
-          +'<div style="font-size:18px;color:#f59e0b;">'+stars+'</div>'
-          +'<div style="flex:1;"><div style="font-weight:700;font-size:13px;">'+escH(d.nom)+(d.ville?' — '+escH(d.ville):'')+' <span style="color:#aaa;font-size:11px;">'+date+'</span></div>'
-          +(d.text?'<div style="font-size:13px;color:#555;font-style:italic;">'+escH(d.text)+'</div>':'')
-          +'</div><div style="display:flex;gap:8px;">'
-          +'<button data-id="'+doc.id+'" onclick="validerAvis(this.dataset.id,this)" style="padding:7px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ Valider</button>'
-          +'<button data-id="'+doc.id+'" onclick="rejeterAvis(this.dataset.id,this)" style="padding:7px 12px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕</button>'
-          +'</div></div>';
-      });
-      pendingEl.innerHTML=html;
-    }
-    if(!pb.length){publieEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis publié.</div>';}
-    else{
-      var html2='';
-      pb.forEach(function(doc){
-        var d=doc.data(),stars='★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
-        var date=d.createdAt?new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ'):'';
-        html2+='<div style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
-          +'<div style="font-size:16px;color:#f59e0b;">'+stars+'</div>'
-          +'<div style="flex:1;"><div style="font-weight:700;font-size:13px;">'+escH(d.nom)+(d.ville?' — '+escH(d.ville):'')+' <span style="color:#aaa;font-size:11px;">'+date+'</span></div>'
-          +(d.text?'<div style="font-size:13px;color:#555;font-style:italic;">'+escH(d.text)+'</div>':'')
-          +'</div><button data-id="'+doc.id+'" onclick="retirerAvis(this.dataset.id,this)" style="padding:6px 10px;background:#6b7280;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;">Retirer</button>'
-          +'</div>';
-      });
-      publieEl.innerHTML=html2;
-    }
-  }).catch(function(e){pendingEl.innerHTML='<div style="color:red;">Erreur: '+e.message+'</div>';});
-}
-function validerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'publie'}).then(function(){toast('Avis publié ✅');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
-function rejeterAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'rejete'}).then(function(){toast('Avis rejeté');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
-function retirerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'pending'}).then(function(){toast('Retiré');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
-function checkAvisBadge(){db.collection('avis').where('statut','==','pending').get().then(function(s){var b=document.getElementById('avisBadge');if(b){b.textContent=s.size;b.style.display=s.size?'':'none';}}).catch(function(){});}
-
 </script>
 </body>
 </html>
