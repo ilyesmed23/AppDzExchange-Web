@@ -114,5 +114,12 @@ service cloud.firestore {
       }
     }
 
+    // ── AVIS CLIENTS ──
+    match /avis/{avisId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update, delete: if isAdmin();
+    }
+
   }
 }
