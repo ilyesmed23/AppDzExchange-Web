@@ -1849,12 +1849,9 @@ function submitAvis() {
     transferId: currentTxId,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function() {
-    return db.collection('transferts').doc(currentTxId).update({ avisSubmitted: true });
-  }).then(function() {
-    var tx = transferts.find(function(x) { return x.id === currentTxId; });
-    if (tx) tx.avisSubmitted = true;
     var avisBox = document.querySelector('#detailBody div[style*="f0fdf4"]');
     if (avisBox) avisBox.innerHTML = '<div style="font-size:14px;font-weight:700;color:#065f46;text-align:center;padding:10px;">'+t('avis_merci')+'</div>';
+    selectedStars = 0;
   }).catch(function(e) { alert('Erreur : ' + e.message); });
 }
 
