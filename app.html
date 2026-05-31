@@ -731,6 +731,17 @@ function sendUserConfirmEmail(txData){
   }).catch(function(e){ console.warn('EmailJS:', e); });
 }
 
+// Notification email admin (nouvelle demande, etc.)
+function sendAdminEmail(subject, message) {
+  if(!_ejReady || _ejPaused) return;
+  emailjs.send(_ejSvc, _ejTpl, {
+    subject:  subject,
+    message:  message,
+    to_email: ADMIN_EMAIL,
+    to_name:  'Admin'
+  }).catch(function(e){ console.warn('EmailJS admin:', e); });
+}
+
 // ── Maintenance Check ──
 var siteEnMaintenance = false;
 (function checkMaintenance() {
