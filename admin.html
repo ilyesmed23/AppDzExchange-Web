@@ -180,6 +180,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
 .modal-ok{flex:1;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;transition:.12s;}
 .modal-ok:hover{opacity:.9;}
 .modal-ok.danger{background:linear-gradient(135deg,#dc2626,#ef4444);}
+.qr-btn{background:#f0f4fa;border:1.5px solid #e0e8f5;border-radius:20px;
+  color:#1254a0;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;
+  white-space:nowrap;transition:.15s;}
+.qr-btn:hover{background:#dbeafe;border-color:#93c5fd;}
 
 /* ── NEW FEATURES ── */
 .b-debutant{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;}
@@ -299,6 +303,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
             <!-- Zone réponse admin -->
             <div style="border-top:1px solid #f0f4fa;background:#fff;">
               <div id="adminFileAttach" style="display:none;padding:6px 14px;background:#f0f4fa;font-size:12px;color:#1254a0;display:flex;align-items:center;justify-content:space-between;"></div>
+              <!-- Réponses rapides -->
+              <div style="padding:8px 12px 0;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #f0f4fa;">
+                <span style="font-size:10px;font-weight:700;color:#aaa;align-self:center;white-space:nowrap;">Rapide :</span>
+                <button class="qr-btn" onclick="useQuickReply('Votre preuve est floue ou illisible. Merci de renvoyer une photo plus nette de votre reçu de virement.')">📸 Preuve floue</button>
+                <button class="qr-btn" onclick="useQuickReply('Votre demande est en cours de traitement. Nous revenons vers vous dans les 24-48h.')">⏳ En traitement</button>
+                <button class="qr-btn" onclick="useQuickReply('Votre compte Paysera doit être vérifié (KYC validé) pour recevoir le virement.')">✅ Paysera non vérifié</button>
+                <button class="qr-btn" onclick="useQuickReply('Le transfert est terminé. Le montant a bien été envoyé sur votre Paysera.')">🎉 Transfert terminé</button>
+                <button class="qr-btn" onclick="useQuickReply('Merci de vérifier l'email Paysera dans votre profil. Il doit correspondre exactement à votre compte Paysera.')">📧 Email Paysera</button>
+              </div>
               <div class="chat-input-area">
                 <button onclick="document.getElementById('adminFileInput').click()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#9ca3af;flex-shrink:0;">📎</button>
                 <input type="file" id="adminFileInput" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleAdminFileSelect(this)">
@@ -1529,6 +1542,11 @@ function doAdminCloseTicket(){
     document.getElementById('adminCloseTicketBtn').style.display='none';
     document.getElementById('adminMsgInput').disabled=true;
   }).catch(function(e){toast('Erreur: '+e.message,'err');});
+}
+
+function useQuickReply(text) {
+  var input = document.getElementById('adminMsgInput');
+  if (input) { input.value = text; input.focus(); }
 }
 
 function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

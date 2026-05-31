@@ -272,6 +272,8 @@ var T = {
     err_ccp: 'Le numéro CCP doit contenir exactement 9 chiffres après le préfixe.',
     err_blocked_email: 'Cette adresse email est bloquée. Contactez le support.',
     err_blocked_paysera: 'Cet email Paysera est bloqué. Contactez le support.',
+    err_ccp_exists: 'Ce numéro CCP est déjà associé à un compte existant.',
+    err_paysera_exists: 'Cet email Paysera est déjà associé à un compte existant.',
     err_suspended: 'Votre compte a été suspendu. Contactez le support.',
     err_forgot_email: 'Veuillez entrer votre email.',
     err_wrong_pass: 'Mot de passe incorrect.',
@@ -332,6 +334,8 @@ var T = {
     err_ccp: 'يجب أن يحتوي رقم CCP على 9 أرقام بالضبط بعد البادئة.',
     err_blocked_email: 'هذا البريد الإلكتروني محظور. تواصل مع الدعم.',
     err_blocked_paysera: 'إيميل Paysera هذا محظور. تواصل مع الدعم.',
+    err_ccp_exists: 'رقم CCP هذا مرتبط بحساب موجود بالفعل.',
+    err_paysera_exists: 'إيميل Paysera هذا مرتبط بحساب موجود بالفعل.',
     err_suspended: '🚫 تم تعليق حسابك. تواصل مع الدعم.',
     err_forgot_email: 'يرجى إدخال بريدك الإلكتروني.',
     err_wrong_pass: 'كلمة المرور غير صحيحة.',
@@ -459,7 +463,31 @@ function handleRegister() {
       isRegistering = false; setLoader('registerLoader', false);
       showError('registerError', T[currentLang].err_blocked_paysera); return;
     }
-    doRegister();
+    // ── Anti-fraude : vérifier CCP et email Paysera uniques ──
+    var checks = [];
+    if (ccp) {
+      var fullCcp = '00799999000' + ccp;
+      checks.push(
+        db.collection('users').where('ccp', '==', fullCcp).limit(1).get()
+          .then(function(snap) {
+            if (!snap.empty) throw new Error(T[currentLang].err_ccp_exists);
+          })
+      );
+    }
+    if (paysera) {
+      checks.push(
+        db.collection('users').where('emailPaysera', '==', paysera.toLowerCase()).limit(1).get()
+          .then(function(snap) {
+            if (!snap.empty) throw new Error(T[currentLang].err_paysera_exists);
+          })
+      );
+    }
+    Promise.all(checks).then(function() {
+      doRegister();
+    }).catch(function(e) {
+      isRegistering = false; setLoader('registerLoader', false);
+      showError('registerError', e.message);
+    });
   }).catch(function(){ doRegister(); });
 }
 
