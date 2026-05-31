@@ -1173,7 +1173,18 @@ function renderDetail(tx) {
   var cancelHtml = '';
   if (tx.statut === 'en_attente') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
 
-  document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + ccpRappelHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml;
+  // Bouton avis si transfert terminé et avis pas encore soumis
+  var avisHtml = '';
+  if (tx.statut === 'terminee') {
+    avisHtml = '<div style="margin-top:16px;background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:14px;text-align:center;">' +
+      '<div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px;">'+t('avis_invite')+'</div>' +
+      '<div id="starsSelect" style="font-size:32px;letter-spacing:4px;cursor:pointer;margin-bottom:10px;">☆☆☆☆☆</div>' +
+      '<input id="avisText" maxlength="50" placeholder="'+t('avis_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:10px;">' +
+      '<button onclick="submitAvis()" style="width:100%;padding:10px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">'+t('avis_send')+'</button>' +
+    '</div>';
+    setTimeout(initStarSelect, 50);
+  }
+  document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + ccpRappelHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml + avisHtml;
 }
 
 // ── UPLOAD PREUVE ──
@@ -1798,6 +1809,50 @@ function confirmLogout() {
   });
 }
 
+// ── AVIS ──
+var selectedStars = 0;
+function initStarSelect() {
+  var el = document.getElementById('starsSelect');
+  if (!el) return;
+  el.addEventListener('mouseover', function(e) {
+    var stars = el.querySelectorAll ? null : null;
+    var pos = Math.ceil((e.offsetX / el.offsetWidth) * 5) || 1;
+    el.textContent = '★'.repeat(pos) + '☆'.repeat(5 - pos);
+  });
+  el.addEventListener('click', function(e) {
+    selectedStars = Math.ceil((e.offsetX / el.offsetWidth) * 5) || 1;
+    el.textContent = '★'.repeat(selectedStars) + '☆'.repeat(5 - selectedStars);
+    el.style.color = '#f59e0b';
+  });
+  el.addEventListener('mouseout', function() {
+    if (!selectedStars) el.textContent = '☆☆☆☆☆';
+    else el.textContent = '★'.repeat(selectedStars) + '☆'.repeat(5 - selectedStars);
+  });
+}
+function submitAvis() {
+  if (!selectedStars) { alert(t('avis_select_stars')); return; }
+  if (!currentTxId) return;
+  var text = (document.getElementById('avisText')||{}).value || '';
+  var u = currentUser || {};
+  db.collection('avis').add({
+    userId: currentUid,
+    nom: u.nom || u.email || 'Utilisateur',
+    ville: '',
+    stars: selectedStars,
+    text: text.trim().substring(0, 50),
+    statut: 'pending',
+    transferId: currentTxId,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function() {
+    return db.collection('transferts').doc(currentTxId).update({ avisSubmitted: true });
+  }).then(function() {
+    var tx = transferts.find(function(x) { return x.id === currentTxId; });
+    if (tx) tx.avisSubmitted = true;
+    var avisBox = document.querySelector('#detailBody div[style*="f0fdf4"]');
+    if (avisBox) avisBox.innerHTML = '<div style="font-size:14px;font-weight:700;color:#065f46;text-align:center;padding:10px;">'+t('avis_merci')+'</div>';
+  }).catch(function(e) { alert('Erreur : ' + e.message); });
+}
+
 function escHtml(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 // ── TRADUCTION FR / AR ──
@@ -1815,6 +1870,11 @@ var T = {
     new_montant_hint: 'Minimum 20 EUR - Maximum 1 000 EUR',
     new_montant_hint_dyn: 'Minimum {min} EUR - Maximum {max} EUR',
     err_montant_dyn: 'Montant invalide. Entre {min} et {max} EUR.',
+    avis_invite: '⭐ Votre avis compte ! Évaluez ce transfert.',
+    avis_ph: 'Votre avis (max 50 caractères)',
+    avis_send: 'Envoyer mon avis',
+    avis_select_stars: 'Choisissez une note en étoiles.',
+    avis_merci: '✅ Merci pour votre avis ! Il sera publié après validation.',
     paysera_reminder: 'Assurez-vous que votre compte Paysera est <b>validé et vérifié</b> avant de soumettre votre demande, afin d\'éviter tout problème lors de la réception de votre virement.',
     new_dzd_label: 'EQUIVALENT EN DZD',
     new_info_title: 'VOS INFORMATIONS ENREGISTREES',
@@ -1904,6 +1964,11 @@ var T = {
     new_montant_hint: 'الحد الأدنى 20 EUR - الحد الأقصى 1000 EUR',
     new_montant_hint_dyn: 'الحد الأدنى {min} EUR - الحد الأقصى {max} EUR',
     err_montant_dyn: 'مبلغ غير صالح. بين {min} و {max} يورو.',
+    avis_invite: '⭐ رأيك يهمنا! قيّم هذا التحويل.',
+    avis_ph: 'رأيك (50 حرف كحد أقصى)',
+    avis_send: 'إرسال تقييمي',
+    avis_select_stars: 'اختر تقييماً بالنجوم.',
+    avis_merci: '✅ شكراً على تقييمك! سيُنشر بعد المراجعة.',
     paysera_reminder: 'تأكد من أن حسابك على Paysera <b>موثق ومُفعَّل</b> قبل تقديم طلبك، لتجنب أي مشكلة عند استلام تحويلك.',
     new_dzd_label: 'المعادل بالدينار الجزائري',
     new_info_title: 'معلوماتك المسجلة',
