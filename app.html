@@ -1814,20 +1814,25 @@ var selectedStars = 0;
 function initStarSelect() {
   var el = document.getElementById('starsSelect');
   if (!el) return;
-  el.addEventListener('mouseover', function(e) {
-    var stars = el.querySelectorAll ? null : null;
-    var pos = Math.ceil((e.offsetX / el.offsetWidth) * 5) || 1;
-    el.textContent = '★'.repeat(pos) + '☆'.repeat(5 - pos);
-  });
-  el.addEventListener('click', function(e) {
-    selectedStars = Math.ceil((e.offsetX / el.offsetWidth) * 5) || 1;
-    el.textContent = '★'.repeat(selectedStars) + '☆'.repeat(5 - selectedStars);
-    el.style.color = '#f59e0b';
-  });
-  el.addEventListener('mouseout', function() {
-    if (!selectedStars) el.textContent = '☆☆☆☆☆';
-    else el.textContent = '★'.repeat(selectedStars) + '☆'.repeat(5 - selectedStars);
-  });
+  el.innerHTML = '';
+  for (var i = 1; i <= 5; i++) {
+    var span = document.createElement('span');
+    span.dataset.val = i;
+    span.textContent = '☆';
+    span.style.cssText = 'font-size:36px;cursor:pointer;color:#d1d5db;padding:0 3px;transition:color .1s;';
+    span.addEventListener('mouseover', function() {
+      var v = parseInt(this.dataset.val);
+      el.querySelectorAll('span').forEach(function(s){ s.textContent = parseInt(s.dataset.val) <= v ? '★' : '☆'; s.style.color = parseInt(s.dataset.val) <= v ? '#f59e0b' : '#d1d5db'; });
+    });
+    span.addEventListener('mouseout', function() {
+      el.querySelectorAll('span').forEach(function(s){ s.textContent = parseInt(s.dataset.val) <= selectedStars ? '★' : '☆'; s.style.color = parseInt(s.dataset.val) <= selectedStars ? '#f59e0b' : '#d1d5db'; });
+    });
+    span.addEventListener('click', function() {
+      selectedStars = parseInt(this.dataset.val);
+      el.querySelectorAll('span').forEach(function(s){ s.textContent = parseInt(s.dataset.val) <= selectedStars ? '★' : '☆'; s.style.color = parseInt(s.dataset.val) <= selectedStars ? '#f59e0b' : '#d1d5db'; });
+    });
+    el.appendChild(span);
+  }
 }
 function submitAvis() {
   if (!selectedStars) { alert(t('avis_select_stars')); return; }
