@@ -1915,14 +1915,12 @@ function loadAvisAdmin(){
   var pEl=document.getElementById('avisListPending');
   var bEl=document.getElementById('avisListPublie');
   var cEl=document.getElementById('avisPublieCount');
-  if(!pEl){console.error('avisListPending not found');return;}
+  if(!pEl)return;
   pEl.innerHTML='Chargement...'; bEl.innerHTML='Chargement...';
-  console.log('loadAvisAdmin called, pEl found');
   Promise.all([
     db.collection('avis').where('statut','==','pending').get(),
     db.collection('avis').where('statut','==','publie').get()
   ]).then(function(res){
-    console.log('avis query OK, pending:'+res[0].size+' publie:'+res[1].size);
     var pd=res[0].docs, pb=res[1].docs;
     var badge=document.getElementById('avisBadge');
     if(badge){badge.textContent=pd.length;badge.style.display=pd.length?'':'none';}
@@ -1946,9 +1944,7 @@ function loadAvisAdmin(){
           +'<button data-id="'+doc.id+'" onclick="rejeterAvis(this.dataset.id,this)" style="padding:7px 12px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕ Rejeter</button>'
           +'</div></div>';
       });
-      console.log('h length:',h.length,'h:',h.substring(0,200));
       pEl.innerHTML=h;
-      console.log('pEl after set:',pEl.innerHTML.substring(0,100));
     }
     // Publiés
     if(!pb.length){bEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis publié.</div>';}
@@ -1969,7 +1965,7 @@ function loadAvisAdmin(){
       });
       bEl.innerHTML=h2;
     }
-  }).catch(function(e){console.error('loadAvisAdmin error:',e);pEl.innerHTML='<div style="color:red;">Erreur: '+e.message+'</div>';});
+  }).catch(function(e){pEl.innerHTML='<div style="color:red;">Erreur: '+e.message+'</div>';});
 }
 function validerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'publie'}).then(function(){toast('Avis publié ✅');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
 function rejeterAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'rejete'}).then(function(){toast('Avis rejeté');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
