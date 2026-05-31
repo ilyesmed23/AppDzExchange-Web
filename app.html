@@ -1188,19 +1188,39 @@ function renderDetail(tx) {
   // Avis : formulaire si pas encore soumis, message merci sinon
   var avisHtml = '';
   if (tx.statut === 'terminee') {
-    if (tx.avisSubmitted) {
-      avisHtml = '<div id="avisSection" style="margin-top:16px;background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:14px;text-align:center;">' +
-        '<div style="font-size:14px;font-weight:700;color:#065f46;">'+t('avis_merci')+'</div></div>';
-    } else {
-      avisHtml = '<div id="avisSection" style="margin-top:16px;background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:14px;text-align:center;">' +
-        '<div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px;">'+t('avis_invite')+'</div>' +
-        '<div id="starsSelect" style="font-size:32px;letter-spacing:4px;cursor:pointer;margin-bottom:10px;">☆☆☆☆☆</div>' +
-        '<input id="avisVille" maxlength="30" placeholder="'+t('avis_ville_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:8px;">' +
-        '<input id="avisText" maxlength="50" placeholder="'+t('avis_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:10px;">' +
-        '<button onclick="submitAvis()" style="width:100%;padding:10px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">'+t('avis_send')+'</button>' +
-      '</div>';
-      setTimeout(initStarSelect, 50);
-    }
+    // Afficher placeholder, puis vérifier si avis déjà soumis via Firestore
+    avisHtml = '<div id="avisSection" style="margin-top:16px;background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:14px;text-align:center;"><div style="color:#aaa;font-size:13px;">⏳</div></div>';
+    db.collection('avis').where('transferId','==',tx.id).where('userId','==',currentUid).get().then(function(snap){
+      var section = document.getElementById('avisSection');
+      if (!section) return;
+      if (!snap.empty || tx.avisSubmitted) {
+        // Avis déjà soumis
+        section.innerHTML = '<div style="font-size:14px;font-weight:700;color:#065f46;">'+t('avis_merci')+'</div>';
+        var txRef = transferts.find(function(x){return x.id===tx.id;});
+        if(txRef) txRef.avisSubmitted = true;
+      } else {
+        // Afficher formulaire
+        section.innerHTML =
+          '<div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px;">'+t('avis_invite')+'</div>' +
+          '<div id="starsSelect" style="font-size:32px;letter-spacing:4px;cursor:pointer;margin-bottom:10px;">☆☆☆☆☆</div>' +
+          '<input id="avisVille" maxlength="30" placeholder="'+t('avis_ville_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:8px;">' +
+          '<input id="avisText" maxlength="50" placeholder="'+t('avis_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:10px;">' +
+          '<button onclick="submitAvis()" style="width:100%;padding:10px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">'+t('avis_send')+'</button>';
+        setTimeout(initStarSelect, 50);
+      }
+    }).catch(function(){
+      // En cas d'erreur, afficher le formulaire quand même
+      var section = document.getElementById('avisSection');
+      if(section && !tx.avisSubmitted) {
+        section.innerHTML =
+          '<div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px;">'+t('avis_invite')+'</div>' +
+          '<div id="starsSelect" style="font-size:32px;cursor:pointer;margin-bottom:10px;">☆☆☆☆☆</div>' +
+          '<input id="avisVille" maxlength="30" placeholder="'+t('avis_ville_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:8px;">' +
+          '<input id="avisText" maxlength="50" placeholder="'+t('avis_ph')+'" style="width:100%;padding:9px 12px;border:1.5px solid #e0e8f5;border-radius:10px;font-size:14px;outline:none;background:#fff;box-sizing:border-box;margin-bottom:10px;">' +
+          '<button onclick="submitAvis()" style="width:100%;padding:10px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">'+t('avis_send')+'</button>';
+        setTimeout(initStarSelect, 50);
+      }
+    });
   }
   document.getElementById('detailBody').innerHTML = progressHtml + rejectedHtml + ccpRappelHtml + recapHtml + uploadHtml + adminProofHtml + cancelHtml + avisHtml;
 }
