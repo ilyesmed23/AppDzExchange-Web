@@ -783,7 +783,6 @@ function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 function loadAvis() {
   db.collection('avis')
     .where('statut','==','publie')
-    .orderBy('createdAt','desc')
     .limit(10)
     .get().then(function(snap) {
       if (snap.empty) return;

@@ -1917,8 +1917,8 @@ function loadAvisAdmin(){
   if(!pEl)return;
   pEl.innerHTML='Chargement...'; bEl.innerHTML='Chargement...';
   Promise.all([
-    db.collection('avis').where('statut','==','pending').orderBy('createdAt','desc').get(),
-    db.collection('avis').where('statut','==','publie').orderBy('createdAt','desc').get()
+    db.collection('avis').where('statut','==','pending').get(),
+    db.collection('avis').where('statut','==','publie').get()
   ]).then(function(res){
     var pd=res[0].docs, pb=res[1].docs;
     var badge=document.getElementById('avisBadge');
