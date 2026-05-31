@@ -1945,7 +1945,9 @@ function loadAvisAdmin(){
           +'<button data-id="'+doc.id+'" onclick="rejeterAvis(this.dataset.id,this)" style="padding:7px 12px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕ Rejeter</button>'
           +'</div></div>';
       });
+      console.log('h length:',h.length,'h:',h.substring(0,200));
       pEl.innerHTML=h;
+      console.log('pEl after set:',pEl.innerHTML.substring(0,100));
     }
     // Publiés
     if(!pb.length){bEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis publié.</div>';}
