@@ -772,10 +772,39 @@ function loadTaux() {
       document.getElementById('dzdInput').addEventListener('input', function() { calcEur(t); });
     }
   }).catch(function(){});
+  loadAvis();
 }
 function calcEur(taux) {
   var dzd = parseFloat(document.getElementById('dzdInput').value) || 0;
   document.getElementById('eurResult').textContent = taux > 0 ? (dzd / taux).toFixed(2) : '--';
+}
+// ── Avis dynamiques Firestore ──
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function loadAvis() {
+  db.collection('avis')
+    .where('statut','==','publie')
+    .orderBy('createdAt','desc')
+    .limit(10)
+    .get().then(function(snap) {
+      if (snap.empty) return;
+      var grid = document.getElementById('reviewsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var stars = '★'.repeat(Math.min(5, Math.max(1, d.stars||5)));
+        var init  = (d.nom||'U').charAt(0).toUpperCase();
+        var textH = d.text ? '<p style="font-size:13px;color:#555;font-style:italic;margin:6px 0 0;">'+escH(d.text)+'</p>' : '';
+        grid.innerHTML += '<div class="review-card">'
+          + '<div class="review-stars">'+stars+'</div>'
+          + textH
+          + '<div class="review-author">'
+          +   '<div class="review-avatar">'+init+'</div>'
+          +   '<div><div class="review-name">'+escH(d.nom||'Utilisateur')+'</div>'
+          +   (d.ville?'<div class="review-loc">'+escH(d.ville)+'</div>':'')
+          + '</div></div></div>';
+      });
+    }).catch(function(){});
 }
 loadTaux();
 
