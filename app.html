@@ -360,6 +360,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
         <div class="info-row">
           <span>Numero CCP</span>
           <b id="adminCCPDisplay">--</b>
+          <button onclick="var c=document.getElementById('adminCCPDisplay').textContent;navigator.clipboard.writeText(c).then(function(){this.textContent='✓ Copié!';var btn=this;setTimeout(function(){btn.textContent='📋 Copier';},1500)}.bind(this)).catch(function(){})" style="margin-left:8px;padding:3px 10px;background:#e8f0fd;border:1px solid #1254a0;border-radius:6px;font-size:11px;font-weight:700;color:#1254a0;cursor:pointer;">📋 Copier</button>
         </div>
         <div style="font-size:11px;color:#666;margin-top:4px;">
           <span data-i18n="new_ccp_hint">Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.</span>
@@ -1845,21 +1846,37 @@ function initStarSelect() {
     el.appendChild(span);
   }
 }
+function formatNomAvis(nom) {
+  if (!nom) return 'Utilisateur';
+  var parts = nom.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return parts[0] + ' ' + parts[parts.length-1].charAt(0).toUpperCase() + '.';
+}
 function submitAvis() {
   if (!selectedStars) { alert(t('avis_select_stars')); return; }
   if (!currentTxId) return;
+  // Vérifier si avis déjà soumis pour ce transfert
+  var tx = transferts.find(function(x){ return x.id === currentTxId; });
+  if (tx && tx.avisSubmitted) {
+    alert(t('avis_merci')); return;
+  }
   var text = (document.getElementById('avisText')||{}).value || '';
   var u = currentUser || {};
+  var nomAvis = formatNomAvis(u.nom || u.email || '');
+  var villeAvis = u.ville || u.wilaya || '';
   db.collection('avis').add({
     userId: currentUid,
-    nom: u.nom || u.email || 'Utilisateur',
-    ville: '',
+    nom: nomAvis,
+    ville: villeAvis,
     stars: selectedStars,
     text: text.trim().substring(0, 50),
     statut: 'pending',
     transferId: currentTxId,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function() {
+    // Marquer avisSubmitted sur le transfert
+    db.collection('transferts').doc(currentTxId).update({ avisSubmitted: true }).catch(function(){});
+    if (tx) tx.avisSubmitted = true;
     var avisBox = document.querySelector('#detailBody div[style*="f0fdf4"]');
     if (avisBox) avisBox.innerHTML = '<div style="font-size:14px;font-weight:700;color:#065f46;text-align:center;padding:10px;">'+t('avis_merci')+'</div>';
     selectedStars = 0;
