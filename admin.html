@@ -545,22 +545,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
       </div>
     </div>
 
-    <!-- AVIS -->
-    <div id="panelAvis" class="panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-        <div style="font-size:14px;color:#888;">Modération des avis clients. Validez avant publication sur la page d'accueil (max 10 affichés).</div>
-        <button class="s-btn" style="width:auto;padding:8px 18px;font-size:13px;" onclick="loadAvisAdmin()">🔄 Rafraîchir</button>
-      </div>
-
-      <!-- En attente -->
-      <div class="section-title" style="margin-bottom:12px;">⏳ En attente de validation</div>
-      <div id="avisListPending" style="margin-bottom:32px;color:#888;font-size:13px;">Chargement...</div>
-
-      <!-- Publiés -->
-      <div class="section-title" style="margin-bottom:12px;">✅ Avis publiés <span id="avisPublieCount" style="font-size:12px;color:#888;font-weight:400;"></span></div>
-      <div id="avisListPublie" style="color:#888;font-size:13px;">Chargement...</div>
-    </div>
-
   </div>
 </div>
 </div>
@@ -1582,98 +1566,6 @@ function show(n){
   if(n==='Avis')loadAvisAdmin();
 }
 
-// ── AVIS CLIENTS ──
-function loadAvisAdmin() {
-  var pendingEl = document.getElementById('avisListPending');
-  var publieEl  = document.getElementById('avisListPublie');
-  var countEl   = document.getElementById('avisPublieCount');
-  if(!pendingEl) return;
-  pendingEl.innerHTML = 'Chargement...';
-  publieEl.innerHTML  = 'Chargement...';
-
-  Promise.all([
-    db.collection('avis').where('statut','==','pending').orderBy('createdAt','desc').get(),
-    db.collection('avis').where('statut','==','publie').orderBy('createdAt','desc').get()
-  ]).then(function(results) {
-    var pendingDocs = results[0].docs;
-    var publieDocs  = results[1].docs;
-
-    // Badge nav
-    var badge = document.getElementById('avisBadge');
-    if(badge){ badge.textContent = pendingDocs.length; badge.style.display = pendingDocs.length ? '' : 'none'; }
-    countEl.textContent = '(' + publieDocs.length + '/10 publiés)';
-
-    // Pending
-    if(!pendingDocs.length) { pendingEl.innerHTML = '<div style="color:#aaa;padding:16px 0;">Aucun avis en attente.</div>'; }
-    else {
-      pendingEl.innerHTML = pendingDocs.map(function(doc) {
-        var d = doc.data();
-        var stars = '★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
-        var date  = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ') : '—';
-        return '<div style="background:#fff;border:1.5px solid #e0e8f5;border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
-          '<div style="font-size:20px;color:#f59e0b;letter-spacing:2px;">' + stars + '</div>' +
-          '<div style="flex:1;min-width:140px;">' +
-            '<div style="font-weight:700;font-size:13px;color:#1a1f36;">' + escH(d.nom) + (d.ville?' <span style="color:#888;font-weight:400;font-size:12px;">— '+escH(d.ville)+'</span>':'') + '</div>' +
-            (d.text ? '<div style="font-size:13px;color:#555;margin-top:3px;font-style:italic;">«&nbsp;' + escH(d.text) + '&nbsp;»</div>' : '') +
-            '<div style="font-size:11px;color:#aaa;margin-top:4px;">' + date + '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:8px;">' +
-            '<button onclick="validerAvis(\'' + doc.id + '\',this)" style="padding:7px 16px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ Valider</button>' +
-            '<button onclick="rejeterAvis(\'' + doc.id + '\',this)" style="padding:7px 14px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕ Rejeter</button>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-    }
-
-    // Publiés
-    if(!publieDocs.length) { publieEl.innerHTML = '<div style="color:#aaa;padding:16px 0;">Aucun avis publié.</div>'; }
-    else {
-      publieEl.innerHTML = publieDocs.map(function(doc) {
-        var d = doc.data();
-        var stars = '★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
-        var date  = d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ') : '—';
-        return '<div style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
-          '<div style="font-size:18px;color:#f59e0b;letter-spacing:2px;">' + stars + '</div>' +
-          '<div style="flex:1;min-width:140px;">' +
-            '<div style="font-weight:700;font-size:13px;color:#1a1f36;">' + escH(d.nom) + (d.ville?' <span style="color:#888;font-weight:400;font-size:12px;">— '+escH(d.ville)+'</span>':'') + '</div>' +
-            (d.text ? '<div style="font-size:13px;color:#555;margin-top:2px;font-style:italic;">«&nbsp;' + escH(d.text) + '&nbsp;»</div>' : '') +
-            '<div style="font-size:11px;color:#aaa;margin-top:3px;">' + date + '</div>' +
-          '</div>' +
-          '<button onclick="retirerAvis(\'' + doc.id + '\',this)" style="padding:6px 12px;background:#6b7280;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;">Retirer</button>' +
-        '</div>';
-      }).join('');
-    }
-  }).catch(function(e){ pendingEl.innerHTML='<div style="color:red;">Erreur: '+e.message+'</div>'; });
-}
-
-function validerAvis(id, btn) {
-  btn.disabled = true; btn.textContent = '...';
-  db.collection('avis').doc(id).update({ statut: 'publie' })
-    .then(function() { toast('Avis publié ✅'); loadAvisAdmin(); })
-    .catch(function(e){ toast('Erreur: '+e.message,'err'); btn.disabled=false; btn.textContent='✅ Valider'; });
-}
-function rejeterAvis(id, btn) {
-  btn.disabled = true; btn.textContent = '...';
-  db.collection('avis').doc(id).update({ statut: 'rejete' })
-    .then(function() { toast('Avis rejeté'); loadAvisAdmin(); })
-    .catch(function(e){ toast('Erreur: '+e.message,'err'); btn.disabled=false; btn.textContent='✕ Rejeter'; });
-}
-function retirerAvis(id, btn) {
-  btn.disabled = true;
-  db.collection('avis').doc(id).update({ statut: 'pending' })
-    .then(function() { toast('Avis retiré'); loadAvisAdmin(); })
-    .catch(function(e){ toast('Erreur: '+e.message,'err'); btn.disabled=false; });
-}
-function escH(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// Badge avis au chargement
-function checkAvisBadge(){
-  db.collection('avis').where('statut','==','pending').get().then(function(snap){
-    var badge=document.getElementById('avisBadge');
-    if(badge){ badge.textContent=snap.size; badge.style.display=snap.size?'':'none'; }
-  }).catch(function(){});
-}
-
 // ── STATISTIQUES VISITEURS & CONNEXIONS ──
 function loadStats() {
   document.getElementById('visitsTable').innerHTML = 'Chargement...';
@@ -1875,4 +1767,190 @@ function sendPersonalNotif() {
 function getAdminBadge(uid) {
   var done = allTx.filter(function(t){ return t.userId===uid && t.statut==='terminee'; }).length;
   if (done >= 20) return { label:'VIP',      ico:'⭐', cls:'b-vip',      done:done };
-  if (done >= 10) return { label:'Or',       ico:'🥇', cls:'b-or',       do
+  if (done >= 10) return { label:'Or',       ico:'🥇', cls:'b-or',       done:done };
+  if (done >= 5)  return { label:'Silver',   ico:'🥈', cls:'b-silver',   done:done };
+  if (done >= 1)  return { label:'Débutant', ico:'🔵', cls:'b-debutant', done:done };
+  return { label:'Nouveau', ico:'🆕', cls:'b-regular', done:done };
+}
+function badgeHtml(uid) {
+  var b = getAdminBadge(uid);
+  return '<span class="badge '+b.cls+'" title="'+b.done+' transfert(s) terminé(s)">'+b.ico+' '+b.label+'</span>';
+}
+
+// ── BULK SELECT ──
+function toggleBulkMode(){
+  bulkSelectMode=!bulkSelectMode;
+  selectedTxIds.clear();
+  var btn=document.getElementById('bulkToggleBtn');
+  var bar=document.getElementById('bulkBar');
+  if(bulkSelectMode){
+    btn.style.background='#059669';btn.style.borderColor='#059669';btn.textContent='☑ Mode sélection ON';
+    bar.style.display='flex';
+  }else{
+    btn.style.background='#374151';btn.style.borderColor='#374151';btn.textContent='☑ Sélectionner';
+    bar.style.display='none';
+  }
+  renderTxList();
+}
+function toggleSelect(id){
+  if(selectedTxIds.has(id))selectedTxIds.delete(id);else selectedTxIds.add(id);
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent=selectedTxIds.size+' sélectionné(s)';
+  // Update visual without full re-render
+  renderTxList();
+}
+function selectAllVisible(){
+  var filtered=allTx.filter(function(t){
+    if(curFilter!=='tous'&&t.statut!==curFilter)return false;
+    if(curSearch){var h=((t.nomUser||'')+(t.email||'')+(t.emailPaysera||'')+(t.montantEur||'')).toLowerCase();if(!h.includes(curSearch))return false;}
+    return true;
+  });
+  filtered.forEach(function(t){selectedTxIds.add(t.id);});
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent=selectedTxIds.size+' sélectionné(s)';
+  renderTxList();
+}
+function deselectAll(){
+  selectedTxIds.clear();
+  var cnt=document.getElementById('bulkCount');
+  if(cnt)cnt.textContent='0 sélectionné(s)';
+  renderTxList();
+}
+function bulkDelete(){
+  if(selectedTxIds.size===0){toast('Aucun transfert sélectionné','info');return;}
+  var _count=selectedTxIds.size;
+  showCModal('🗑️','Supprimer '+_count+' transfert(s) ?',
+    'Cette action est irréversible.\nLes preuves (images) associées seront aussi supprimées.',
+    '🗑 Supprimer tout',true,function(){
+    toast('Suppression de '+_count+' transfert(s)...','info');
+    var ids=Array.from(selectedTxIds);
+    var done=0;
+    ids.forEach(function(id){
+      storage.ref('preuves/'+id).listAll().then(function(res){
+        return Promise.all(res.items.map(function(f){return f.delete();}));
+      }).catch(function(){}).finally(function(){
+        db.collection('transferts').doc(id).delete().then(function(){
+          done++;
+          if(done===ids.length){
+            selectedTxIds.clear();
+            bulkSelectMode=false;
+            document.getElementById('bulkToggleBtn').style.background='#374151';
+            document.getElementById('bulkToggleBtn').style.borderColor='#374151';
+            document.getElementById('bulkToggleBtn').textContent='☑ Sélectionner';
+            document.getElementById('bulkBar').style.display='none';
+            toast(ids.length+' transfert(s) supprimé(s) ✓','ok');
+          }
+        }).catch(function(e){toast('Erreur: '+e.message,'err');});
+      });
+    });
+  });
+}
+
+// ── SOLDE EUR ──
+function saveSoldeEur(){
+  var v=parseFloat(document.getElementById('sSolde').value);
+  if(isNaN(v)||v<0){document.getElementById('soldeMsg').textContent='Valeur invalide.';document.getElementById('soldeMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({soldeEur:v},{merge:true}).then(function(){
+    soldeEur=v;renderDash();
+    document.getElementById('soldeMsg').textContent='✓ Solde mis à jour : '+v.toFixed(2)+' €';
+    document.getElementById('soldeMsg').style.color='#059669';
+    toast('Solde EUR enregistré','ok');
+    setTimeout(function(){document.getElementById('soldeMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('soldeMsg').textContent='Erreur: '+e.message;document.getElementById('soldeMsg').style.color='#dc2626';});
+}
+
+// ── ALERT THRESHOLD ──
+function saveAlertThreshold(){
+  var v=parseFloat(document.getElementById('sAlertThreshold').value);
+  if(isNaN(v)||v<0){document.getElementById('alertMsg').textContent='Valeur invalide.';document.getElementById('alertMsg').style.color='#dc2626';return;}
+  db.collection('config').doc('settings').set({alertThreshold:v},{merge:true}).then(function(){
+    alertThreshold=v;renderDash();renderTxList();
+    document.getElementById('alertMsg').textContent='✓ Seuil enregistré : '+v+' EUR';
+    document.getElementById('alertMsg').style.color='#059669';
+    toast('Seuil alerte enregistré','ok');
+    setTimeout(function(){document.getElementById('alertMsg').textContent='';},3000);
+  }).catch(function(e){document.getElementById('alertMsg').textContent='Erreur: '+e.message;document.getElementById('alertMsg').style.color='#dc2626';});
+}
+
+// ── ANNOUNCEMENT ──
+function saveAnnouncement(){
+  var v=document.getElementById('sAnnouncement').value.trim();
+  if(v){
+    // Lire les notifs existantes, ajouter la nouvelle en tête, garder max 30
+    db.collection('config').doc('settings').get().then(function(doc){
+      var existing=(doc.exists&&doc.data().recentNotifications)||[];
+      var newNotif={id:Date.now().toString(),message:v,type:'announcement',createdAt:Date.now()};
+      var updated=[newNotif].concat(existing).slice(0,30);
+      db.collection('config').doc('settings').set({announcement:v,recentNotifications:updated},{merge:true}).then(function(){
+        document.getElementById('announceMsg').textContent='✓ Annonce publiée + notification envoyée à tous les utilisateurs';
+        document.getElementById('announceMsg').style.color='#059669';
+        toast('📢 Annonce + notification envoyées','ok');
+        setTimeout(function(){document.getElementById('announceMsg').textContent='';},3500);
+      }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  } else {
+    db.collection('config').doc('settings').set({announcement:''},{merge:true}).then(function(){
+      document.getElementById('announceMsg').textContent='✓ Annonce désactivée';
+      document.getElementById('announceMsg').style.color='#059669';
+      toast('Annonce désactivée','ok');
+      setTimeout(function(){document.getElementById('announceMsg').textContent='';},3000);
+    }).catch(function(e){document.getElementById('announceMsg').textContent='Erreur: '+e.message;document.getElementById('announceMsg').style.color='#dc2626';});
+  }
+}
+// ── AVIS CLIENTS ──
+function loadAvisAdmin() {
+  var pendingEl=document.getElementById('avisListPending');
+  var publieEl=document.getElementById('avisListPublie');
+  var countEl=document.getElementById('avisPublieCount');
+  if(!pendingEl)return;
+  pendingEl.innerHTML='Chargement...'; publieEl.innerHTML='Chargement...';
+  Promise.all([
+    db.collection('avis').where('statut','==','pending').orderBy('createdAt','desc').get(),
+    db.collection('avis').where('statut','==','publie').orderBy('createdAt','desc').get()
+  ]).then(function(res){
+    var pd=res[0].docs, pb=res[1].docs;
+    var badge=document.getElementById('avisBadge');
+    if(badge){badge.textContent=pd.length;badge.style.display=pd.length?'':'none';}
+    if(countEl)countEl.textContent='('+pb.length+'/10)';
+    if(!pd.length){pendingEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis en attente.</div>';}
+    else{
+      var html='';
+      pd.forEach(function(doc){
+        var d=doc.data(),stars='★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
+        var date=d.createdAt?new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ'):'—';
+        html+='<div style="background:#fff;border:1.5px solid #e0e8f5;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
+          +'<div style="font-size:18px;color:#f59e0b;">'+stars+'</div>'
+          +'<div style="flex:1;"><div style="font-weight:700;font-size:13px;">'+escH(d.nom)+(d.ville?' — '+escH(d.ville):'')+' <span style="color:#aaa;font-size:11px;">'+date+'</span></div>'
+          +(d.text?'<div style="font-size:13px;color:#555;font-style:italic;">'+escH(d.text)+'</div>':'')
+          +'</div><div style="display:flex;gap:8px;">'
+          +'<button data-id="'+doc.id+'" onclick="validerAvis(this.dataset.id,this)" style="padding:7px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ Valider</button>'
+          +'<button data-id="'+doc.id+'" onclick="rejeterAvis(this.dataset.id,this)" style="padding:7px 12px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">✕</button>'
+          +'</div></div>';
+      });
+      pendingEl.innerHTML=html;
+    }
+    if(!pb.length){publieEl.innerHTML='<div style="color:#aaa;padding:12px 0;">Aucun avis publié.</div>';}
+    else{
+      var html2='';
+      pb.forEach(function(doc){
+        var d=doc.data(),stars='★'.repeat(Math.min(5,Math.max(1,d.stars||5)));
+        var date=d.createdAt?new Date(d.createdAt.seconds*1000).toLocaleDateString('fr-DZ'):'';
+        html2+='<div style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'
+          +'<div style="font-size:16px;color:#f59e0b;">'+stars+'</div>'
+          +'<div style="flex:1;"><div style="font-weight:700;font-size:13px;">'+escH(d.nom)+(d.ville?' — '+escH(d.ville):'')+' <span style="color:#aaa;font-size:11px;">'+date+'</span></div>'
+          +(d.text?'<div style="font-size:13px;color:#555;font-style:italic;">'+escH(d.text)+'</div>':'')
+          +'</div><button data-id="'+doc.id+'" onclick="retirerAvis(this.dataset.id,this)" style="padding:6px 10px;background:#6b7280;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;">Retirer</button>'
+          +'</div>';
+      });
+      publieEl.innerHTML=html2;
+    }
+  }).catch(function(e){pendingEl.innerHTML='<div style="color:red;">Erreur: '+e.message+'</div>';});
+}
+function validerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'publie'}).then(function(){toast('Avis publié ✅');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
+function rejeterAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'rejete'}).then(function(){toast('Avis rejeté');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
+function retirerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).update({statut:'pending'}).then(function(){toast('Retiré');loadAvisAdmin();}).catch(function(e){toast(e.message,'err');btn.disabled=false;});}
+function checkAvisBadge(){db.collection('avis').where('statut','==','pending').get().then(function(s){var b=document.getElementById('avisBadge');if(b){b.textContent=s.size;b.style.display=s.size?'':'none';}}).catch(function(){});}
+
+</script>
+</body>
+</html>
