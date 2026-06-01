@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" width="160" height="48">
+  <rect width="160" height="48" rx="10" fill="#00B259"/>
+  <circle cx="24" cy="24" r="16" fill="white" opacity="0.2"/>
+  <text x="24" y="30" font-family="Arial,sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">P</text>
+  <text x="100" y="20" font-family="Arial,sans-serif" font-weight="800" font-size="14" fill="white" text-anchor="middle">Paysera</text>
+  <text x="100" y="36" font-family="Arial,sans-serif" font-size="9" fill="rgba(255,255,255,0.8)" text-anchor="middle">Paiement en ligne EUR</text>
+</svg>
