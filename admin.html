@@ -476,10 +476,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;min-height:100vh
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
           <label style="font-size:13px;color:#444;">Transferts clôturés depuis plus de</label>
-          <input type="number" id="cleanupDays" value="90" min="7" style="width:70px;padding:8px;border:1.5px solid #e0e8f5;border-radius:8px;font-size:13px;">
+          <input type="number" id="cleanupDays" value="90" min="0" style="width:70px;padding:8px;border:1.5px solid #e0e8f5;border-radius:8px;font-size:13px;">
           <span style="font-size:13px;color:#444;">jours</span>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <input type="checkbox" id="cleanupAllStatuses" style="width:16px;height:16px;cursor:pointer;">
+          <label for="cleanupAllStatuses" style="font-size:12.5px;color:#c2410c;cursor:pointer;">Inclure aussi les transferts en cours (pas seulement Terminé/Rejeté/Annulé) — ⚠️ risque de gêner un traitement en cours</label>
+        </div>
         <button class="s-btn" onclick="analyzeCleanup()">🔍 Analyser (sans rien supprimer)</button>
+        <button class="s-btn" style="margin-top:8px;background:#555;" onclick="showAllProofs()">📋 Voir absolument toutes les preuves de la base (aucun filtre)</button>
         <div id="cleanupResult" style="margin-top:12px;font-size:13px;color:#444;"></div>
       </div>
 
@@ -1727,36 +1732,47 @@ function showCModal(ico, title, msg, okLabel, danger, onOk){
 function hideCModal(){document.getElementById('cModal').classList.remove('open');}
 
 // ── NETTOYAGE DES PREUVES (stockage) ──
-function eligibleForCleanup(days){
+function eligibleForCleanup(days, allStatuses){
   var cutoff=Date.now()-days*24*60*60*1000;
   return allTx.filter(function(t){
-    return ['terminee','rejetee','annulee'].indexOf(t.statut)!==-1
+    var statusOk = allStatuses ? true : (['terminee','rejetee','annulee'].indexOf(t.statut)!==-1);
+    return statusOk
       && t._ts && t._ts<cutoff
       && !t.preuvesNettoyees
       && (t.preuveUserUrl || t.preuveAdminUrl || (t.preuveHistorique && t.preuveHistorique.length));
   });
 }
+function showAllProofs(){
+  document.getElementById('cleanupDays').value='0';
+  document.getElementById('cleanupAllStatuses').checked=true;
+  analyzeCleanup();
+}
 function analyzeCleanup(){
   var daysRaw=document.getElementById('cleanupDays').value;
   var days=(daysRaw===''||isNaN(Number(daysRaw)))?90:Number(daysRaw);
   days=Math.max(0,days);
-  var eligible=eligibleForCleanup(days);
+  var allStatuses=document.getElementById('cleanupAllStatuses').checked;
+  var eligible=eligibleForCleanup(days, allStatuses);
   var totalFiles=eligible.reduce(function(acc,t){
     return acc + (t.preuveUserUrl?1:0) + (t.preuveAdminUrl?1:0) + ((t.preuveHistorique&&t.preuveHistorique.length)||0);
   },0);
+  var activeCount=eligible.filter(function(t){return ['terminee','rejetee','annulee'].indexOf(t.statut)===-1;}).length;
   var box=document.getElementById('cleanupResult');
   if(eligible.length===0){
     box.innerHTML='<div style="color:#059669;">✓ Aucun transfert éligible — rien à nettoyer pour l\'instant.</div>';
     return;
   }
   box.innerHTML='<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;padding:12px;">'+
-    '<b>'+eligible.length+'</b> transfert(s) clôturé(s) depuis plus de '+days+' jours, totalisant environ <b>'+totalFiles+'</b> image(s).<br>'+
-    '<button class="s-btn" style="margin-top:10px;background:#dc2626;" onclick="confirmCleanup('+days+')">🗑 Supprimer ces '+totalFiles+' image(s) définitivement</button>'+
+    '<b>'+eligible.length+'</b> transfert(s) trouvé(s)'+(days>0?' depuis plus de '+days+' jours':'')+', totalisant environ <b>'+totalFiles+'</b> image(s).<br>'+
+    (activeCount>0?'<div style="color:#dc2626;font-weight:700;margin-top:6px;">⚠️ '+activeCount+' de ces transferts sont encore EN COURS (pas Terminé/Rejeté/Annulé) — supprimer leur preuve peut gêner leur traitement.</div>':'')+
+    '<button class="s-btn" style="margin-top:10px;background:#dc2626;" onclick="confirmCleanup('+days+','+allStatuses+')">🗑 Supprimer ces '+totalFiles+' image(s) définitivement</button>'+
     '</div>';
 }
-function confirmCleanup(days){
-  var eligible=eligibleForCleanup(days);
-  showCModal('🗑️','Confirmer la suppression définitive ?','Ceci va supprimer les images (Firestore + Storage) de '+eligible.length+' transfert(s) clôturé(s). Action irréversible. Les infos du transfert (montant, date, statut) sont conservées.','🗑 Supprimer définitivement',true,function(){
+function confirmCleanup(days, allStatuses){
+  var eligible=eligibleForCleanup(days, allStatuses);
+  var activeCount=eligible.filter(function(t){return ['terminee','rejetee','annulee'].indexOf(t.statut)===-1;}).length;
+  var warn=activeCount>0?(' ⚠️ '+activeCount+' transfert(s) EN COURS seront aussi touchés — leur preuve ne sera plus visible pour le traitement.'):'';
+  showCModal('🗑️','Confirmer la suppression définitive ?','Ceci va supprimer les images (Firestore + Storage) de '+eligible.length+' transfert(s). Action irréversible. Les infos du transfert (montant, date, statut) sont conservées.'+warn,'🗑 Supprimer définitivement',true,function(){
     runCleanup(eligible);
   });
 }
