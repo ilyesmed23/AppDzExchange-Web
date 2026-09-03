@@ -51,7 +51,7 @@ service cloud.firestore {
             && (resource.data.statut == 'en_attente' || resource.data.statut == 'manque_info')
             && request.resource.data.statut == 'preuve_envoyee'
             && request.resource.data.diff(resource.data).affectedKeys()
-                .hasOnly(['statut','preuveUserUrl','preuveUpdatedAt']))
+                .hasOnly(['statut','preuveUserUrl','preuveUpdatedAt','preuveHistorique']))
         // Marquer avis soumis sur transfert terminé
         || (isAuth()
             && resource.data.userId == request.auth.uid

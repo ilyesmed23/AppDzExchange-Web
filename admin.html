@@ -1034,6 +1034,16 @@ function fillDrawer(t){
   var proofAdmin=t.preuveAdminUrl?
     '<div class="d-section-title" style="margin-top:10px;">VOTRE PREUVE PAYSERA</div>'+
     '<img src="'+t.preuveAdminUrl+'" class="proof-thumb" onclick="viewImg(\''+t.preuveAdminUrl+'\')" />':'';
+  var proofHisto='';
+  if(t.preuveHistorique && t.preuveHistorique.length>1){
+    var hItems=t.preuveHistorique.slice().reverse().map(function(h,idx){
+      var d=h.uploadedAt?new Date(h.uploadedAt).toLocaleDateString('fr-DZ')+' '+new Date(h.uploadedAt).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}):'';
+      return '<div style="text-align:center;"><img src="'+h.url+'" class="proof-thumb" onclick="viewImg(\''+h.url+'\')" style="'+(idx===0?'border-color:#10b981;border-width:2.5px;':'')+'" />'+
+        '<div style="font-size:10px;color:#888;margin-top:2px;">'+(idx===0?'Actuelle · ':'')+d+'</div></div>';
+    }).join('');
+    proofHisto='<div class="d-section-title" style="margin-top:10px;">HISTORIQUE DES PREUVES ('+t.preuveHistorique.length+')</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+hItems+'</div>';
+  }
   
   var acts='';
   if(t.statut==='preuve_envoyee'){
@@ -1076,7 +1086,7 @@ function fillDrawer(t){
       (t.motifRejet?'<div class="d-row"><span>Motif rejet</span><b>'+t.motifRejet+'</b></div>':'')+
       (t.infoManquante?'<div class="d-row"><span>Info demandée</span><b>'+t.infoManquante+'</b></div>':'')+
     '</div>'+
-    proofUser+proofAdmin+
+    proofUser+proofHisto+proofAdmin+
     '<div class="action-row" style="margin-top:14px;">'+acts+'</div>'+
     '<div class="d-section" style="margin-top:4px;">'+
       '<div class="d-section-title">CHANGER LE STATUT</div>'+

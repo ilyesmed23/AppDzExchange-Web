@@ -1242,7 +1242,8 @@ function handleFileSelected(input) {
     return db.collection('transferts').doc(currentTxId).update({
       statut: 'preuve_envoyee',
       preuveUserUrl: url,
-      preuveUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      preuveUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      preuveHistorique: firebase.firestore.FieldValue.arrayUnion({ url: url, uploadedAt: Date.now() })
     });
   }).then(function() {
     if (loader) loader.style.display = 'none';
