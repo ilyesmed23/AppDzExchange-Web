@@ -1737,7 +1737,9 @@ function eligibleForCleanup(days){
   });
 }
 function analyzeCleanup(){
-  var days=Number(document.getElementById('cleanupDays').value)||90;
+  var daysRaw=document.getElementById('cleanupDays').value;
+  var days=(daysRaw===''||isNaN(Number(daysRaw)))?90:Number(daysRaw);
+  days=Math.max(0,days);
   var eligible=eligibleForCleanup(days);
   var totalFiles=eligible.reduce(function(acc,t){
     return acc + (t.preuveUserUrl?1:0) + (t.preuveAdminUrl?1:0) + ((t.preuveHistorique&&t.preuveHistorique.length)||0);
