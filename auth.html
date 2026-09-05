@@ -158,6 +158,10 @@ body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
       <label data-i18n="lbl_password">MOT DE PASSE *</label>
       <input type="password" id="regPassword" data-i18n-ph="ph_new_password" placeholder="Minimum 6 caractères">
     </div>
+    <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+      <label for="regWebsite">Site web</label>
+      <input type="text" id="regWebsite" tabindex="-1" autocomplete="off">
+    </div>
     <div id="registerLoader" class="loader" data-i18n="loader_register">Création du compte...</div>
     <button class="btn btn-primary" onclick="handleRegister()" data-i18n="btn_register">Créer mon compte</button>
     <div class="divider">────────────</div>
@@ -214,6 +218,7 @@ body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 function toast(msg,type){var el=document.getElementById('toast');if(!el){window.alert(msg);return;}el.textContent=msg;el.className='toast show '+(type||'info');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){el.className='toast';},3500);}
+var pageLoadTime = Date.now();
 const firebaseConfig = {
   apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
   authDomain: "appdzexchange.firebaseapp.com",
@@ -274,6 +279,7 @@ var T = {
     // Erreurs JS
     err_fields: 'Veuillez remplir tous les champs.',
     err_fields_reg: 'Veuillez remplir tous les champs obligatoires (*).',
+    err_bot: 'Une erreur est survenue. Veuillez réessayer dans quelques instants.',
     err_pass_short: 'Mot de passe minimum 6 caractères.',
     err_ccp: 'Le numéro CCP doit contenir exactement 9 chiffres après le préfixe.',
     err_blocked_email: 'Cette adresse email est bloquée. Contactez le support.',
@@ -336,6 +342,7 @@ var T = {
     // Erreurs JS
     err_fields: 'يرجى ملء جميع الحقول.',
     err_fields_reg: 'يرجى ملء جميع الحقول الإلزامية (*).',
+    err_bot: 'حدث خطأ. يرجى المحاولة مرة أخرى بعد قليل.',
     err_pass_short: 'كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل.',
     err_ccp: 'يجب أن يحتوي رقم CCP على 9 أرقام بالضبط بعد البادئة.',
     err_blocked_email: 'هذا البريد الإلكتروني محظور. تواصل مع الدعم.',
@@ -448,6 +455,9 @@ function handleLogin() {
 }
 
 function handleRegister() {
+  var honeypot = document.getElementById('regWebsite');
+  if (honeypot && honeypot.value) { showError('registerError', T[currentLang].err_bot); return; }
+  if (Date.now() - pageLoadTime < 2500) { showError('registerError', T[currentLang].err_bot); return; }
   var nom     = document.getElementById('regNom').value.trim();
   var email   = document.getElementById('regEmail').value.trim();
   var paysera = document.getElementById('regEmailPaysera').value.trim();
