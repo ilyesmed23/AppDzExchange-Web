@@ -413,30 +413,7 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
     <p class="section-sub" data-i18n="temoignages_sub">Des Algériens qui utilisent AppDz Exchange au quotidien</p>
   </div>
   <div id="reviewsGrid" style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;padding:0 5%;">
-    <!-- Avis 1 -->
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-            <div class="review-author">
-        <div class="review-avatar">K</div>
-        <div><div class="review-name" data-i18n="review1_name">Karim B.</div><div class="review-loc" data-i18n="review1_loc">Alger</div></div>
-      </div>
-    </div>
-    <!-- Avis 2 -->
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-            <div class="review-author">
-        <div class="review-avatar">S</div>
-        <div><div class="review-name" data-i18n="review2_name">Sara M.</div><div class="review-loc" data-i18n="review2_loc">Oran</div></div>
-      </div>
-    </div>
-    <!-- Avis 3 -->
-    <div class="review-card">
-      <div class="review-stars">★★★★★</div>
-            <div class="review-author">
-        <div class="review-avatar">Y</div>
-        <div><div class="review-name" data-i18n="review3_name">Yacine L.</div><div class="review-loc" data-i18n="review3_loc">Constantine</div></div>
-      </div>
-    </div>
+    <p id="reviewsEmpty" style="grid-column:1/-1;text-align:center;color:#888;font-size:14px;" data-i18n="temoignages_empty">Soyez parmi les premiers à laisser votre avis !</p>
   </div>
 </section>
 
@@ -615,6 +592,7 @@ var T = {
     best_rate_badge: '🏆 Meilleur taux du marché',
     temoignages_title: 'Ce que disent nos clients',
     temoignages_sub: 'Des Algériens qui utilisent AppDz Exchange au quotidien',
+    temoignages_empty: 'Soyez parmi les premiers à laisser votre avis !',
     review1_name: 'Karim B.', review1_loc: 'Alger',
     review2_name: 'Sara M.', review2_loc: 'Oran',
     review3_name: 'Yacine L.', review3_loc: 'Constantine',
@@ -697,6 +675,7 @@ var T = {
     best_rate_badge: '🏆 أفضل سعر في السوق',
     temoignages_title: 'آراء عملائنا',
     temoignages_sub: 'جزائريون يستخدمون AppDz Exchange يومياً',
+    temoignages_empty: 'كن أول من يترك رأيه!',
     review1_name: 'كريم ب.', review1_loc: 'الجزائر العاصمة',
     review2_name: 'سارة م.', review2_loc: 'وهران',
     review3_name: 'ياسين ل.', review3_loc: 'قسنطينة',
@@ -792,6 +771,8 @@ function loadAvis() {
       if (snap.empty) return;
       var grid = document.getElementById('reviewsGrid');
       if (!grid) return;
+      var emptyMsg = document.getElementById('reviewsEmpty');
+      if (emptyMsg) emptyMsg.remove();
       grid.innerHTML = '';
       snap.forEach(function(doc) {
         var d = doc.data();
