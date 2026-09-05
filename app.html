@@ -297,9 +297,16 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:#f0f4fa; min-height:1
   /* ── Profil centré ── */
   #panelProfil .card { max-width: 500px; margin: 0 auto 12px; }
 }
+
+/* Toast notifications */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:11px;font-size:13.5px;font-weight:700;color:#fff;z-index:2000;display:none;box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:90vw;text-align:center;}
+.toast.show{display:block;}
+.toast.ok{background:#065f46;}.toast.err{background:#991b1b;}.toast.info{background:#1254a0;}
 </style>
 </head>
 <body>
+
+<div id="toast" class="toast"></div>
 
 <!-- HEADER -->
 <div class="header">
@@ -835,8 +842,8 @@ function updateEmailVerifUI() {
 function resendVerifEmail() {
   var user = firebase.auth().currentUser;
   if (user) user.sendEmailVerification().then(function() {
-    alert('Email de confirmation renvoyé ! Vérifiez aussi vos spams.');
-  }).catch(function(e) { alert('Erreur : ' + e.message); });
+    toast('Email de confirmation renvoyé ! Vérifiez aussi vos spams.','ok');
+  }).catch(function(e) { toast('Erreur : ' + e.message,'err'); });
 }
 
 // ── USER INFO ──
@@ -1261,7 +1268,7 @@ function handleFileSelected(input) {
     renderDetail(d);
   }).catch(function(err) {
     if (loader) loader.style.display = 'none';
-    alert('Erreur upload : ' + err.message);
+    toast('Erreur upload : ' + err.message,'err');
   });
   input.value = '';
 }
@@ -1693,7 +1700,7 @@ function showNewTicketView() { showNewTicketForm(); }
 function handleTicketFileSelect(input) {
   var file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Fichier trop lourd (max 5 Mo)'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { toast('Fichier trop lourd (max 5 Mo)','err'); input.value = ''; return; }
   newTicketFileData = file;
   var prev = document.getElementById('ticketFilePreview');
   prev.style.display = 'flex';
@@ -1710,7 +1717,7 @@ function clearNewTicketFile() {
 function handleReplyFileSelect(input) {
   var file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Fichier trop lourd (max 5 Mo)'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { toast('Fichier trop lourd (max 5 Mo)','err'); input.value = ''; return; }
   replyFileData = file;
   var att = document.getElementById('tdFileAttach');
   att.style.display = 'flex';
@@ -1800,7 +1807,7 @@ function sendTicketReply() {
   p.then(function() {
     input.value = ''; input.disabled = false; input.focus(); clearReplyFile();
   }).catch(function(e) {
-    input.disabled = false; alert('Erreur : ' + e.message);
+    input.disabled = false; toast('Erreur : ' + e.message,'err');
   });
 }
 
@@ -1827,7 +1834,7 @@ function closeTicket() {
     b.textContent = t('tk_cloture'); b.style.background = '#d1fae5'; b.style.color = '#065f46';
     document.getElementById('tdCloseBtn').style.display  = 'none';
     document.getElementById('tdReplyArea').style.display = 'none';
-  }).catch(function(e) { alert('Erreur : ' + e.message); });
+  }).catch(function(e) { toast('Erreur : ' + e.message,'err'); });
 }
 
 // ── LOGOUT ──
@@ -1844,7 +1851,7 @@ function confirmLogout() {
   auth.signOut().then(function() {
     window.location.href = 'auth.html';
   }).catch(function(e) {
-    alert('Erreur : ' + e.message);
+    toast('Erreur : ' + e.message,'err');
   });
 }
 
@@ -1880,12 +1887,12 @@ function formatNomAvis(nom) {
   return parts[0] + ' ' + parts[parts.length-1].charAt(0).toUpperCase() + '.';
 }
 function submitAvis() {
-  if (!selectedStars) { alert(t('avis_select_stars')); return; }
+  if (!selectedStars) { toast(t('avis_select_stars'),'err'); return; }
   if (!currentTxId) return;
   // Vérifier si avis déjà soumis pour ce transfert
   var tx = transferts.find(function(x){ return x.id === currentTxId; });
   if (tx && tx.avisSubmitted) {
-    alert(t('avis_merci')); return;
+    toast(t('avis_merci'),'ok'); return;
   }
   var text = (document.getElementById('avisText')||{}).value || '';
   var u = currentUser || {};
@@ -1908,7 +1915,7 @@ function submitAvis() {
     var avisBox = document.getElementById('avisSection');
     if (avisBox) avisBox.innerHTML = '<div style="font-size:14px;font-weight:700;color:#065f46;text-align:center;padding:10px;">'+t('avis_merci')+'</div>';
     selectedStars = 0;
-  }).catch(function(e) { alert('Erreur : ' + e.message); });
+  }).catch(function(e) { toast('Erreur : ' + e.message,'err'); });
 }
 
 function escHtml(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
