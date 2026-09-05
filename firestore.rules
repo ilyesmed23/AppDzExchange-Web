@@ -126,5 +126,14 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ── LOGS D'ERREURS JS (monitoring basique) ──
+    match /errorLogs/{logId} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.message is string
+        && request.resource.data.message.size() < 500
+        && request.resource.data.keys().hasOnly(['message','stack','url','page','userAgent','userId','createdAt']);
+      allow update: if false;
+    }
+
   }
 }

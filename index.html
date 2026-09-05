@@ -542,6 +542,35 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
+// ── Monitoring d'erreurs basique (sans dépendance externe) ──
+(function(){
+  var _errCount = 0;
+  function _logClientError(message, stack){
+    if (_errCount >= 5) return;
+    _errCount++;
+    try {
+      var uid = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : null;
+      db.collection('errorLogs').add({
+        message: String(message||'').slice(0,500),
+        stack: String(stack||'').slice(0,1000),
+        url: location.href.slice(0,300),
+        page: location.pathname.split('/').pop() || 'index.html',
+        userAgent: navigator.userAgent.slice(0,200),
+        userId: uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(){});
+    } catch(e){}
+  }
+  window.addEventListener('error', function(e){
+    _logClientError(e.message, e.error && e.error.stack);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var r = e.reason;
+    _logClientError(r && r.message ? r.message : String(r), r && r.stack);
+  });
+})();
+
+
 // ── TRADUCTIONS ──
 var T = {
   fr: {

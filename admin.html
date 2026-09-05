@@ -495,6 +495,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="cleanupResult" style="margin-top:12px;font-size:13px;color:#444;"></div>
       </div>
 
+      <!-- MONITORING D'ERREURS JS -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">🐞 Erreurs JS récentes (monitoring basique)</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+          Erreurs JavaScript remontées automatiquement depuis le site (index, app, auth, admin). Pas de service externe (type Sentry) — stockage direct dans Firestore.
+        </div>
+        <button class="s-btn" onclick="loadErrorLogs()">🔄 Charger les 20 dernières erreurs</button>
+        <button class="s-btn" style="margin-top:8px;background:#991b1b;" onclick="clearErrorLogs()">🗑 Vider tous les logs</button>
+        <div id="errorLogsResult" style="margin-top:14px;font-size:12.5px;color:var(--text);max-height:400px;overflow-y:auto;"></div>
+      </div>
+
       <!-- ANNONCE BROADCAST -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">📢 Annonce aux utilisateurs</div>
@@ -647,6 +658,35 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 var firebaseConfig={apiKey:"AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",authDomain:"appdzexchange.firebaseapp.com",projectId:"appdzexchange",storageBucket:"appdzexchange.firebasestorage.app",messagingSenderId:"217882852453",appId:"1:217882852483:android:b687e98a47d7f274d9efb6"};
 firebase.initializeApp(firebaseConfig);
 var auth=firebase.auth(), db=firebase.firestore(), storage=firebase.storage();
+
+// ── Monitoring d'erreurs basique (sans dépendance externe) ──
+(function(){
+  var _errCount = 0;
+  function _logClientError(message, stack){
+    if (_errCount >= 5) return;
+    _errCount++;
+    try {
+      var uid = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.uid : null;
+      db.collection('errorLogs').add({
+        message: String(message||'').slice(0,500),
+        stack: String(stack||'').slice(0,1000),
+        url: location.href.slice(0,300),
+        page: location.pathname.split('/').pop() || 'index.html',
+        userAgent: navigator.userAgent.slice(0,200),
+        userId: uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(){});
+    } catch(e){}
+  }
+  window.addEventListener('error', function(e){
+    _logClientError(e.message, e.error && e.error.stack);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var r = e.reason;
+    _logClientError(r && r.message ? r.message : String(r), r && r.stack);
+  });
+})();
+
 
 // ── EMAILJS CONFIG ── (remplir après création compte sur emailjs.com)
 var EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // Account → API Keys
@@ -1830,6 +1870,38 @@ function runCleanup(eligible){
     });
   }
   next(0);
+}
+
+// ── MONITORING D'ERREURS JS ──
+function escHtmlLog(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function loadErrorLogs(){
+  var box=document.getElementById('errorLogsResult');
+  box.innerHTML='⏳ Chargement...';
+  db.collection('errorLogs').orderBy('createdAt','desc').limit(20).get().then(function(snap){
+    if(snap.empty){ box.innerHTML='<div style="color:#059669;">✓ Aucune erreur enregistrée.</div>'; return; }
+    var html='';
+    snap.forEach(function(doc){
+      var d=doc.data();
+      var date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleString('fr-DZ'):'—';
+      html+='<div style="border-left:3px solid #991b1b;background:var(--card2,var(--card));border-radius:8px;padding:8px 10px;margin-bottom:8px;">'
+        +'<div style="font-weight:700;color:#991b1b;">'+escHtmlLog(d.message)+'</div>'
+        +'<div style="color:var(--muted);margin-top:2px;">'+date+' · '+escHtmlLog(d.page)+(d.userId?' · user:'+escHtmlLog(d.userId):'')+'</div>'
+        +'</div>';
+    });
+    box.innerHTML=html;
+  }).catch(function(e){ box.innerHTML='<div style="color:#dc2626;">Erreur: '+escHtmlLog(e.message)+'</div>'; });
+}
+function clearErrorLogs(){
+  showCModal('🗑️','Vider tous les logs d\'erreurs ?','Cette action est définitive.','🗑 Vider',true,function(){
+    db.collection('errorLogs').limit(400).get().then(function(snap){
+      var batch=db.batch();
+      snap.forEach(function(doc){ batch.delete(doc.ref); });
+      return batch.commit();
+    }).then(function(){
+      toast('Logs vidés ✓','ok');
+      document.getElementById('errorLogsResult').innerHTML='';
+    }).catch(function(e){ toast('Erreur: '+e.message,'err'); });
+  });
 }
 
 function showPModal(title, hint, placeholder, okLabel, onOk){
