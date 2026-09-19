@@ -74,6 +74,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 .s-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;outline:none;margin-bottom:12px;background:var(--card2);color:var(--text);}
 .s-input:focus{border-color:#1254a0;}
 .s-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+.settings-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.settings-tab{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;}
+.settings-tab:hover{border-color:#1254a0;color:#1254a0;}
+.settings-tab.active{background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border-color:transparent;}
+.settings-category{max-width:480px;}
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-start;justify-content:flex-end;}
 .drawer-overlay.open{display:flex;}
 .drawer{background:var(--card);width:460px;max-width:100vw;height:100vh;overflow-y:auto;padding:22px 24px;box-shadow:-6px 0 30px rgba(0,0,0,.15);}
@@ -334,7 +339,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 
     <!-- PARAMETRES -->
     <div id="panelSettings" class="panel">
-      <div class="settings-block">
+      <div class="settings-tabs">
+        <button type="button" class="settings-tab active" data-cat="general" onclick="switchSettingsTab('general')">&#9881;&#65039; General</button>
+        <button type="button" class="settings-tab" data-cat="site" onclick="switchSettingsTab('site')">&#128679; Site &amp; communication</button>
+        <button type="button" class="settings-tab" data-cat="notif" onclick="switchSettingsTab('notif')">&#128276; Notifications</button>
+        <button type="button" class="settings-tab" data-cat="contact" onclick="switchSettingsTab('contact')">&#9993;&#65039; Contact &amp; support</button>
+        <button type="button" class="settings-tab" data-cat="technique" onclick="switchSettingsTab('technique')">&#128027; Technique</button>
+      </div>
+
+      <div class="settings-category" id="setcat-general">
+            <div class="settings-block">
         <div class="s-title">⚙️ Configuration</div>
         <label class="s-lbl">TAUX (DZD par 1 EUR)</label>
         <input class="s-input" id="sTaux" type="number" placeholder="275">
@@ -356,6 +370,38 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="settingsMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
+      
+
+      <!-- SOLDE EUR -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">💵 Solde EUR disponible</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Définissez votre solde EUR disponible. Il sera automatiquement décrémenté à chaque transfert marqué <strong>Terminé</strong>.
+        </div>
+        <label class="s-lbl">SOLDE ACTUEL (EUR)</label>
+        <input class="s-input" id="sSolde" type="number" min="0" step="0.01" placeholder="ex: 5000">
+        <button class="s-btn" onclick="saveSoldeEur()">💾 Mettre à jour le solde</button>
+        <div id="soldeMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      
+
+      <!-- ALERTE GROS MONTANTS -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">🚨 Alerte gros montants</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Les transferts dépassant ce seuil seront mis en évidence (bordure rouge) dans la liste et comptés dans le tableau de bord.
+        </div>
+        <label class="s-lbl">SEUIL D'ALERTE (EUR)</label>
+        <input class="s-input" id="sAlertThreshold" type="number" min="0" placeholder="ex: 500">
+        <button class="s-btn" onclick="saveAlertThreshold()">💾 Enregistrer le seuil</button>
+        <div id="alertMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      
+      </div>
+
+      <div class="settings-category" id="setcat-site" style="display:none;">
       <!-- MODE MAINTENANCE -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">🚧 Mode Maintenance</div>
@@ -378,6 +424,57 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="maintStatusMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
 
+      
+
+      <!-- ANNONCE BROADCAST -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">📢 Annonce aux utilisateurs</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Ce message sera affiché en bandeau à tous les utilisateurs connectés sur l'application. Laissez vide pour désactiver.
+        </div>
+        <label class="s-lbl">MESSAGE D'ANNONCE</label>
+        <textarea class="s-input" id="sAnnouncement" rows="3" placeholder="ex: Maintenance prévue le 1er juin de 14h à 16h. Merci de votre compréhension." style="resize:vertical;font-family:inherit;"></textarea>
+        <button class="s-btn" onclick="saveAnnouncement()">📢 Publier l'annonce</button>
+        <div id="announceMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+
+      
+
+      <!-- NOTIFICATION PERSONNALISÉE -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">✉️ Notification personnalisée</div>
+        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Envoyez un message privé à un utilisateur précis. Il apparaîtra dans son onglet 🔔 Notifications avec la mention <strong>Personnel</strong>.
+        </div>
+
+        <!-- Sélecteur utilisateur -->
+        <label class="s-lbl">RECHERCHER UN UTILISATEUR</label>
+        <div id="userPickerSelected" style="display:none;" class="user-picker-selected">
+          <div>
+            <div class="ups-name" id="upsName"></div>
+            <div class="ups-email" id="upsEmail"></div>
+          </div>
+          <button class="user-picker-clear" onclick="clearPickedUser()" title="Changer">✕</button>
+        </div>
+        <div id="userPickerField" class="user-picker">
+          <input class="user-picker-input" id="userPickerInput" type="text"
+            placeholder="Nom ou email de l'utilisateur..."
+            oninput="filterUserPicker(this.value)"
+            onfocus="filterUserPicker(this.value)"
+            autocomplete="off">
+          <div class="user-picker-results" id="userPickerResults"></div>
+        </div>
+
+        <label class="s-lbl" style="margin-top:12px;">MESSAGE</label>
+        <textarea class="s-input" id="sPersonalNotif" rows="3"
+          placeholder="ex: Votre demande a été traitée en priorité. Merci de votre confiance !"
+          style="resize:vertical;font-family:inherit;"></textarea>
+        <button class="s-btn" onclick="sendPersonalNotif()">✉️ Envoyer la notification</button>
+        <div id="personalNotifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      </div>
+      </div>
+
+      <div class="settings-category" id="setcat-notif" style="display:none;">
       <!-- WEB3FORMS : NOTIFICATIONS ADMIN -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">🔔 Notifications Admin (Web3Forms)</div>
@@ -397,6 +494,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         </div>
         <div id="notifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
       </div>
+
+      
 
       <!-- EMAILJS : NOTIFICATIONS UTILISATEURS -->
       <div class="settings-block" style="margin-top:16px;">
@@ -451,30 +550,24 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         </div>
       </div>
 
-      <!-- SOLDE EUR -->
-      <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">💵 Solde EUR disponible</div>
-        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Définissez votre solde EUR disponible. Il sera automatiquement décrémenté à chaque transfert marqué <strong>Terminé</strong>.
-        </div>
-        <label class="s-lbl">SOLDE ACTUEL (EUR)</label>
-        <input class="s-input" id="sSolde" type="number" min="0" step="0.01" placeholder="ex: 5000">
-        <button class="s-btn" onclick="saveSoldeEur()">💾 Mettre à jour le solde</button>
-        <div id="soldeMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      
       </div>
 
-      <!-- ALERTE GROS MONTANTS -->
+      <div class="settings-category" id="setcat-contact" style="display:none;">
+      <!-- MESSAGES DE CONTACT (visiteurs) -->
       <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">🚨 Alerte gros montants</div>
-        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Les transferts dépassant ce seuil seront mis en évidence (bordure rouge) dans la liste et comptés dans le tableau de bord.
+        <div class="s-title">&#9993;&#65039; Messages de contact (visiteurs)</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+          Messages envoyes via le formulaire de contact du site public (visiteurs non inscrits). Une notification email est aussi envoyee automatiquement a chaque nouveau message.
         </div>
-        <label class="s-lbl">SEUIL D'ALERTE (EUR)</label>
-        <input class="s-input" id="sAlertThreshold" type="number" min="0" placeholder="ex: 500">
-        <button class="s-btn" onclick="saveAlertThreshold()">💾 Enregistrer le seuil</button>
-        <div id="alertMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+        <button class="s-btn" onclick="loadContacts()">&#128260; Charger les 20 derniers messages</button>
+        <div id="contactsResult" style="margin-top:14px;font-size:12.5px;color:var(--text);max-height:400px;overflow-y:auto;"></div>
       </div>
 
+      
+      </div>
+
+      <div class="settings-category" id="setcat-technique" style="display:none;">
       <!-- NETTOYAGE DES PREUVES (stockage) -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">🧹 Nettoyage des preuves (stockage Firebase)</div>
@@ -495,15 +588,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="cleanupResult" style="margin-top:12px;font-size:13px;color:#444;"></div>
       </div>
 
-      <!-- MESSAGES DE CONTACT (visiteurs) -->
-      <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">&#9993;&#65039; Messages de contact (visiteurs)</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
-          Messages envoyes via le formulaire de contact du site public (visiteurs non inscrits). Une notification email est aussi envoyee automatiquement a chaque nouveau message.
-        </div>
-        <button class="s-btn" onclick="loadContacts()">&#128260; Charger les 20 derniers messages</button>
-        <div id="contactsResult" style="margin-top:14px;font-size:12.5px;color:var(--text);max-height:400px;overflow-y:auto;"></div>
-      </div>
+      
 
       <!-- MONITORING D'ERREURS JS -->
       <div class="settings-block" style="margin-top:16px;">
@@ -516,49 +601,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="errorLogsResult" style="margin-top:14px;font-size:12.5px;color:var(--text);max-height:400px;overflow-y:auto;"></div>
       </div>
 
-      <!-- ANNONCE BROADCAST -->
-      <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">📢 Annonce aux utilisateurs</div>
-        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Ce message sera affiché en bandeau à tous les utilisateurs connectés sur l'application. Laissez vide pour désactiver.
-        </div>
-        <label class="s-lbl">MESSAGE D'ANNONCE</label>
-        <textarea class="s-input" id="sAnnouncement" rows="3" placeholder="ex: Maintenance prévue le 1er juin de 14h à 16h. Merci de votre compréhension." style="resize:vertical;font-family:inherit;"></textarea>
-        <button class="s-btn" onclick="saveAnnouncement()">📢 Publier l'annonce</button>
-        <div id="announceMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
-      </div>
-
-      <!-- NOTIFICATION PERSONNALISÉE -->
-      <div class="settings-block" style="margin-top:16px;">
-        <div class="s-title">✉️ Notification personnalisée</div>
-        <div style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;">
-          Envoyez un message privé à un utilisateur précis. Il apparaîtra dans son onglet 🔔 Notifications avec la mention <strong>Personnel</strong>.
-        </div>
-
-        <!-- Sélecteur utilisateur -->
-        <label class="s-lbl">RECHERCHER UN UTILISATEUR</label>
-        <div id="userPickerSelected" style="display:none;" class="user-picker-selected">
-          <div>
-            <div class="ups-name" id="upsName"></div>
-            <div class="ups-email" id="upsEmail"></div>
-          </div>
-          <button class="user-picker-clear" onclick="clearPickedUser()" title="Changer">✕</button>
-        </div>
-        <div id="userPickerField" class="user-picker">
-          <input class="user-picker-input" id="userPickerInput" type="text"
-            placeholder="Nom ou email de l'utilisateur..."
-            oninput="filterUserPicker(this.value)"
-            onfocus="filterUserPicker(this.value)"
-            autocomplete="off">
-          <div class="user-picker-results" id="userPickerResults"></div>
-        </div>
-
-        <label class="s-lbl" style="margin-top:12px;">MESSAGE</label>
-        <textarea class="s-input" id="sPersonalNotif" rows="3"
-          placeholder="ex: Votre demande a été traitée en priorité. Merci de votre confiance !"
-          style="resize:vertical;font-family:inherit;"></textarea>
-        <button class="s-btn" onclick="sendPersonalNotif()">✉️ Envoyer la notification</button>
-        <div id="personalNotifMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+      
       </div>
 
     </div>
@@ -1880,6 +1923,16 @@ function runCleanup(eligible){
     });
   }
   next(0);
+}
+
+// ── SOUS-ONGLETS PARAMETRES ──
+function switchSettingsTab(cat){
+  document.querySelectorAll('.settings-category').forEach(function(el){
+    el.style.display = (el.id === 'setcat-' + cat) ? '' : 'none';
+  });
+  document.querySelectorAll('.settings-tab').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.cat === cat);
+  });
 }
 
 // ── MESSAGES DE CONTACT ──
