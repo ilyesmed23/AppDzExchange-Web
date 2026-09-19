@@ -792,17 +792,19 @@ function sendUserConfirmEmail(txData){
   }).catch(function(e){ console.warn('EmailJS:', e); });
 }
 
-// Notification email admin (nouvelle demande, etc.)
+// Notification email admin (nouvelle demande, nouveau ticket, etc.)
 // Le template EmailJS dispo (compte gratuit, 2 templates max) est celui des notifs de transfert
 // (statut_label / montant_eur / montant_dzd / email_paysera / motif / date) : subject/message ne
 // sont geres par aucun template existant, donc on remplit directement ces champs-la.
-function sendAdminEmail(statutLabel, motif, montantEur, montantDzd, emailPaysera) {
+// subtitle/intro/outro sont optionnels : par defaut le texte reste celui d'une demande de transfert
+// (compatibilite avec les appels existants), mais on peut les personnaliser (ex: notif de ticket support).
+function sendAdminEmail(statutLabel, motif, montantEur, montantDzd, emailPaysera, subtitle, intro, outro) {
   if(!_ejReady || _ejPaused) return;
   emailjs.send(_ejSvc, _ejTpl, {
     statut_label:  statutLabel,
-    email_subtitle:'Nouvelle demande de transfert',
-    email_intro:   'Une nouvelle demande de transfert vient d\'être soumise :',
-    email_outro:   'Connectez-vous à l\'espace admin pour traiter cette demande.',
+    email_subtitle: subtitle || 'Nouvelle demande de transfert',
+    email_intro:    intro || 'Une nouvelle demande de transfert vient d\'être soumise :',
+    email_outro:    outro || 'Connectez-vous à l\'espace admin pour traiter cette demande.',
     motif:         motif || '',
     montant_eur:   (montantEur === undefined || montantEur === null || montantEur === '') ? '—' : montantEur,
     montant_dzd:   (montantDzd === undefined || montantDzd === null || montantDzd === '') ? '—' : montantDzd,
@@ -811,6 +813,24 @@ function sendAdminEmail(statutLabel, motif, montantEur, montantDzd, emailPaysera
     to_email: ADMIN_EMAIL,
     to_name:  'Admin'
   }).catch(function(e){ console.warn('EmailJS admin:', e); });
+}
+
+// Notification email admin : nouveau ticket support ou nouveau message dans un ticket
+function notifyAdminTicket(isNewTicket, nom, email, objet, texte){
+  var motif = 'De : ' + (nom || '—') + '  |  Email : ' + (email || '—') +
+    (objet ? '  |  Objet : ' + objet : '') +
+    '  |  Message : ' + (texte || '(fichier joint)');
+  if (isNewTicket) {
+    sendAdminEmail('🆕 Nouveau ticket support', motif, '—', '—', '',
+      'Nouveau ticket support',
+      'Un utilisateur vient d\'ouvrir un nouveau ticket :',
+      'Connectez-vous à l\'espace admin pour répondre.');
+  } else {
+    sendAdminEmail('💬 Nouveau message (ticket)', motif, '—', '—', '',
+      'Nouveau message dans un ticket',
+      'Un utilisateur a répondu dans un ticket support :',
+      'Connectez-vous à l\'espace admin pour répondre.');
+  }
 }
 
 // ── Maintenance Check ──
@@ -1829,6 +1849,7 @@ function createTicket() {
     document.getElementById('ticketMsg').value = '';
     clearNewTicketFile();
     hideNewTicketForm();
+    notifyAdminTicket(true, u.nom, u.email, objet, msg);
   }).catch(function(e) {
     loader.style.display = 'none';
     errEl.textContent = 'Erreur : ' + e.message; errEl.style.display = 'block';
@@ -1866,6 +1887,8 @@ function sendTicketReply() {
     : doSend(msgData);
   p.then(function() {
     input.value = ''; input.disabled = false; input.focus(); clearReplyFile();
+    var uInfo = currentUser || {};
+    notifyAdminTicket(false, uInfo.nom, uInfo.email, null, text || (msgData.fileName || ''));
   }).catch(function(e) {
     input.disabled = false; toast('Erreur : ' + e.message,'err');
   });
