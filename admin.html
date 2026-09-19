@@ -1883,6 +1883,29 @@ function runCleanup(eligible){
 }
 
 // ── MESSAGES DE CONTACT ──
+var contactsCache = {};
+var REPLY_TEMPLATES = {
+  probleme_resolu: {
+    label: 'Probleme resolu (ex: inscription)',
+    fr: { subject: 'Suivi de votre message - AppDzExchange', body: "Bonjour {nom},\n\nMerci de nous avoir contactes. Le probleme que vous aviez signale est maintenant resolu, vous pouvez reessayer normalement.\n\nN'hesitez pas a nous recontacter si le souci persiste.\n\nCordialement,\nL'equipe AppDzExchange" },
+    ar: { subject: 'متابعة رسالتكم - AppDzExchange', body: "مرحباً {nom}،\n\nشكراً لتواصلكم معنا. المشكلة التي أبلغتم عنها تم حلها الآن، يمكنكم إعادة المحاولة بشكل طبيعي.\n\nلا تترددوا في مراسلتنا مجدداً إذا استمرت المشكلة.\n\nمع تحيات،\nفريق AppDzExchange" }
+  },
+  maintenance: {
+    label: 'Site en maintenance',
+    fr: { subject: 'Site en maintenance - AppDzExchange', body: "Bonjour {nom},\n\nNous vous informons que notre site est actuellement en maintenance. Veuillez nous excuser pour la gene occasionnee, le service sera retabli tres prochainement.\n\nMerci de votre comprehension.\n\nCordialement,\nL'equipe AppDzExchange" },
+    ar: { subject: 'الموقع قيد الصيانة - AppDzExchange', body: "مرحباً {nom}،\n\nنعلمكم أن موقعنا حالياً قيد الصيانة. نعتذر عن الإزعاج، وستُستأنف الخدمة في أقرب وقت ممكن.\n\nشكراً لتفهمكم.\n\nمع تحيات،\nفريق AppDzExchange" }
+  },
+  retabli: {
+    label: 'Site retabli',
+    fr: { subject: 'Site de nouveau disponible - AppDzExchange', body: "Bonjour {nom},\n\nNotre site est de nouveau operationnel. Vous pouvez des a present reessayer d'y acceder normalement.\n\nMerci de votre patience.\n\nCordialement,\nL'equipe AppDzExchange" },
+    ar: { subject: 'الموقع أصبح متاحاً من جديد - AppDzExchange', body: "مرحباً {nom}،\n\nموقعنا أصبح يعمل من جديد بشكل طبيعي. يمكنكم الآن إعادة المحاولة.\n\nشكراً لصبركم.\n\nمع تحيات،\nفريق AppDzExchange" }
+  },
+  personnalise: {
+    label: 'Personnalise (vide)',
+    fr: { subject: 'Reponse a votre message - AppDzExchange', body: '' },
+    ar: { subject: 'رد على رسالتكم - AppDzExchange', body: '' }
+  }
+};
 function loadContacts(){
   var box=document.getElementById('contactsResult');
   box.innerHTML='⏳ Chargement...';
@@ -1891,13 +1914,18 @@ function loadContacts(){
     var html='';
     snap.forEach(function(doc){
       var d=doc.data();
+      contactsCache[doc.id]=d;
       var date=d.timestamp&&d.timestamp.toDate?d.timestamp.toDate().toLocaleString('fr-DZ'):'—';
       var unread = d.lu===false;
       html+='<div style="border-left:3px solid '+(unread?'#1254a0':'#94a3b8')+';background:var(--card2,var(--card));border-radius:8px;padding:8px 10px;margin-bottom:8px;">'
-        +'<div style="font-weight:700;color:#1254a0;">'+escHtmlLog(d.nom)+(unread?' <span style="background:#1254a0;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;">NOUVEAU</span>':'')+'</div>'
+        +'<div style="font-weight:700;color:#1254a0;">'+escHtmlLog(d.nom)+(unread?' <span style="background:#1254a0;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;">NOUVEAU</span>':'')+(d.repondu?' <span style="background:#059669;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;">REPONDU</span>':'')+'</div>'
         +'<div style="color:var(--muted);margin-top:2px;">'+date+' · '+escHtmlLog(d.email)+'</div>'
         +'<div style="margin-top:6px;white-space:pre-wrap;">'+escHtmlLog(d.message)+'</div>'
-        +(unread?'<button class="s-btn" style="margin-top:8px;padding:4px 10px;font-size:11px;" onclick="markContactRead(\''+doc.id+'\',this)">✓ Marquer comme lu</button>':'')
+        +'<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">'
+        +(unread?'<button class="s-btn" style="padding:4px 10px;font-size:11px;" onclick="markContactRead(\''+doc.id+'\',this)">✓ Marquer comme lu</button>':'')
+        +'<button class="s-btn" style="padding:4px 10px;font-size:11px;" onclick="toggleReply(\''+doc.id+'\')">✉️ Repondre</button>'
+        +'</div>'
+        +'<div id="reply-'+doc.id+'" style="display:none;margin-top:10px;padding:10px;border-top:1px dashed var(--muted);"></div>'
         +'</div>';
     });
     box.innerHTML=html;
@@ -1907,6 +1935,58 @@ function markContactRead(id, btn){
   db.collection('contacts').doc(id).update({lu:true}).then(function(){
     if(btn){ btn.outerHTML=''; }
   }).catch(function(e){ toast('Erreur: '+e.message,'err'); });
+}
+function toggleReply(id){
+  var panel=document.getElementById('reply-'+id);
+  if(!panel) return;
+  if(panel.style.display==='none'){
+    var opts='';
+    for(var k in REPLY_TEMPLATES){ opts+='<option value="'+k+'">'+REPLY_TEMPLATES[k].label+'</option>'; }
+    panel.innerHTML=
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">'
+      +'<select id="tpl-'+id+'" onchange="applyTemplate(\''+id+'\')" style="flex:1;min-width:180px;">'+opts+'</select>'
+      +'<select id="lang-'+id+'" onchange="applyTemplate(\''+id+'\')">'
+      +'<option value="fr">Francais</option><option value="ar">العربية</option>'
+      +'</select>'
+      +'</div>'
+      +'<input id="subj-'+id+'" type="text" placeholder="Objet" style="width:100%;margin-bottom:6px;padding:6px;border-radius:6px;border:1px solid var(--muted);background:var(--card);color:var(--text);">'
+      +'<textarea id="body-'+id+'" rows="6" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--muted);background:var(--card);color:var(--text);"></textarea>'
+      +'<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">'
+      +'<button class="s-btn" onclick="sendReplyMailto(\''+id+'\')">📧 Ouvrir dans ma messagerie</button>'
+      +'<button class="s-btn" onclick="copyReplyText(\''+id+'\')">📋 Copier le texte</button>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:6px;">Ouvre votre messagerie par defaut avec le message pre-rempli (choisissez contact@appdzexchange.com comme expediteur si possible).</div>';
+    panel.style.display='block';
+    applyTemplate(id);
+  } else {
+    panel.style.display='none';
+  }
+}
+function applyTemplate(id){
+  var d=contactsCache[id]||{};
+  var tplKey=document.getElementById('tpl-'+id).value;
+  var lang=document.getElementById('lang-'+id).value;
+  var tpl=REPLY_TEMPLATES[tplKey][lang];
+  var nom=d.nom||'';
+  document.getElementById('subj-'+id).value=tpl.subject;
+  document.getElementById('body-'+id).value=tpl.body.replace('{nom}',nom);
+}
+function sendReplyMailto(id){
+  var d=contactsCache[id]||{};
+  var subj=document.getElementById('subj-'+id).value;
+  var body=document.getElementById('body-'+id).value;
+  var to=d.email||'';
+  var link='mailto:'+to+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  window.open(link,'_blank');
+  db.collection('contacts').doc(id).update({repondu:true}).catch(function(){});
+}
+function copyReplyText(id){
+  var subj=document.getElementById('subj-'+id).value;
+  var body=document.getElementById('body-'+id).value;
+  var text='Objet: '+subj+'\n\n'+body;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast('Texte copie !','ok'); }).catch(function(){ toast('Erreur de copie','err'); });
+  }
 }
 
 // ── MONITORING D'ERREURS JS ──
