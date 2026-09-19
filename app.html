@@ -580,7 +580,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
     <div style="margin-bottom:4px;">
       <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;" data-i18n="pr_ccp_edit">NUMERO CCP</label>
       <div style="display:flex;align-items:center;border:1.5px solid #e0e8f5;border-radius:10px;background:#f8fafc;overflow:hidden;">
-        <span style="padding:10px 8px;font-size:12px;color:#888;white-space:nowrap;border-right:1px solid #e0e8f5;">00799999000</span>
+        <span style="padding:10px 8px;font-size:12px;color:#888;white-space:nowrap;border-right:1px solid #e0e8f5;">0079999900</span>
         <input id="editCCP" type="tel" placeholder="123456789" inputmode="numeric"
           style="flex:1;border:none;padding:10px 10px;font-size:14px;outline:none;background:transparent;">
       </div>
@@ -1460,7 +1460,8 @@ function openEditProfile() {
   document.getElementById('editNom').value = currentUser.nom || '';
   document.getElementById('editPaysera').value = currentUser.emailPaysera || '';
   var ccp = currentUser.ccp || '';
-  if (ccp.startsWith('00799999000')) ccp = ccp.slice(11);
+  if (ccp.startsWith('00799999000')) ccp = ccp.slice(11);       // ancien prefixe (comptes crees avant le changement)
+  else if (ccp.startsWith('0079999900')) ccp = ccp.slice(10);   // nouveau prefixe
   document.getElementById('editCCP').value = ccp;
   document.getElementById('editProfileError').style.display = 'none';
   document.getElementById('editProfileLoader').style.display = 'none';
@@ -1475,7 +1476,7 @@ function confirmEditProfile() {
   errEl.style.display = 'none';
   if (!nom)     { errEl.textContent = 'Le nom ne peut pas etre vide.'; errEl.style.display='block'; return; }
   if (ccpRaw && !/^\d+$/.test(ccpRaw)) { errEl.textContent = 'Le CCP ne doit contenir que des chiffres.'; errEl.style.display='block'; return; }
-  var fullCcp = ccpRaw ? '00799999000'+ccpRaw : (currentUser.ccp||'');
+  var fullCcp = ccpRaw ? '0079999900'+ccpRaw : (currentUser.ccp||'');
   document.getElementById('editProfileLoader').style.display = 'block';
   db.collection('users').doc(currentUid).update({ nom:nom, emailPaysera:paysera, ccp:fullCcp })
     .then(function() {

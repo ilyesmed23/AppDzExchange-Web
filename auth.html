@@ -149,7 +149,7 @@ body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
     <div class="field">
       <label data-i18n="lbl_ccp">NUMÉRO CCP (BARIDIMOB)</label>
       <div class="ccp-row">
-        <span class="ccp-prefix">00799999000</span>
+        <span class="ccp-prefix">0079999900</span>
         <input type="text" id="regCCP" data-i18n-ph="ph_ccp" placeholder="123456789" maxlength="9" inputmode="numeric" style="flex:1;">
       </div>
       <div class="hint" data-i18n="hint_ccp">Saisissez les 9 derniers chiffres de votre numéro CCP</div>
@@ -551,7 +551,7 @@ function handleRegister() {
     // ── Anti-fraude : vérifier CCP et email Paysera uniques ──
     var checks = [];
     if (ccp) {
-      var fullCcp = '00799999000' + ccp;
+      var fullCcp = '0079999900' + ccp;
       checks.push(
         db.collection('users').where('ccp', '==', fullCcp).limit(1).get()
           .then(function(snap) {
@@ -591,7 +591,7 @@ function doRegister() {
   auth.createUserWithEmailAndPassword(email, pass)
     .then(function(cred) {
       var user = cred.user;
-      var fullCcp = ccp ? '00799999000' + ccp : '';
+      var fullCcp = ccp ? '0079999900' + ccp : '';
       return db.collection('users').doc(user.uid).set({
         nom: nom, email: email, emailPaysera: paysera, ccp: fullCcp,
         blocked: false, createdAt: new Date()
