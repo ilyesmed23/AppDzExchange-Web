@@ -800,6 +800,9 @@ function sendAdminEmail(statutLabel, motif, montantEur, montantDzd, emailPaysera
   if(!_ejReady || _ejPaused) return;
   emailjs.send(_ejSvc, _ejTpl, {
     statut_label:  statutLabel,
+    email_subtitle:'Nouvelle demande de transfert',
+    email_intro:   'Une nouvelle demande de transfert vient d\'être soumise :',
+    email_outro:   'Connectez-vous à l\'espace admin pour traiter cette demande.',
     motif:         motif || '',
     montant_eur:   (montantEur === undefined || montantEur === null || montantEur === '') ? '—' : montantEur,
     montant_dzd:   (montantDzd === undefined || montantDzd === null || montantDzd === '') ? '—' : montantDzd,

@@ -290,9 +290,15 @@ setLang(urlLang === 'ar' ? 'ar' : savedLang);
 renderState('checking');
 
 if (!oobCode || !mode) {
-  renderState('unknown');
+  var recentlyVerified = false;
+  try{
+    var ts = parseInt(localStorage.getItem('appdz_email_verified_recent') || '0', 10);
+    if (ts && (Date.now() - ts) < 15 * 60 * 1000) recentlyVerified = true;
+  }catch(e){}
+  renderState(recentlyVerified ? 'verified' : 'unknown');
 } else if (mode === 'verifyEmail') {
   auth.applyActionCode(oobCode).then(function(){
+    try{ localStorage.setItem('appdz_email_verified_recent', String(Date.now())); }catch(e){}
     renderState('verified');
   }).catch(function(err){
     var map = {

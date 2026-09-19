@@ -256,6 +256,9 @@ function notifyAdminNewUser(nom, email, paysera, ccp){
   if(!_ejReady || _ejPaused) return;
   emailjs.send(_ejSvc, _ejTpl, {
     statut_label:  '🆕 Nouvelle inscription',
+    email_subtitle:'Nouvelle inscription',
+    email_intro:   'Un nouvel utilisateur vient de s\'inscrire sur AppDz Exchange :',
+    email_outro:   'Connectez-vous à l\'espace admin pour voir tous les utilisateurs.',
     motif:         'Nom : ' + (nom || '—') + '  |  Email : ' + (email || '—') + '  |  CCP : ' + (ccp || '—'),
     montant_eur:   '—',
     montant_dzd:   '—',
