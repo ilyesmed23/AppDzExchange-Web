@@ -216,6 +216,7 @@ body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
 function toast(msg,type){var el=document.getElementById('toast');if(!el){window.alert(msg);return;}el.textContent=msg;el.className='toast show '+(type||'info');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){el.className='toast';},3500);}
 var pageLoadTime = Date.now();
@@ -230,6 +231,34 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
+
+// ── EmailJS : notification admin nouvelle inscription ──
+// (ADMIN_EMAIL est deja declare plus bas dans ce fichier, reutilise ici)
+var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejReady = false, _ejPaused = false;
+db.collection('config').doc('settings').get().then(function(s){
+  if(!s.exists) return;
+  var d = s.data();
+  _ejKey = d.ejKey || ''; _ejSvc = d.ejSvc || ''; _ejTpl = d.ejTpl || '';
+  _ejPaused = !!d.ejNotifPaused;
+  if(_ejKey && _ejSvc && _ejTpl){
+    try{ emailjs.init(_ejKey); _ejReady = true; }catch(e){}
+  }
+}).catch(function(){});
+
+function notifyAdminNewUser(nom, email, paysera, ccp){
+  if(!_ejReady || _ejPaused) return;
+  emailjs.send(_ejSvc, _ejTpl, {
+    subject:  '🆕 Nouvelle inscription — ' + (nom || email),
+    message:  'Un nouvel utilisateur vient de s\'inscrire :\n\n' +
+      '👤 Nom : ' + (nom || '—') + '\n' +
+      '📧 Email : ' + (email || '—') + '\n' +
+      '🏦 CCP : ' + (ccp || '—') + '\n' +
+      '💳 Paysera : ' + (paysera || '—') + '\n\n' +
+      '🔗 Connectez-vous sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html pour voir le compte.',
+    to_email: ADMIN_EMAIL,
+    to_name:  'Admin'
+  }).catch(function(e){ console.warn('EmailJS:', e); });
+}
 
 // ── Monitoring d'erreurs basique (sans dépendance externe) ──
 (function(){
@@ -559,6 +588,7 @@ function doRegister() {
         db.collection('config').doc('settings').set(
           { totalUsers: firebase.firestore.FieldValue.increment(1) }, { merge: true }
         ).catch(function(){});
+        notifyAdminNewUser(nom, email, paysera, fullCcp);
         return user.sendEmailVerification();
       }).then(function() {
         isRegistering = false; setLoader('registerLoader', false);
