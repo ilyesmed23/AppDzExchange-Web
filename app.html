@@ -2202,6 +2202,11 @@ function setLang(lang) {
   localStorage.setItem('lang', lang);
   document.documentElement.lang = lang;
   document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  // Persiste la preference de langue pour que les notifications email (Cloud Functions)
+  // soient envoyees dans la bonne langue, meme si l'utilisateur n'est pas sur le site.
+  if (typeof currentUid !== 'undefined' && currentUid) {
+    db.collection('users').doc(currentUid).update({ lang: lang }).catch(function(){});
+  }
 
   // Éléments statiques
   document.querySelectorAll('[data-i18n]').forEach(function(el) {

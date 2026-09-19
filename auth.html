@@ -594,7 +594,7 @@ function doRegister() {
       var fullCcp = ccp ? '0079999900' + ccp : '';
       return db.collection('users').doc(user.uid).set({
         nom: nom, email: email, emailPaysera: paysera, ccp: fullCcp,
-        blocked: false, createdAt: new Date()
+        blocked: false, createdAt: new Date(), lang: currentLang
       }).then(function() {
         db.collection('config').doc('settings').set(
           { totalUsers: firebase.firestore.FieldValue.increment(1) }, { merge: true }
