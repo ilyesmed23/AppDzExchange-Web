@@ -495,6 +495,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div id="cleanupResult" style="margin-top:12px;font-size:13px;color:#444;"></div>
       </div>
 
+      <!-- MESSAGES DE CONTACT (visiteurs) -->
+      <div class="settings-block" style="margin-top:16px;">
+        <div class="s-title">&#9993;&#65039; Messages de contact (visiteurs)</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">
+          Messages envoyes via le formulaire de contact du site public (visiteurs non inscrits). Une notification email est aussi envoyee automatiquement a chaque nouveau message.
+        </div>
+        <button class="s-btn" onclick="loadContacts()">&#128260; Charger les 20 derniers messages</button>
+        <div id="contactsResult" style="margin-top:14px;font-size:12.5px;color:var(--text);max-height:400px;overflow-y:auto;"></div>
+      </div>
+
       <!-- MONITORING D'ERREURS JS -->
       <div class="settings-block" style="margin-top:16px;">
         <div class="s-title">🐞 Erreurs JS récentes (monitoring basique)</div>
@@ -1870,6 +1880,33 @@ function runCleanup(eligible){
     });
   }
   next(0);
+}
+
+// ── MESSAGES DE CONTACT ──
+function loadContacts(){
+  var box=document.getElementById('contactsResult');
+  box.innerHTML='⏳ Chargement...';
+  db.collection('contacts').orderBy('timestamp','desc').limit(20).get().then(function(snap){
+    if(snap.empty){ box.innerHTML='<div style="color:#059669;">✓ Aucun message.</div>'; return; }
+    var html='';
+    snap.forEach(function(doc){
+      var d=doc.data();
+      var date=d.timestamp&&d.timestamp.toDate?d.timestamp.toDate().toLocaleString('fr-DZ'):'—';
+      var unread = d.lu===false;
+      html+='<div style="border-left:3px solid '+(unread?'#1254a0':'#94a3b8')+';background:var(--card2,var(--card));border-radius:8px;padding:8px 10px;margin-bottom:8px;">'
+        +'<div style="font-weight:700;color:#1254a0;">'+escHtmlLog(d.nom)+(unread?' <span style="background:#1254a0;color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;">NOUVEAU</span>':'')+'</div>'
+        +'<div style="color:var(--muted);margin-top:2px;">'+date+' · '+escHtmlLog(d.email)+'</div>'
+        +'<div style="margin-top:6px;white-space:pre-wrap;">'+escHtmlLog(d.message)+'</div>'
+        +(unread?'<button class="s-btn" style="margin-top:8px;padding:4px 10px;font-size:11px;" onclick="markContactRead(\''+doc.id+'\',this)">✓ Marquer comme lu</button>':'')
+        +'</div>';
+    });
+    box.innerHTML=html;
+  }).catch(function(e){ box.innerHTML='<div style="color:#dc2626;">Erreur: '+escHtmlLog(e.message)+'</div>'; });
+}
+function markContactRead(id, btn){
+  db.collection('contacts').doc(id).update({lu:true}).then(function(){
+    if(btn){ btn.outerHTML=''; }
+  }).catch(function(e){ toast('Erreur: '+e.message,'err'); });
 }
 
 // ── MONITORING D'ERREURS JS ──
