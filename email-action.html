@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vérification Email — AppDz Exchange</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Segoe UI',Arial,sans-serif; min-height:100vh;
+  background:linear-gradient(160deg,#1254a0 0%,#0097a7 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:16px; overflow-x:hidden; }
+body[dir="rtl"] { font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
+.logo-banner { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.logo-icon { width:48px; height:48px; border-radius:12px; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  box-shadow:0 4px 14px rgba(0,0,0,.2); }
+.logo-arrow { color:#fff; font-size:26px; font-weight:700; }
+.app-title { color:#fff; font-size:20px; font-weight:800; }
+.card { background:#fff; border-radius:22px; padding:30px 24px;
+  width:100%; max-width:420px; box-shadow:0 16px 48px rgba(0,0,0,.25); text-align:center; }
+.card h2 { font-size:21px; color:#1254a0; font-weight:800; margin-bottom:12px; }
+.field { margin-bottom:13px; text-align:left; }
+.field label { font-size:11px; color:#666; font-weight:700; display:block; margin-bottom:4px; letter-spacing:.4px; }
+.field input { width:100%; padding:12px 13px; border:1.5px solid #e0e8f5;
+  border-radius:11px; font-size:16px; color:#333; outline:none; background:#f8fafc; transition:.2s; }
+.field input:focus { border-color:#1254a0; background:#fff; }
+.btn { width:100%; padding:13px; border:none; border-radius:13px; font-size:15px;
+  font-weight:700; cursor:pointer; transition:.15s; margin-top:4px; }
+.btn-primary { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff; }
+.btn-primary:active { transform:scale(.97); }
+.btn-primary:disabled { opacity:.6; cursor:default; }
+.btn-link { background:none; color:#1254a0; font-size:13px; font-weight:600;
+  border:none; cursor:pointer; padding:8px; width:100%; text-align:center; }
+.divider { text-align:center; color:#ddd; font-size:11px; margin:8px 0; }
+.error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px;
+  padding:10px 12px; font-size:13px; color:#dc2626; margin-bottom:12px; display:none; text-align:left; }
+.loader { display:none; text-align:center; padding:8px; color:#1254a0; font-size:13px; }
+.verif-icon { font-size:48px; text-align:center; margin-bottom:12px; }
+.verif-msg { font-size:13.5px; color:#555; text-align:center; line-height:1.6; margin-bottom:18px; }
+.lang-switcher-auth { position:fixed; top:18px; right:18px; z-index:999;
+  display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.15);
+  border-radius:20px; padding:3px; backdrop-filter:blur(8px); }
+.lang-btn { background:transparent; border:none; color:#fff; font-size:12px; font-weight:800;
+  padding:4px 10px; border-radius:16px; cursor:pointer; transition:.15s; letter-spacing:.5px; }
+.lang-btn.active { background:rgba(255,255,255,.9); color:#1254a0; }
+.lang-btn:hover:not(.active) { background:rgba(255,255,255,.2); }
+.auth-footer { text-align:center; padding:14px 0 4px; font-size:11px; }
+@media (min-width: 769px) {
+  body { flex-direction:row; align-items:stretch; padding:0; gap:0; }
+  body::before { content:''; flex:1; background:linear-gradient(160deg,#1254a0 0%,#0097a7 100%);
+    display:flex; position:relative; min-height:100vh; }
+  .logo-banner { position:fixed; left:0; top:50%; transform:translateY(-50%);
+    width:calc(50vw - 20px); flex-direction:column; gap:16px; padding:40px; color:#fff; z-index:10; }
+  .app-title { font-size:28px; font-weight:900; text-align:center; }
+  .card-wrapper { display:flex; flex-direction:column; justify-content:center; align-items:center;
+    flex:1; padding-right:8%; padding-top:60px; padding-bottom:20px; min-height:100vh; }
+  .card { position:relative; z-index:20; width:100%;
+    border-radius:24px; min-width:400px; max-width:440px; box-shadow:0 24px 64px rgba(0,0,0,.2); }
+  body[dir="rtl"] .card-wrapper { padding-right:0; padding-left:8%; }
+  body[dir="rtl"] .logo-banner { left:auto; right:0; }
+}
+body[dir="rtl"] #backBtn { left:auto; right:18px; }
+body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:11px;font-size:13.5px;font-weight:700;color:#fff;z-index:2000;display:none;box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:90vw;text-align:center;}
+.toast.show{display:block;}
+.toast.ok{background:#065f46;}.toast.err{background:#991b1b;}.toast.info{background:#1254a0;}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<div class="lang-switcher-auth">
+  <button class="lang-btn active" id="btnFr" onclick="setLang('fr')">FR</button>
+  <button class="lang-btn" id="btnAr" onclick="setLang('ar')">AR</button>
+</div>
+
+<a id="backBtn" href="index.html" style="position:fixed;top:18px;left:18px;z-index:999;display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:8px 16px;border:1.5px solid rgba(255,255,255,.35);border-radius:22px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">← <span id="backHomeLabel">Accueil</span></a>
+
+<div class="logo-banner">
+  <div class="logo-icon">&#127968;</div>
+  <span class="logo-arrow">&#8644;</span>
+  <div class="logo-icon">&#128179;</div>
+  <span class="app-title">AppDz Exchange</span>
+</div>
+
+<div class="card-wrapper"><div class="card">
+
+  <div id="mainState">
+    <div class="verif-icon" id="stateIcon">&#8987;</div>
+    <h2 id="stateTitle">Vérification en cours...</h2>
+    <p class="verif-msg" id="stateMsg">Veuillez patienter quelques instants.</p>
+
+    <div id="successActions" style="display:none;">
+      <button class="btn btn-primary" onclick="location.href='auth.html'" id="btnLoginSuccess">Se connecter</button>
+      <button class="btn btn-primary" style="margin-top:8px;background:rgba(18,84,160,.15);color:#1254a0;border:1.5px solid #1254a0;" onclick="location.href='app.html'" id="btnAccountSuccess">Accéder à mon compte</button>
+      <div class="divider">────────────</div>
+      <button class="btn-link" onclick="location.href='index.html'" id="btnHomeSuccess">← Retour à l'accueil</button>
+    </div>
+
+    <div id="errorActions" style="display:none;">
+      <button class="btn btn-primary" onclick="location.href='auth.html'" id="btnLoginError">Se connecter</button>
+      <button class="btn-link" onclick="location.href='auth.html?register=1'" id="btnRegisterError">Créer un compte</button>
+    </div>
+  </div>
+
+  <div id="resetState" style="display:none;">
+    <div class="verif-icon">&#128273;</div>
+    <h2 id="resetTitle">Nouveau mot de passe</h2>
+    <p class="verif-msg" id="resetMsg">Choisissez un nouveau mot de passe pour votre compte.</p>
+    <div id="resetError" class="error-box"></div>
+    <div class="field">
+      <label id="lblNewPass">NOUVEAU MOT DE PASSE</label>
+      <input type="password" id="newPassword" placeholder="Minimum 6 caractères">
+    </div>
+    <div class="field">
+      <label id="lblConfirmPass">CONFIRMER LE MOT DE PASSE</label>
+      <input type="password" id="newPassword2" placeholder="Minimum 6 caractères">
+    </div>
+    <div class="loader" id="resetLoader">Réinitialisation en cours...</div>
+    <button class="btn btn-primary" onclick="submitNewPassword()" id="btnDoReset">Réinitialiser le mot de passe</button>
+  </div>
+
+  <div id="resetSuccessState" style="display:none;">
+    <div class="verif-icon">&#9989;</div>
+    <h2 id="resetSuccessTitle">Mot de passe modifié !</h2>
+    <p class="verif-msg" id="resetSuccessMsg">Votre mot de passe a été réinitialisé avec succès.</p>
+    <button class="btn btn-primary" onclick="location.href='auth.html'" id="btnLoginResetSuccess">Se connecter</button>
+  </div>
+
+</div></div>
+
+<div class="auth-footer">
+  <a href="legal.html" style="color:rgba(255,255,255,.6);text-decoration:none;margin:0 8px;">CGU</a> ·
+  <a href="privacy.html" style="color:rgba(255,255,255,.6);text-decoration:none;margin:0 8px;">Confidentialité</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+function toast(msg,type){var el=document.getElementById('toast');if(!el){window.alert(msg);return;}el.textContent=msg;el.className='toast show '+(type||'info');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){el.className='toast';},3500);}
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
+  authDomain: "appdzexchange.firebaseapp.com",
+  projectId: "appdzexchange",
+  storageBucket: "appdzexchange.firebasestorage.app",
+  messagingSenderId: "217882852483",
+  appId: "1:217882852483:android:b687e98a47d7f274d9efb6"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+var STR = {
+  fr: {
+    back_home:'Accueil',
+    checking_title:'Vérification en cours...',
+    checking_msg:'Veuillez patienter quelques instants.',
+    verified_title:'Email vérifié ! 🎉',
+    verified_msg:'Votre adresse email a été confirmée avec succès. Vous pouvez maintenant profiter de tous les services AppDz Exchange.',
+    verify_err_title:'Lien invalide',
+    verify_err_expired:'Ce lien de confirmation a expiré. Connectez-vous pour en recevoir un nouveau.',
+    verify_err_used:'Ce lien a déjà été utilisé, ou votre email est peut-être déjà confirmé. Vous pouvez vous connecter directement.',
+    verify_err_generic:'Une erreur est survenue lors de la vérification de votre email.',
+    reset_title:'Nouveau mot de passe',
+    reset_msg:'Choisissez un nouveau mot de passe pour votre compte.',
+    lbl_new_pass:'NOUVEAU MOT DE PASSE',
+    lbl_confirm_pass:'CONFIRMER LE MOT DE PASSE',
+    ph_pass:'Minimum 6 caractères',
+    btn_reset:'Réinitialiser le mot de passe',
+    err_pass_short:'Le mot de passe doit contenir au moins 6 caractères.',
+    err_pass_mismatch:'Les mots de passe ne correspondent pas.',
+    reset_success_title:'Mot de passe modifié ! ✓',
+    reset_success_msg:'Votre mot de passe a été réinitialisé avec succès.',
+    reset_err_expired:'Ce lien de réinitialisation a expiré. Redemandez-en un nouveau depuis la page de connexion.',
+    reset_err_generic:'Une erreur est survenue. Le lien est peut-être invalide ou expiré.',
+    recover_title:'Email restauré',
+    recover_msg:'Votre adresse email a été restaurée avec succès.',
+    unknown_title:'Lien invalide',
+    unknown_msg:"Ce lien n'est pas valide ou a expiré.",
+    btn_login:'Se connecter',
+    btn_account:'Accéder à mon compte',
+    btn_home:'← Retour à l’accueil',
+    btn_register:'Créer un compte',
+    loader_reset:'Réinitialisation en cours...'
+  },
+  ar: {
+    back_home:'الرئيسية',
+    checking_title:'جارٍ التحقق...',
+    checking_msg:'يرجى الانتظار قليلاً.',
+    verified_title:'تم تأكيد البريد الإلكتروني! 🎉',
+    verified_msg:'تم تأكيد بريدك الإلكتروني بنجاح. يمكنك الآن الاستفادة من جميع خدمات AppDz Exchange.',
+    verify_err_title:'رابط غير صالح',
+    verify_err_expired:'انتهت صلاحية رابط التأكيد. سجّل الدخول للحصول على رابط جديد.',
+    verify_err_used:'تم استخدام هذا الرابط من قبل، أو ربما تم تأكيد بريدك الإلكتروني بالفعل. يمكنك تسجيل الدخول مباشرة.',
+    verify_err_generic:'حدث خطأ أثناء التحقق من بريدك الإلكتروني.',
+    reset_title:'كلمة مرور جديدة',
+    reset_msg:'اختر كلمة مرور جديدة لحسابك.',
+    lbl_new_pass:'كلمة المرور الجديدة',
+    lbl_confirm_pass:'تأكيد كلمة المرور',
+    ph_pass:'6 أحرف على الأقل',
+    btn_reset:'إعادة تعيين كلمة المرور',
+    err_pass_short:'يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل.',
+    err_pass_mismatch:'كلمتا المرور غير متطابقتين.',
+    reset_success_title:'تم تغيير كلمة المرور! ✓',
+    reset_success_msg:'تمت إعادة تعيين كلمة مرورك بنجاح.',
+    reset_err_expired:'انتهت صلاحية رابط إعادة التعيين. اطلب رابطاً جديداً من صفحة تسجيل الدخول.',
+    reset_err_generic:'حدث خطأ. قد يكون الرابط غير صالح أو منتهي الصلاحية.',
+    recover_title:'تمت استعادة البريد الإلكتروني',
+    recover_msg:'تمت استعادة عنوان بريدك الإلكتروني بنجاح.',
+    unknown_title:'رابط غير صالح',
+    unknown_msg:'هذا الرابط غير صالح أو منتهي الصلاحية.',
+    btn_login:'تسجيل الدخول',
+    btn_account:'الوصول إلى حسابي',
+    btn_home:'→ العودة إلى الرئيسية',
+    btn_register:'إنشاء حساب',
+    loader_reset:'جارٍ إعادة التعيين...'
+  }
+};
+
+var currentLang = 'fr';
+var currentStateKey = null;
+var mode = null, oobCode = null;
+
+function show(id){ var el=document.getElementById(id); if(el) el.style.display='block'; }
+function hide(id){ var el=document.getElementById(id); if(el) el.style.display='none'; }
+function setText(id,txt){ var el=document.getElementById(id); if(el) el.textContent = txt; }
+
+function setLang(lang){
+  currentLang = lang;
+  try{ localStorage.setItem('lang', lang); }catch(e){}
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('btnFr').classList.toggle('active', lang==='fr');
+  document.getElementById('btnAr').classList.toggle('active', lang==='ar');
+  document.getElementById('backHomeLabel').textContent = STR[lang].back_home;
+  var backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.childNodes[0].nodeValue = lang === 'ar' ? '→ ' : '← ';
+  setText('btnLoginSuccess', STR[lang].btn_login);
+  setText('btnAccountSuccess', STR[lang].btn_account);
+  setText('btnHomeSuccess', STR[lang].btn_home);
+  setText('btnLoginError', STR[lang].btn_login);
+  setText('btnRegisterError', STR[lang].btn_register);
+  setText('lblNewPass', STR[lang].lbl_new_pass);
+  setText('lblConfirmPass', STR[lang].lbl_confirm_pass);
+  var np = document.getElementById('newPassword'); if(np) np.placeholder = STR[lang].ph_pass;
+  var np2 = document.getElementById('newPassword2'); if(np2) np2.placeholder = STR[lang].ph_pass;
+  setText('btnDoReset', STR[lang].btn_reset);
+  setText('resetLoader', STR[lang].loader_reset);
+  setText('btnLoginResetSuccess', STR[lang].btn_login);
+  if (currentStateKey) renderState(currentStateKey);
+}
+
+function renderState(key){
+  currentStateKey = key;
+  var s = STR[currentLang];
+  hide('resetState'); hide('resetSuccessState');
+  if (key === 'checking'){
+    show('mainState'); hide('successActions'); hide('errorActions');
+    setText('stateIcon','⏳'); setText('stateTitle', s.checking_title); setText('stateMsg', s.checking_msg);
+  } else if (key === 'verified'){
+    show('mainState'); hide('errorActions'); show('successActions');
+    setText('stateIcon','✅'); setText('stateTitle', s.verified_title); setText('stateMsg', s.verified_msg);
+  } else if (key === 'verify_error'){
+    show('mainState'); hide('successActions'); show('errorActions');
+    setText('stateIcon','⚠️'); setText('stateTitle', s.verify_err_title); setText('stateMsg', window._verifyErrMsg || s.verify_err_generic);
+  } else if (key === 'reset'){
+    hide('mainState'); show('resetState');
+  } else if (key === 'reset_success'){
+    hide('mainState'); show('resetSuccessState');
+  } else if (key === 'recover'){
+    show('mainState'); hide('errorActions'); show('successActions');
+    setText('stateIcon','✅'); setText('stateTitle', s.recover_title); setText('stateMsg', s.recover_msg);
+  } else {
+    show('mainState'); hide('successActions'); show('errorActions');
+    setText('stateIcon','❓'); setText('stateTitle', s.unknown_title); setText('stateMsg', s.unknown_msg);
+  }
+}
+
+var params = new URLSearchParams(window.location.search);
+mode = params.get('mode');
+oobCode = params.get('oobCode');
+var urlLang = params.get('lang');
+var savedLang = 'fr';
+try{ savedLang = localStorage.getItem('lang') || 'fr'; }catch(e){}
+setLang(urlLang === 'ar' ? 'ar' : savedLang);
+renderState('checking');
+
+if (!oobCode || !mode) {
+  renderState('unknown');
+} else if (mode === 'verifyEmail') {
+  auth.applyActionCode(oobCode).then(function(){
+    renderState('verified');
+  }).catch(function(err){
+    var map = {
+      'auth/expired-action-code': STR[currentLang].verify_err_expired,
+      'auth/invalid-action-code': STR[currentLang].verify_err_used
+    };
+    window._verifyErrMsg = map[err.code] || STR[currentLang].verify_err_generic;
+    renderState('verify_error');
+  });
+} else if (mode === 'resetPassword') {
+  auth.verifyPasswordResetCode(oobCode).then(function(email){
+    window._resetEmail = email;
+    renderState('reset');
+  }).catch(function(err){
+    var map = {
+      'auth/expired-action-code': STR[currentLang].reset_err_expired,
+      'auth/invalid-action-code': STR[currentLang].reset_err_expired
+    };
+    window._verifyErrMsg = map[err.code] || STR[currentLang].reset_err_generic;
+    renderState('verify_error');
+  });
+} else if (mode === 'recoverEmail') {
+  auth.checkActionCode(oobCode).then(function(){
+    return auth.applyActionCode(oobCode);
+  }).then(function(){
+    renderState('recover');
+  }).catch(function(err){
+    window._verifyErrMsg = STR[currentLang].verify_err_generic;
+    renderState('verify_error');
+  });
+} else {
+  renderState('unknown');
+}
+
+function submitNewPassword(){
+  var p1 = document.getElementById('newPassword').value;
+  var p2 = document.getElementById('newPassword2').value;
+  var errEl = document.getElementById('resetError');
+  errEl.style.display='none';
+  if (!p1 || p1.length < 6){ errEl.textContent = STR[currentLang].err_pass_short; errEl.style.display='block'; return; }
+  if (p1 !== p2){ errEl.textContent = STR[currentLang].err_pass_mismatch; errEl.style.display='block'; return; }
+  document.getElementById('resetLoader').style.display='block';
+  document.getElementById('btnDoReset').disabled = true;
+  auth.confirmPasswordReset(oobCode, p1).then(function(){
+    document.getElementById('resetLoader').style.display='none';
+    renderState('reset_success');
+  }).catch(function(err){
+    document.getElementById('resetLoader').style.display='none';
+    document.getElementById('btnDoReset').disabled = false;
+    var map = {
+      'auth/expired-action-code': STR[currentLang].reset_err_expired,
+      'auth/weak-password': STR[currentLang].err_pass_short
+    };
+    errEl.textContent = map[err.code] || STR[currentLang].reset_err_generic;
+    errEl.style.display='block';
+  });
+}
+</script>
+</body>
+</html>
