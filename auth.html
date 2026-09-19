@@ -232,6 +232,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
+// Contourne le reglage 'Customize action URL' de la Console Firebase (bloque cote Google : EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED). En passant ce parametre a chaque envoi, on redirige nous-memes vers notre page perso (theme du site + verification/reset geres en JS) sans dependre de ce reglage.
+var ACTION_CODE_SETTINGS = { url: 'https://appdzexchange.com/email-action.html', handleCodeInApp: true };
+
 // ── EmailJS : notification admin nouvelle inscription ──
 // (ADMIN_EMAIL est deja declare plus bas dans ce fichier, reutilise ici)
 var _ejKey = '', _ejSvc = '', _ejTpl = '', _ejReady = false, _ejPaused = false;
@@ -589,7 +592,7 @@ function doRegister() {
           { totalUsers: firebase.firestore.FieldValue.increment(1) }, { merge: true }
         ).catch(function(){});
         notifyAdminNewUser(nom, email, paysera, fullCcp);
-        return user.sendEmailVerification();
+        return user.sendEmailVerification(ACTION_CODE_SETTINGS);
       }).then(function() {
         isRegistering = false; setLoader('registerLoader', false);
         document.getElementById('verifEmailDisplay').textContent = email;
@@ -614,7 +617,7 @@ function handleCheckVerif() {
 }
 function handleResendVerif() {
   var user = auth.currentUser;
-  if (user) user.sendEmailVerification().then(function() { toast(T[currentLang].resent,'ok'); });
+  if (user) user.sendEmailVerification(ACTION_CODE_SETTINGS).then(function() { toast(T[currentLang].resent,'ok'); });
 }
 function handleLogoutVerif() {
   auth.signOut().then(function() { showPanel('loginPanel'); });
@@ -623,7 +626,7 @@ function handleReset() {
   var email = document.getElementById('forgotEmail').value.trim();
   if (!email) { showError('forgotError', T[currentLang].err_forgot_email); return; }
   setLoader('forgotLoader', true);
-  auth.sendPasswordResetEmail(email)
+  auth.sendPasswordResetEmail(email, ACTION_CODE_SETTINGS)
     .then(function() {
       setLoader('forgotLoader', false);
       document.getElementById('forgotForm').style.display = 'none';
