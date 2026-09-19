@@ -707,10 +707,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 <script>
 var firebaseConfig={apiKey:"AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",authDomain:"appdzexchange.firebaseapp.com",projectId:"appdzexchange",storageBucket:"appdzexchange.firebasestorage.app",messagingSenderId:"217882852453",appId:"1:217882852483:android:b687e98a47d7f274d9efb6"};
 firebase.initializeApp(firebaseConfig);
-var auth=firebase.auth(), db=firebase.firestore(), storage=firebase.storage();
+var auth=firebase.auth(), db=firebase.firestore(), storage=firebase.storage(), cloudFunctions=firebase.functions();
 
 // ── Monitoring d'erreurs basique (sans dépendance externe) ──
 (function(){
@@ -1450,9 +1451,9 @@ function unblockUser(uid){
 function deleteUser(uid){
   var u=allUsers.find(function(x){return x.id===uid;});if(!u)return;
   showCModal('🗑','Supprimer '+escH(u.nom||u.email||'cet utilisateur')+'?',
-    'Suppression irréversible du profil. L\'utilisateur pourra se réinscrire.',
+    'Suppression définitive du compte (connexion et profil). L\'adresse email redeviendra disponible pour une nouvelle inscription.',
     'Supprimer',true,function(){
-      db.collection('users').doc(uid).delete()
+      cloudFunctions.httpsCallable('deleteUserAccount')({uid:uid})
       .then(function(){toast('Utilisateur supprimé','ok');})
       .catch(function(e){toast('Erreur: '+e.message,'err');});
   });
