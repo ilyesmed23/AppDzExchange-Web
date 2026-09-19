@@ -578,10 +578,10 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
         style="width:100%;box-sizing:border-box;border:1.5px solid #e0e8f5;border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#f8fafc;">
     </div>
     <div style="margin-bottom:4px;">
-      <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;">NUMERO CCP (9 chiffres)</label>
+      <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:4px;" data-i18n="pr_ccp_edit">NUMERO CCP</label>
       <div style="display:flex;align-items:center;border:1.5px solid #e0e8f5;border-radius:10px;background:#f8fafc;overflow:hidden;">
         <span style="padding:10px 8px;font-size:12px;color:#888;white-space:nowrap;border-right:1px solid #e0e8f5;">00799999000</span>
-        <input id="editCCP" type="tel" placeholder="123456789" maxlength="9" inputmode="numeric"
+        <input id="editCCP" type="tel" placeholder="123456789" inputmode="numeric"
           style="flex:1;border:none;padding:10px 10px;font-size:14px;outline:none;background:transparent;">
       </div>
     </div>
@@ -1474,7 +1474,7 @@ function confirmEditProfile() {
   var errEl   = document.getElementById('editProfileError');
   errEl.style.display = 'none';
   if (!nom)     { errEl.textContent = 'Le nom ne peut pas etre vide.'; errEl.style.display='block'; return; }
-  if (ccpRaw && !/^\d{9}$/.test(ccpRaw)) { errEl.textContent = 'Le CCP doit contenir exactement 9 chiffres.'; errEl.style.display='block'; return; }
+  if (ccpRaw && !/^\d+$/.test(ccpRaw)) { errEl.textContent = 'Le CCP ne doit contenir que des chiffres.'; errEl.style.display='block'; return; }
   var fullCcp = ccpRaw ? '00799999000'+ccpRaw : (currentUser.ccp||'');
   document.getElementById('editProfileLoader').style.display = 'block';
   db.collection('users').doc(currentUid).update({ nom:nom, emailPaysera:paysera, ccp:fullCcp })
@@ -2075,7 +2075,7 @@ var T = {
     montant_a_envoyer: 'Montant à envoyer :',
     // Profil
     pr_modifier: 'Modifier le profil',
-    pr_nom: 'NOM COMPLET', pr_paysera_edit: 'EMAIL PAYSERA', pr_ccp_edit: 'NUMÉRO CCP (9 chiffres)',
+    pr_nom: 'NOM COMPLET', pr_paysera_edit: 'EMAIL PAYSERA', pr_ccp_edit: 'NUMÉRO CCP',
     pr_save: 'Enregistrer', pr_cancel: 'Annuler',
     // Notifications vide
     notif_empty: 'Aucune notification',
@@ -2165,7 +2165,7 @@ var T = {
     num_ccp: 'رقم CCP للإيداع :',
     montant_a_envoyer: 'المبلغ المراد إرساله :',
     pr_modifier: 'تعديل الملف', pr_nom: 'الاسم الكامل',
-    pr_paysera_edit: 'بريد PAYSERA', pr_ccp_edit: 'رقم CCP (9 أرقام)',
+    pr_paysera_edit: 'بريد PAYSERA', pr_ccp_edit: 'رقم CCP',
     pr_save: 'حفظ', pr_cancel: 'إلغاء',
     notif_empty: 'لا توجد إشعارات',
     notif_loading: 'جارٍ التحميل...',
