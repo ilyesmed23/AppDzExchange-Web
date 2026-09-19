@@ -1242,7 +1242,8 @@ function renderDetail(tx) {
     } else if (tx.preuveUserUrl) {
       uploadHtml = thumbHtml(tx.preuveUserUrl, 'Votre preuve envoyée');
       if (tx.statut === 'preuve_envoyee') {
-        uploadHtml += '<button onclick="triggerUpload()" style="width:100%;margin-top:10px;padding:10px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;color:#0369a1;font-size:13px;font-weight:700;cursor:pointer;">Modifier la preuve</button>' +
+        uploadHtml += '<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:10px 14px;margin-top:10px;font-size:12.5px;font-weight:700;color:#1254a0;text-align:center;">'+t('preuve_en_attente_traitement')+'</div>';
+        uploadHtml += '<button onclick="triggerUpload()" style="width:100%;margin-top:10px;padding:10px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;color:#0369a1;font-size:13px;font-weight:700;cursor:pointer;">'+t('modifier_preuve')+'</button>' +
           '<div id="uploadLoader" class="loader">Upload en cours...</div>';
       }
     }
@@ -2045,6 +2046,7 @@ var T = {
     preuve_insuffisante: 'Preuve insuffisante',
     preuve_hint: 'Veuillez renvoyer une meilleure photo de votre reçu de virement.',
     modifier_preuve: 'Modifier la preuve',
+    preuve_en_attente_traitement: '⏳ Veuillez patienter, votre demande est en cours de traitement.',
     ou_envoyer: 'OÙ ENVOYER VOTRE VIREMENT BARIDIMOB ?',
     num_ccp: 'Numéro CCP à créditer :',
     montant_a_envoyer: 'Montant à envoyer :',
@@ -2135,6 +2137,7 @@ var T = {
     preuve_insuffisante: 'الإثبات غير كافٍ',
     preuve_hint: 'يرجى إعادة إرسال صورة أوضح لإيصال التحويل.',
     modifier_preuve: 'تعديل الإثبات',
+    preuve_en_attente_traitement: '⏳ يرجى الانتظار، طلبك قيد المعالجة.',
     ou_envoyer: 'إلى أين تُرسل تحويلك؟',
     num_ccp: 'رقم CCP للإيداع :',
     montant_a_envoyer: 'المبلغ المراد إرساله :',
