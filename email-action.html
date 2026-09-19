@@ -161,6 +161,8 @@ var STR = {
     checking_msg:'Veuillez patienter quelques instants.',
     verified_title:'Email vérifié ! 🎉',
     verified_msg:'Votre adresse email a été confirmée avec succès. Vous pouvez maintenant profiter de tous les services AppDz Exchange.',
+    continue_title:'C\'est fait ! ✅',
+    continue_msg:'Si vous venez de confirmer votre email ou de réinitialiser votre mot de passe, c\'est réussi. Vous pouvez vous connecter dès maintenant.',
     verify_err_title:'Lien invalide',
     verify_err_expired:'Ce lien de confirmation a expiré. Connectez-vous pour en recevoir un nouveau.',
     verify_err_used:'Ce lien a déjà été utilisé, ou votre email est peut-être déjà confirmé. Vous pouvez vous connecter directement.',
@@ -193,6 +195,8 @@ var STR = {
     checking_msg:'يرجى الانتظار قليلاً.',
     verified_title:'تم تأكيد البريد الإلكتروني! 🎉',
     verified_msg:'تم تأكيد بريدك الإلكتروني بنجاح. يمكنك الآن الاستفادة من جميع خدمات AppDz Exchange.',
+    continue_title:'تم بنجاح! ✅',
+    continue_msg:'إذا كنت قد أكدت للتو بريدك الإلكتروني أو أعدت تعيين كلمة المرور، فقد تم ذلك بنجاح. يمكنك تسجيل الدخول الآن.',
     verify_err_title:'رابط غير صالح',
     verify_err_expired:'انتهت صلاحية رابط التأكيد. سجّل الدخول للحصول على رابط جديد.',
     verify_err_used:'تم استخدام هذا الرابط من قبل، أو ربما تم تأكيد بريدك الإلكتروني بالفعل. يمكنك تسجيل الدخول مباشرة.',
@@ -274,6 +278,9 @@ function renderState(key){
   } else if (key === 'recover'){
     show('mainState'); hide('errorActions'); show('successActions');
     setText('stateIcon','✅'); setText('stateTitle', s.recover_title); setText('stateMsg', s.recover_msg);
+  } else if (key === 'continue'){
+    show('mainState'); hide('errorActions'); show('successActions');
+    setText('stateIcon','✅'); setText('stateTitle', s.continue_title); setText('stateMsg', s.continue_msg);
   } else {
     show('mainState'); hide('successActions'); show('errorActions');
     setText('stateIcon','❓'); setText('stateTitle', s.unknown_title); setText('stateMsg', s.unknown_msg);
@@ -290,12 +297,11 @@ setLang(urlLang === 'ar' ? 'ar' : savedLang);
 renderState('checking');
 
 if (!oobCode || !mode) {
-  var recentlyVerified = false;
-  try{
-    var ts = parseInt(localStorage.getItem('appdz_email_verified_recent') || '0', 10);
-    if (ts && (Date.now() - ts) < 15 * 60 * 1000) recentlyVerified = true;
-  }catch(e){}
-  renderState(recentlyVerified ? 'verified' : 'unknown');
+  // Firebase envoie parfois d'abord vers sa propre page (firebaseapp.com/__/auth/action) qui
+  // traite deja l'action et redirige ensuite ici sans code (bouton "Continue" de Firebase).
+  // Dans ce cas l'action a deja reussi cote serveur : on affiche un message rassurant plutot
+  // qu'un "lien invalide" qui inquiete inutilement l'utilisateur.
+  renderState('continue');
 } else if (mode === 'verifyEmail') {
   auth.applyActionCode(oobCode).then(function(){
     try{ localStorage.setItem('appdz_email_verified_recent', String(Date.now())); }catch(e){}
