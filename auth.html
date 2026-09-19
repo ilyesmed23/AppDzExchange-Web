@@ -150,9 +150,9 @@ body[dir="rtl"] .lang-switcher-auth { right:auto; left:18px; }
       <label data-i18n="lbl_ccp">NUMÉRO CCP (BARIDIMOB)</label>
       <div class="ccp-row">
         <span class="ccp-prefix">00799999000</span>
-        <input type="text" id="regCCP" data-i18n-ph="ph_ccp" placeholder="123456789" inputmode="numeric" style="flex:1;">
+        <input type="text" id="regCCP" data-i18n-ph="ph_ccp" placeholder="123456789" maxlength="9" inputmode="numeric" style="flex:1;">
       </div>
-      <div class="hint" data-i18n="hint_ccp">Saisissez les chiffres de votre numéro CCP après le préfixe</div>
+      <div class="hint" data-i18n="hint_ccp">Saisissez les 9 derniers chiffres de votre numéro CCP</div>
     </div>
     <div class="field">
       <label data-i18n="lbl_password">MOT DE PASSE *</label>
@@ -322,7 +322,7 @@ var T = {
     ph_ccp: '123456789',
     ph_new_password: 'Minimum 6 caractères',
     hint_paysera: "Laissez vide si vous n'avez pas encore de compte Paysera",
-    hint_ccp: 'Saisissez les chiffres de votre numéro CCP après le préfixe',
+    hint_ccp: 'Saisissez les 9 derniers chiffres de votre numéro CCP',
     loader_login: 'Connexion en cours...',
     loader_register: 'Création du compte...',
     loader_sending: 'Envoi en cours...',
@@ -350,7 +350,7 @@ var T = {
     err_fields_reg: 'Veuillez remplir tous les champs obligatoires (*).',
     err_bot: 'Une erreur est survenue. Veuillez réessayer dans quelques instants.',
     err_pass_short: 'Mot de passe minimum 6 caractères.',
-    err_ccp: 'Le numéro CCP ne doit contenir que des chiffres.',
+    err_ccp: 'Le numéro CCP doit contenir exactement 9 chiffres après le préfixe.',
     err_blocked_email: 'Cette adresse email est bloquée. Contactez le support.',
     err_blocked_paysera: 'Cet email Paysera est bloqué. Contactez le support.',
     err_ccp_exists: 'Ce numéro CCP est déjà associé à un compte existant.',
@@ -385,7 +385,7 @@ var T = {
     ph_ccp: '123456789',
     ph_new_password: '6 أحرف على الأقل',
     hint_paysera: 'اتركه فارغاً إن لم يكن لديك حساب Paysera بعد',
-    hint_ccp: 'أدخل أرقام رقم CCP الخاص بك بعد البادئة',
+    hint_ccp: 'أدخل الـ 9 أرقام الأخيرة من رقم CCP الخاص بك',
     loader_login: 'جارٍ تسجيل الدخول...',
     loader_register: 'جارٍ إنشاء الحساب...',
     loader_sending: 'جارٍ الإرسال...',
@@ -413,7 +413,7 @@ var T = {
     err_fields_reg: 'يرجى ملء جميع الحقول الإلزامية (*).',
     err_bot: 'حدث خطأ. يرجى المحاولة مرة أخرى بعد قليل.',
     err_pass_short: 'كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل.',
-    err_ccp: 'يجب أن يحتوي رقم CCP على أرقام فقط.',
+    err_ccp: 'يجب أن يحتوي رقم CCP على 9 أرقام بالضبط بعد البادئة.',
     err_blocked_email: 'هذا البريد الإلكتروني محظور. تواصل مع الدعم.',
     err_blocked_paysera: 'إيميل Paysera هذا محظور. تواصل مع الدعم.',
     err_ccp_exists: 'رقم CCP هذا مرتبط بحساب موجود بالفعل.',
@@ -534,7 +534,7 @@ function handleRegister() {
   var pass    = document.getElementById('regPassword').value;
   if (!nom || !email || !pass) { showError('registerError', T[currentLang].err_fields_reg); return; }
   if (pass.length < 6) { showError('registerError', T[currentLang].err_pass_short); return; }
-  if (ccp && (!/^\d+$/.test(ccp))) { showError('registerError', T[currentLang].err_ccp); return; }
+  if (ccp && (!/^\d{9}$/.test(ccp))) { showError('registerError', T[currentLang].err_ccp); return; }
   setLoader('registerLoader', true);
   isRegistering = true;
   db.collection('config').doc('settings').get().then(function(doc) {
