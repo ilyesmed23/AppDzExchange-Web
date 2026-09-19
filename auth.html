@@ -248,16 +248,19 @@ db.collection('config').doc('settings').get().then(function(s){
   }
 }).catch(function(){});
 
+// Le template EmailJS disponible (compte gratuit, 2 templates max) est celui des notifications
+// de transfert (statut_label / montant_eur / montant_dzd / email_paysera / motif / date).
+// On reutilise ces memes champs pour la notif de nouvelle inscription plutot que subject/message,
+// qui ne sont pas geres par ce template (sinon les champs restent vides a la reception).
 function notifyAdminNewUser(nom, email, paysera, ccp){
   if(!_ejReady || _ejPaused) return;
   emailjs.send(_ejSvc, _ejTpl, {
-    subject:  '🆕 Nouvelle inscription — ' + (nom || email),
-    message:  'Un nouvel utilisateur vient de s\'inscrire :\n\n' +
-      '👤 Nom : ' + (nom || '—') + '\n' +
-      '📧 Email : ' + (email || '—') + '\n' +
-      '🏦 CCP : ' + (ccp || '—') + '\n' +
-      '💳 Paysera : ' + (paysera || '—') + '\n\n' +
-      '🔗 Connectez-vous sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html pour voir le compte.',
+    statut_label:  '🆕 Nouvelle inscription',
+    motif:         'Nom : ' + (nom || '—') + '  |  Email : ' + (email || '—') + '  |  CCP : ' + (ccp || '—'),
+    montant_eur:   '—',
+    montant_dzd:   '—',
+    email_paysera: paysera || '—',
+    date:          new Date().toLocaleDateString('fr-DZ'),
     to_email: ADMIN_EMAIL,
     to_name:  'Admin'
   }).catch(function(e){ console.warn('EmailJS:', e); });

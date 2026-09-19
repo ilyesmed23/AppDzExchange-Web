@@ -793,11 +793,18 @@ function sendUserConfirmEmail(txData){
 }
 
 // Notification email admin (nouvelle demande, etc.)
-function sendAdminEmail(subject, message) {
+// Le template EmailJS dispo (compte gratuit, 2 templates max) est celui des notifs de transfert
+// (statut_label / montant_eur / montant_dzd / email_paysera / motif / date) : subject/message ne
+// sont geres par aucun template existant, donc on remplit directement ces champs-la.
+function sendAdminEmail(statutLabel, motif, montantEur, montantDzd, emailPaysera) {
   if(!_ejReady || _ejPaused) return;
   emailjs.send(_ejSvc, _ejTpl, {
-    subject:  subject,
-    message:  message,
+    statut_label:  statutLabel,
+    motif:         motif || '',
+    montant_eur:   (montantEur === undefined || montantEur === null || montantEur === '') ? '—' : montantEur,
+    montant_dzd:   (montantDzd === undefined || montantDzd === null || montantDzd === '') ? '—' : montantDzd,
+    email_paysera: emailPaysera || '—',
+    date:          new Date().toLocaleDateString('fr-DZ'),
     to_email: ADMIN_EMAIL,
     to_name:  'Admin'
   }).catch(function(e){ console.warn('EmailJS admin:', e); });
@@ -1365,15 +1372,11 @@ function handleCreateTransfert() {
     // Notification email admin
     var u = currentUser || {};
     sendAdminEmail(
-      '🔔 Nouvelle demande de transfert — ' + eur + ' EUR',
-      'Nouvelle demande de transfert reçue :\n\n' +
-      '👤 Nom : ' + (u.nom || '—') + '\n' +
-      '📧 Email : ' + (u.email || '—') + '\n' +
-      '🏦 CCP : ' + (u.ccp || '—') + '\n' +
-      '💳 Paysera : ' + (u.emailPaysera || '—') + '\n\n' +
-      '💰 Montant : ' + eur + ' EUR → ' + Math.round(eur * currentTaux) + ' DZD\n' +
-      '📊 Taux appliqué : ' + currentTaux + ' DZD/EUR\n\n' +
-      '🔗 Connectez-vous sur https://ilyesmed23.github.io/AppDzExchange-Web/admin.html pour valider.'
+      '🔔 Nouvelle demande de transfert',
+      'Nom : ' + (u.nom || '—') + '  |  Email : ' + (u.email || '—') + '  |  CCP : ' + (u.ccp || '—') + '  |  Taux appliqué : ' + currentTaux + ' DZD/EUR',
+      eur,
+      Math.round(eur * currentTaux),
+      u.emailPaysera || '—'
     );
     return db.collection('transferts').doc(ref.id).get();
   }).then(function(snap) {
