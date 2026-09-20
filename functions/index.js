@@ -1,6 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const { defineSecret } = require("firebase-functions/params");
 const { onDocumentUpdated, onDocumentCreated } = require("firebase-functions/v2/firestore");
 
@@ -9,6 +9,7 @@ admin.initializeApp();
 // Doit correspondre a la constante ADMIN utilisee dans admin.html
 const ADMIN_EMAIL = "giftformenow@gmail.com";
 const SITE_URL = "https://appdzexchange.com";
+const SENDER = "AppDz Exchange <noreply@appdzexchange.com>";
 
 /**
  * Supprime DEFINITIVEMENT un utilisateur : son compte Firebase Authentication
@@ -41,23 +42,21 @@ exports.deleteUserAccount = functions.https.onCall(async (data, context) => {
 
 /* ──────────────────────────────────────────────────────────────────────
  * Notifications email aux UTILISATEURS (nouveau message ticket, changement
- * de statut d'un transfert) via Gmail SMTP + Nodemailer.
- * Le mot de passe d'application Gmail est stocke dans Secret Manager
- * (defini une seule fois par l'admin via : firebase functions:secrets:set GMAIL_APP_PASSWORD)
- * et n'est jamais visible dans le code source.
+ * de statut d'un transfert), envoyees via Resend (service tiers gratuit)
+ * depuis noreply@appdzexchange.com — l'utilisateur ne voit jamais l'email
+ * gmail personnel de l'admin.
+ * La cle API Resend est stockee dans Secret Manager (jamais dans le code) :
+ *   firebase functions:secrets:set RESEND_API_KEY
  * ────────────────────────────────────────────────────────────────────── */
 
-const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 
-let _transporter = null;
-function getTransporter() {
-  if (!_transporter) {
-    _transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: ADMIN_EMAIL, pass: GMAIL_APP_PASSWORD.value() }
-    });
+let _resend = null;
+function getResend() {
+  if (!_resend) {
+    _resend = new Resend(RESEND_API_KEY.value());
   }
-  return _transporter;
+  return _resend;
 }
 
 // Petit gabarit HTML sobre, aux couleurs du site, avec un bouton vers l'espace perso.
@@ -91,8 +90,8 @@ function renderEmailHtml(lang, title, message) {
 async function sendUserNotification(to, lang, subject, title, message) {
   if (!to) return;
   try {
-    await getTransporter().sendMail({
-      from: '"AppDz Exchange" <' + ADMIN_EMAIL + ">",
+    await getResend().emails.send({
+      from: SENDER,
       to: to,
       subject: subject,
       html: renderEmailHtml(lang, title, message)
@@ -141,7 +140,7 @@ const TRANSFER_NOTICES = {
 // N'envoie un email que si le champ "statut" a reellement change et que
 // le nouveau statut fait partie de la liste ci-dessus.
 exports.onTransferStatusChanged = onDocumentUpdated(
-  { document: "transferts/{txId}", secrets: [GMAIL_APP_PASSWORD] },
+  { document: "transferts/{txId}", secrets: [RESEND_API_KEY] },
   async (event) => {
     const before = event.data.before.data();
     const after = event.data.after.data();
@@ -174,7 +173,7 @@ exports.onTransferStatusChanged = onDocumentUpdated(
 // N'envoie un email que lorsque c'est l'ADMIN qui repond (from === 'admin'),
 // pour ne pas notifier l'utilisateur de ses propres messages.
 exports.onTicketAdminReply = onDocumentCreated(
-  { document: "tickets/{ticketId}/messages/{msgId}", secrets: [GMAIL_APP_PASSWORD] },
+  { document: "tickets/{ticketId}/messages/{msgId}", secrets: [RESEND_API_KEY] },
   async (event) => {
     const msg = event.data.data();
     if (!msg || msg.from !== "admin") return;
