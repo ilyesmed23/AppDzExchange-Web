@@ -756,33 +756,6 @@ var _ejReady = false;
   }catch(e){}
 })();
 
-function sendEmailNotif(t, newStatut, motif){
-  if(!t) return;
-  if(notifPaused){toast('⚠️ Notifications désactivées (toggle dans Paramètres)','err');return;}
-  if(!_ejReady){toast('⚠️ EmailJS non configuré — vérifie les clés dans Paramètres','err');return;}
-  var toEmail = t.email;
-  if(!toEmail && t.userId){
-    var u=allUsers.find(function(x){return x.id===t.userId;});
-    if(u) toEmail=u.email;
-  }
-  if(!toEmail) return;
-  var labels={'validee':'✅ Transfert Validé','terminee':'🎉 Transfert Terminé',
-    'rejetee':'❌ Transfert Rejeté','manque_info':'⚠️ Information Manquante','annulee':'🚫 Transfert Annulé'};
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    to_email:    toEmail,
-    to_name:     t.nomUser||toEmail,
-    statut_label:labels[newStatut]||newStatut,
-    email_subtitle:'Notification de transfert',
-    email_intro:  'Le statut de votre transfert a été mis à jour :',
-    email_outro:  'Connectez-vous à votre espace AppDz Exchange pour suivre votre transfert.',
-    montant_eur: t.montantEur||'—',
-    montant_dzd: t.montantDzd||'—',
-    email_paysera:t.emailPaysera||'—',
-    motif:       motif||'',
-    date:        t.dateStr||new Date().toLocaleDateString('fr-FR')
-  }).then(function(){toast('📧 Email envoyé à '+toEmail,'ok');})
-    .catch(function(e){console.warn('EmailJS:',e);});
-}
 var ADMIN="giftformenow@gmail.com";
 var allTx=[], allUsers=[], curFilter='tous', curSearch='', curTxId=null;
 var alertThreshold=500, soldeEur=0, bulkSelectMode=false, selectedTxIds=new Set();
@@ -1186,7 +1159,6 @@ function fillDrawer(t){
     acts='<button class="dbtn d-gray" style="opacity:.6;cursor:default;">✓ Transfert terminé</button>';
   }
   acts+='<button class="dbtn d-green" onclick="exportSingle(\''+t.id+'\')">📥 Exporter</button>';
-  acts+='<button class="dbtn d-blue" onclick="sendEmailNotif(allTx.find(function(x){return x.id===\''+t.id+'\';}),\''+t.statut+'\')">📧 Notifier</button>';
   acts+='<button class="dbtn d-red" onclick="delTx(\''+t.id+'\')" style="margin-left:auto;">🗑 Supprimer</button>';
 
   var statBtns=['en_attente','preuve_envoyee','validee','terminee','rejetee','annulee','manque_info'].map(function(s){
