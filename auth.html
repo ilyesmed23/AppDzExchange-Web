@@ -236,6 +236,20 @@ function getActionCodeSettings(){
   return { url: 'https://appdzexchange.com/email-action.html?lang=' + currentLang, handleCodeInApp: true };
 }
 
+// Envoie le code (verif email / reset password) via un appel REST direct avec
+// l'entete X-Firebase-Locale, car le SDK compat ne propage pas toujours
+// correctement auth.languageCode vers l'email/la page Firebase generes.
+function sendOobCodeDirect(payload, lang){
+  return fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' + firebaseConfig.apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Firebase-Locale': lang },
+    body: JSON.stringify(payload)
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if (data.error) { throw data.error; }
+    return data;
+  });
+}
+
 // ── Monitoring d'erreurs basique (sans dépendance externe) ──
 (function(){
   var _errCount = 0;
@@ -565,7 +579,10 @@ function doRegister() {
           { totalUsers: firebase.firestore.FieldValue.increment(1) }, { merge: true }
         ).catch(function(){});
         auth.languageCode = currentLang;
-        return user.sendEmailVerification(getActionCodeSettings());
+        return user.getIdToken().then(function(idToken){
+          var settings = getActionCodeSettings();
+          return sendOobCodeDirect({ requestType: 'VERIFY_EMAIL', idToken: idToken, continueUrl: settings.url, canHandleCodeInApp: true }, currentLang);
+        });
       }).then(function() {
         isRegistering = false; setLoader('registerLoader', false);
         document.getElementById('verifEmailDisplay').textContent = email;
@@ -590,7 +607,13 @@ function handleCheckVerif() {
 }
 function handleResendVerif() {
   var user = auth.currentUser;
-  if (user) { auth.languageCode = currentLang; user.sendEmailVerification(getActionCodeSettings()).then(function() { toast(T[currentLang].resent,'ok'); }); }
+  if (user) {
+    auth.languageCode = currentLang;
+    user.getIdToken().then(function(idToken){
+      var settings = getActionCodeSettings();
+      return sendOobCodeDirect({ requestType: 'VERIFY_EMAIL', idToken: idToken, continueUrl: settings.url, canHandleCodeInApp: true }, currentLang);
+    }).then(function() { toast(T[currentLang].resent,'ok'); });
+  }
 }
 function handleLogoutVerif() {
   auth.signOut().then(function() { showPanel('loginPanel'); });
@@ -600,7 +623,7 @@ function handleReset() {
   if (!email) { showError('forgotError', T[currentLang].err_forgot_email); return; }
   setLoader('forgotLoader', true);
   auth.languageCode = currentLang;
-  auth.sendPasswordResetEmail(email, getActionCodeSettings())
+  sendOobCodeDirect({ requestType: 'PASSWORD_RESET', email: email, continueUrl: getActionCodeSettings().url, canHandleCodeInApp: true }, currentLang)
     .then(function() {
       setLoader('forgotLoader', false);
       document.getElementById('forgotForm').style.display = 'none';
