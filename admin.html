@@ -616,6 +616,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
         <div class="stat-card"><div class="stat-val" id="svLogins">--</div><div class="stat-label">Connexions totales</div><div class="stat-sub">Tous utilisateurs</div></div>
       </div>
 
+      <!-- Compteur Resend (emails transactionnels) -->
+      <div class="stats-grid" id="resendStatsGrid" style="margin-bottom:10px;">
+        <div class="stat-card"><div class="stat-val" id="rsToday">--</div><div class="stat-label">Resend aujourd'hui</div><div class="stat-sub">Limite gratuite : 100/jour</div></div>
+        <div class="stat-card"><div class="stat-val" id="rsMonth">--</div><div class="stat-label">Resend ce mois</div><div class="stat-sub">Limite gratuite : 3000/mois</div></div>
+      </div>
+      <div style="margin-bottom:22px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:12px;color:#888;">Corriger avec le vrai total (resend.com/settings/usage) :</span>
+        <input type="number" id="rsFixToday" placeholder="Aujourd'hui" style="width:100px;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid #444;background:#1a1a1a;color:#fff;">
+        <input type="number" id="rsFixMonth" placeholder="Ce mois" style="width:100px;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid #444;background:#1a1a1a;color:#fff;">
+        <button class="s-btn" style="width:auto;padding:6px 14px;font-size:12px;" onclick="fixResendUsage()">Corriger</button>
+      </div>
+
       <!-- Bouton rafraîchir -->
       <div style="margin-bottom:16px;">
         <button class="s-btn" style="width:auto;padding:10px 22px;" onclick="loadStats()">🔄 Rafraîchir les statistiques</button>
@@ -769,7 +781,14 @@ auth.onAuthStateChanged(function(u){
 function initListeners(){
   checkAvisBadge();
   // Badge tickets non lus au démarrage
-  db.collection('tickets').onSnapshot(function(snap){
+  // Compteur Resend, mis a jour en direct par les Cloud Functions
+db.collection('config').doc('resendUsage').onSnapshot(function(s){
+  var d = s.exists ? s.data() : {};
+  var rt = document.getElementById('rsToday'); if(rt) rt.textContent = (d.sentToday||0);
+  var rm = document.getElementById('rsMonth'); if(rm) rm.textContent = (d.sentThisMonth||0);
+});
+
+db.collection('tickets').onSnapshot(function(snap){
     var n=snap.docs.reduce(function(acc,d){return acc+(d.data().unreadAdmin||0);},0);
     var b=document.getElementById('msgBadge');
     if(n>0){b.textContent=n>9?'9+':n;b.style.display='inline';}else b.style.display='none';
@@ -1699,6 +1718,20 @@ function show(n){
 }
 
 // ── STATISTIQUES VISITEURS & CONNEXIONS ──
+function fixResendUsage(){
+  var t = document.getElementById('rsFixToday').value;
+  var m = document.getElementById('rsFixMonth').value;
+  var payload = {};
+  if(t!=='') payload.sentToday = parseInt(t,10);
+  if(m!=='') payload.sentThisMonth = parseInt(m,10);
+  if(!Object.keys(payload).length){ toast('Entrez au moins une valeur','err'); return; }
+  cloudFunctions.httpsCallable('setResendUsage')(payload).then(function(){
+    toast('Compteur Resend mis a jour');
+    document.getElementById('rsFixToday').value='';
+    document.getElementById('rsFixMonth').value='';
+  }).catch(function(e){ toast('Erreur: '+e.message,'err'); });
+}
+
 function loadStats() {
   document.getElementById('visitsTable').innerHTML = 'Chargement...';
   document.getElementById('usersLoginList').innerHTML = 'Chargement...';

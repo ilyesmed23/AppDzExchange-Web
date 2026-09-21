@@ -87,6 +87,35 @@ function renderEmailHtml(lang, title, message) {
   );
 }
 
+// Compteur d'envois Resend (jour + mois), pour suivre le forfait gratuit
+// (100/jour, 3000/mois) depuis l'interface admin. Se reinitialise tout seul
+// quand on change de jour/mois.
+async function incrementResendCounter() {
+  try {
+    var now = new Date();
+    var monthKey = now.getUTCFullYear() + "-" + String(now.getUTCMonth() + 1).padStart(2, "0");
+    var dayKey = monthKey + "-" + String(now.getUTCDate()).padStart(2, "0");
+    var ref = admin.firestore().collection("config").doc("resendUsage");
+    await admin.firestore().runTransaction(async (tx) => {
+      var snap = await tx.get(ref);
+      var data = snap.exists ? snap.data() : {};
+      var sentMonth = (data.currentMonth === monthKey) ? (data.sentThisMonth || 0) + 1 : 1;
+      var sentDay = (data.currentDay === dayKey) ? (data.sentToday || 0) + 1 : 1;
+      var sentTotal = (data.sentTotal || 0) + 1;
+      tx.set(ref, {
+        sentTotal: sentTotal,
+        sentThisMonth: sentMonth,
+        currentMonth: monthKey,
+        sentToday: sentDay,
+        currentDay: dayKey,
+        lastUpdated: now
+      }, { merge: true });
+    });
+  } catch (e) {
+    console.error("incrementResendCounter error:", e);
+  }
+}
+
 async function sendUserNotification(to, lang, subject, title, message) {
   if (!to) return;
   try {
@@ -96,7 +125,11 @@ async function sendUserNotification(to, lang, subject, title, message) {
       subject: subject,
       html: renderEmailHtml(lang, title, message)
     });
-    if (result && result.error) console.error("sendUserNotification error:", result.error);
+    if (result && result.error) {
+      console.error("sendUserNotification error:", result.error);
+    } else {
+      await incrementResendCounter();
+    }
   } catch (e) {
     console.error("sendUserNotification error:", e);
   }
@@ -238,7 +271,11 @@ async function sendAdminNotification(subject, title, message) {
       subject: subject,
       html: renderAdminEmailHtml(title, message)
     });
-    if (result && result.error) console.error("sendAdminNotification error:", result.error);
+    if (result && result.error) {
+      console.error("sendAdminNotification error:", result.error);
+    } else {
+      await incrementResendCounter();
+    }
   } catch (e) {
     console.error("sendAdminNotification error:", e);
   }
@@ -303,3 +340,21 @@ exports.onTicketUserMessage = onDocumentCreated(
     await sendAdminNotification(" Nouveau message ticket support", "Nouveau message ticket", details);
   }
 );
+
+// Permet a l'admin de corriger manuellement le compteur Resend (jour/mois)
+// apres avoir verifie le vrai total sur resend.com/dashboard/emails.
+exports.setResendUsage = functions.https.onCall(async (data, context) => {
+  if (!context.auth || context.auth.token.email !== ADMIN_EMAIL) {
+    throw new functions.https.HttpsError("permission-denied", "Reserve a l'administrateur.");
+  }
+  var now = new Date();
+  var monthKey = now.getUTCFullYear() + "-" + String(now.getUTCMonth() + 1).padStart(2, "0");
+  var dayKey = monthKey + "-" + String(now.getUTCDate()).padStart(2, "0");
+  var update = { lastUpdated: now };
+  var sentToday = Number(data && data.sentToday);
+  var sentThisMonth = Number(data && data.sentThisMonth);
+  if (!isNaN(sentToday)) { update.sentToday = sentToday; update.currentDay = dayKey; }
+  if (!isNaN(sentThisMonth)) { update.sentThisMonth = sentThisMonth; update.currentMonth = monthKey; }
+  await admin.firestore().collection("config").doc("resendUsage").set(update, { merge: true });
+  return { ok: true };
+});
