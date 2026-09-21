@@ -1550,7 +1550,7 @@ function renderTicketList(){
     var timeStr=ts?new Date(ts).toLocaleDateString('fr-DZ',{day:'2-digit',month:'2-digit'}):'';
     var dotColor=t.statut==='ouvert'?'#f59e0b':t.statut==='en_cours'?'#3b82f6':'#10b981';
     var statLabel=t.statut==='ouvert'?'Ouvert':t.statut==='en_cours'?'En cours':'Clôturé';
-    return '<div class="conv-item'+isActive+'" onclick="openTicket(\''+t.id+'\')">'+
+    return '<div class="conv-item'+isActive+'" onclick="openFloatingChat(\''+t.id+'\')">'+
       '<div class="conv-meta">'+
         '<span class="conv-name">'+escH(name)+'</span>'+
         '<span class="conv-time">'+timeStr+'</span>'+
@@ -1703,6 +1703,132 @@ function useQuickReply(text) {
 }
 
 function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+//  FLOATING CHATS (fenetres multiples) 
+var floatingChats = {};
+var floatingListeners = {};
+
+function openFloatingChat(id){
+  var existing = document.getElementById('fchat_'+id);
+  if (existing) {
+    existing.scrollIntoView({behavior:'smooth', inline:'nearest', block:'nearest'});
+    db.collection('tickets').doc(id).update({unreadAdmin:0}).catch(function(){});
+    return;
+  }
+  var t = allTickets.find(function(x){ return x.id === id; });
+  if (!t) return;
+  var u = allUsers.find(function(x){ return x.id === t.userId; }) || {};
+  var name = u.nom || u.email || 'Utilisateur';
+  var isClos = t.statut === 'cloture';
+  var html =
+    '<div class="fchat-win" id="fchat_'+id+'" style="width:290px;height:400px;background:#fff;border:1px solid #e0e8f5;border-bottom:none;border-radius:12px 12px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;">'
+      +'<div style="background:#1254a0;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px;">'
+        +'<div style="width:26px;height:26px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">'+escH(name.charAt(0).toUpperCase())+'</div>'
+        +'<div style="flex:1;min-width:0;">'
+          +'<div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escH(name)+'</div>'
+          +'<div style="font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escH(t.objet||'')+'</div>'
+        +'</div>'
+        +'<span onclick="floatingCloseTicket(\''+id+'\')" title="Cloturer" style="cursor:pointer;font-size:13px;padding:0 4px;">&#9989;</span>'
+        +'<span onclick="closeFloatingChat(\''+id+'\')" title="Fermer" style="cursor:pointer;font-size:15px;padding:0 4px;">&#10005;</span>'
+      +'</div>'
+      +'<div id="fthread_'+id+'" class="chat-thread" style="flex:1;overflow-y:auto;padding:10px;min-height:0;"></div>'
+      +'<div style="border-top:1px solid #f0f4fa;padding:6px 8px;display:flex;gap:6px;flex-wrap:wrap;">'
+        +'<button class="qr-btn" style="font-size:10px;padding:3px 7px;" onclick="document.getElementById(\'finput_'+id+'\').value=\'Votre demande est en cours de traitement. Nous revenons versvous dans les 24-48h.\'">En traitement</button>'
+        +'<button class="qr-btn" style="font-size:10px;padding:3px 7px;" onclick="document.getElementById(\'finput_'+id+'\').value=\'Le transfert est termine. Le montant a bien ete envoye sur votre Paysera.\'">Termine</button>'
+      +'</div>'
+      +'<div style="border-top:1px solid #f0f4fa;display:flex;gap:6px;padding:8px;">'
+        +'<input id="finput_'+id+'" type="text" placeholder="'+(isClos?'Ticket cloture':'Votre reponse...')+'" '+(isClos?'disabled':'')+' maxlength="1000" style="flex:1;border:1px solid #e0e8f5;border-radius:16px;padding:6px 12px;font-size:12px;outline:none;" onkeydown="if(event.key===\'Enter\')sendFloatingMsg(\''+id+'\')">'
+        +'<button onclick="sendFloatingMsg(\''+id+'\')" style="background:#1254a0;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;flex-shrink:0;">&#10148;</button>'
+      +'</div>'
+    +'</div>';
+  var c = document.getElementById('floatingChatsContainer');
+  var wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  c.appendChild(wrap.firstChild);
+  floatingChats[id] = true;
+  db.collection('tickets').doc(id).update({unreadAdmin:0}).catch(function(){});
+  renderFloatingMessages(id);
+}
+
+function closeFloatingChat(id){
+  if (floatingListeners[id]) { floatingListeners[id](); delete floatingListeners[id]; }
+  var win = document.getElementById('fchat_'+id);
+  if (win) win.remove();
+  delete floatingChats[id];
+}
+
+function renderFloatingMessages(id){
+  if (floatingListeners[id]) { floatingListeners[id](); floatingListeners[id] = null; }
+  floatingListeners[id] = db.collection('tickets').doc(id).collection('messages')
+    .onSnapshot(function(snap){
+      var msgs = snap.docs.map(function(d){ var x = d.data(); x.id = d.id; return x; });
+      msgs.sort(function(a,b){
+        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
+        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
+        return ta - tb;
+      });
+      var thread = document.getElementById('fthread_'+id);
+      if (!thread) return;
+      if (!msgs.length) { thread.innerHTML = '<div style="padding:16px;text-align:center;color:#aaa;font-size:12px;">Aucun message</div>'; return; }
+      var tkt = allTickets.find(function(x){ return x.id === id; }) || {};
+      var u = allUsers.find(function(x){ return x.id === tkt.userId; }) || {};
+      thread.innerHTML = msgs.map(function(m){
+        var isAdmin = m.from === 'admin';
+        var ts = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : 0;
+        var timeStr = ts ? new Date(ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
+        var fileHtml = '';
+        if (m.fileUrl) {
+          var isImg = m.fileType && m.fileType.startsWith('image');
+          fileHtml = isImg ? '<br><img src="'+m.fileUrl+'" style="max-width:150px;max-height:120px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+m.fileUrl+'\',\'_blank\')">'
+            : '<br><a href="'+m.fileUrl+'" target="_blank" style="color:'+(isAdmin?'#fff':'#1254a0')+';font-size:11px;">Fichier: '+escH(m.fileName||'')+'</a>';
+        }
+        return '<div class="msg-wrap from-'+(isAdmin?'admin':'user')+'" style="margin-bottom:8px;">'
+          +'<div class="bubble bubble-'+(isAdmin?'admin':'user')+'" style="font-size:12px;">'+escH(m.text||'')+fileHtml+'</div>'
+          +'<div class="msg-time" style="font-size:10px;">'+(isAdmin?'Vous':(u.nom||'User'))+' - '+timeStr+'</div>'
+        +'</div>';
+      }).join('');
+      setTimeout(function(){ thread.scrollTop = thread.scrollHeight; }, 50);
+      snap.docs.forEach(function(doc){
+        if (doc.data().from === 'user' && !doc.data().readByAdmin)
+          doc.ref.update({readByAdmin:true}).catch(function(){});
+      });
+    }, function(e){ console.error('floating chat msgs:', e); });
+}
+
+function sendFloatingMsg(id){
+  var input = document.getElementById('finput_'+id);
+  if (!input) return;
+  var text = input.value.trim();
+  if (!text) return;
+  input.disabled = true;
+  var msgData = {from:'admin', text:text, timestamp:firebase.firestore.FieldValue.serverTimestamp(), readByAdmin:true, readByUser:false, fileUrl:null, fileType:null, fileName:null};
+  db.collection('tickets').doc(id).collection('messages').add(msgData).then(function(){
+    return db.collection('tickets').doc(id).update({
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastMessage: text, statut: 'en_cours',
+      unreadUser: firebase.firestore.FieldValue.increment(1)
+    });
+  }).then(function(){
+    input.value = ''; input.disabled = false; input.focus();
+  }).catch(function(e){
+    input.disabled = false; toast('Erreur: '+e.message,'err');
+  });
+}
+
+function floatingCloseTicket(id){
+  showCModal('OK','Cloturer ce ticket ?',"Le ticket sera marque comme cloture. L'utilisateur ne pourra plus y repondre.",'Cloturer',false,function(){
+    db.collection('tickets').doc(id).update({
+      statut:'cloture', updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      unreadUser: firebase.firestore.FieldValue.increment(1)
+    }).then(function(){
+      toast('Ticket cloture','ok');
+      var t = allTickets.find(function(x){ return x.id === id; });
+      if (t) t.statut = 'cloture';
+      var inp = document.getElementById('finput_'+id);
+      if (inp) { inp.disabled = true; inp.placeholder = 'Ticket cloture'; }
+    }).catch(function(e){ toast('Erreur: '+e.message,'err'); });
+  });
+}
 
 // ── NAV ──
 var pTitles={Dash:['Tableau de bord','Vue d\'ensemble'],Tx:['Transferts','Gérer toutes les demandes'],Users:['Utilisateurs','Membres inscrits'],Messages:['Messages','Conversations avec les utilisateurs'],Settings:['Paramètres','Configuration générale'],Stats:['Statistiques','Visiteurs & connexions'],Avis:['Avis clients','Modération des commentaires']};
@@ -2368,5 +2494,9 @@ function retirerAvis(id,btn){btn.disabled=true;db.collection('avis').doc(id).upd
 function checkAvisBadge(){db.collection('avis').where('statut','==','pending').get().then(function(s){var b=document.getElementById('avisBadge');if(b){b.textContent=s.size;b.style.display=s.size?'':'none';}}).catch(function(){});}
 
 </script>
+
+<!-- FLOATING CHATS (fenetres multiples) -->
+<div id="floatingChatsContainer" style="position:fixed;bottom:0;right:16px;display:flex;flex-direction:row-reverse;gap:12px;z-index:9998;align-items:flex-end;max-width:100vw;overflow-x:auto;"></div>
+
 </body>
 </html>

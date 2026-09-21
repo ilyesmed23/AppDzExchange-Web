@@ -2171,10 +2171,11 @@ function setLang(lang) {
 <div id="chatBubble" onclick="toggleChatWidget()" style="position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1254a0,#10b981);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;z-index:9999;">&#128172;</div>
 <div id="chatWidgetPanel" style="display:none;position:fixed;bottom:86px;right:20px;width:300px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden;z-index:9999;">
   <div style="background:#1254a0;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+    <div id="chatWidgetBackBtn" onclick="closeWidgetChat()" style="display:none;cursor:pointer;font-size:16px;padding:0 6px 0 0;">&#8592;</div>
     <div style="width:30px;height:30px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">A</div>
-    <div style="flex:1;">
+    <div style="flex:1;min-width:0;">
       <div style="font-size:13px;font-weight:700;">Assistant AppDzExchange</div>
-      <div style="font-size:11px;opacity:.85;">En ligne</div>
+      <div style="font-size:11px;opacity:.85;" id="chatWidgetStatus">En ligne</div>
     </div>
     <div style="cursor:pointer;font-size:16px;padding:0 4px;" onclick="toggleChatWidget()">&#10005;</div>
   </div>
@@ -2182,14 +2183,22 @@ function setLang(lang) {
     <div style="background:#f3f4f6;border-radius:12px;border-bottom-left-radius:4px;padding:8px 12px;align-self:flex-start;max-width:85%;">Bonjour ! Comment puis-je t'aider ?</div>
   </div>
   <div id="chatWidgetQuick" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 14px;border-top:1px solid #f0f0f0;"></div>
+  <div id="chatWidgetFooter" style="display:none;gap:8px;padding:10px 12px;border-top:1px solid #f0f0f0;">
+    <input id="chatWidgetInput" type="text" placeholder="Ecris ton message..." maxlength="1000" style="flex:1;border:1px solid #e5e7eb;border-radius:20px;padding:8px 14px;font-size:12.5px;outline:none;" onkeydown="if(event.key==='Enter')sendWidgetChatMsg()">
+    <button onclick="sendWidgetChatMsg()" style="background:#1254a0;color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0;">&#10148;</button>
+  </div>
 </div>
 
 <script>
+var widgetTicketId = null;
+var widgetTicketMsgsListener = null;
+var widgetMode = 'faq';
+
 function toggleChatWidget(){
   var p = document.getElementById('chatWidgetPanel');
   var isOpen = p.style.display === 'block';
   p.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) renderChatQuickReplies();
+  if (!isOpen && widgetMode === 'faq') renderChatQuickReplies();
 }
 function addChatMsg(text, from){
   var body = document.getElementById('chatWidgetBody');
@@ -2217,9 +2226,7 @@ function renderChatQuickReplies(){
         setTimeout(function(){ toggleChatWidget(); if (typeof showNav === 'function') showNav('Accueil'); }, 900);
       } },
     { label: 'Parler a un agent', run: function(){
-        addChatMsg('Je veux parler a un agent', 'user');
-        addChatMsg('Je t\'ouvre la conversation avec notre support, un instant...', 'bot');
-        setTimeout(function(){ toggleChatWidget(); if (typeof showNav === 'function') showNav('Messages'); }, 900);
+        openWidgetChat();
       } }
   ];
   items.forEach(function(it){
@@ -2228,6 +2235,132 @@ function renderChatQuickReplies(){
     b.style.cssText = 'background:#f3f4f6;border:1px solid #e5e7eb;padding:6px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;';
     b.onclick = it.run;
     q.appendChild(b);
+  });
+}
+
+function openWidgetChat(){
+  widgetMode = 'chat';
+  document.getElementById('chatWidgetQuick').style.display = 'none';
+  document.getElementById('chatWidgetBackBtn').style.display = 'block';
+  document.getElementById('chatWidgetFooter').style.display = 'flex';
+  document.getElementById('chatWidgetStatus').textContent = 'Conversation avec le support';
+  if (typeof loadUnreadCount === 'function') loadUnreadCount();
+  var body = document.getElementById('chatWidgetBody');
+  var active = (typeof ticketsData !== 'undefined') ? ticketsData.find(function(t){ return t.statut === 'ouvert' || t.statut === 'en_cours'; }) : null;
+  if (active) {
+    widgetTicketId = active.id;
+    body.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa;font-size:11px;">Chargement...</div>';
+    attachWidgetTicketListener(active.id);
+  } else {
+    widgetTicketId = null;
+    body.innerHTML = '<div style="background:#f3f4f6;border-radius:12px;border-bottom-left-radius:4px;padding:8px 12px;align-self:flex-start;max-width:85%;">Ecris ton message ci-dessous, un conseiller te repondra ici meme.</div>';
+  }
+}
+
+function closeWidgetChat(){
+  widgetMode = 'faq';
+  if (widgetTicketMsgsListener) { widgetTicketMsgsListener(); widgetTicketMsgsListener = null; }
+  widgetTicketId = null;
+  document.getElementById('chatWidgetBackBtn').style.display = 'none';
+  document.getElementById('chatWidgetFooter').style.display = 'none';
+  document.getElementById('chatWidgetStatus').textContent = 'En ligne';
+  document.getElementById('chatWidgetBody').innerHTML = '<div style="background:#f3f4f6;border-radius:12px;border-bottom-left-radius:4px;padding:8px 12px;align-self:flex-start;max-width:85%;">Bonjour ! Comment puis-je t\'aider ?</div>';
+  document.getElementById('chatWidgetQuick').style.display = 'flex';
+  renderChatQuickReplies();
+}
+
+function attachWidgetTicketListener(ticketId){
+  if (widgetTicketMsgsListener) { widgetTicketMsgsListener(); widgetTicketMsgsListener = null; }
+  widgetTicketMsgsListener = db.collection('tickets').doc(ticketId).collection('messages')
+    .onSnapshot(function(snap){
+      var msgs = snap.docs.map(function(d){ var x = d.data(); x.id = d.id; return x; });
+      msgs.sort(function(a,b){
+        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
+        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
+        return ta - tb;
+      });
+      var body = document.getElementById('chatWidgetBody');
+      if (!body) return;
+      if (!msgs.length) {
+        body.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa;font-size:11px;">Aucun message</div>';
+        return;
+      }
+      body.innerHTML = msgs.map(function(m){
+        var isUser = m.from === 'user';
+        var fileHtml = '';
+        if (m.fileUrl) {
+          fileHtml = '<br><a href="' + m.fileUrl + '" target="_blank" style="color:' + (isUser ? '#fff' : '#1254a0') + ';font-size:11px;text-decoration:underline;">Fichier joint</a>';
+        }
+        return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + (isUser
+          ? 'background:#1254a0;color:#fff;border-bottom-right-radius:4px;align-self:flex-end;margin-left:auto;'
+          : 'background:#f3f4f6;border-bottom-left-radius:4px;align-self:flex-start;') + '">' + escHtml(m.text || '') + fileHtml + '</div>';
+      }).join('');
+      setTimeout(function(){ body.scrollTop = body.scrollHeight; }, 50);
+      snap.docs.forEach(function(doc){
+        if (doc.data().from === 'admin' && !doc.data().readByUser)
+          doc.ref.update({ readByUser: true }).catch(function(){});
+      });
+    }, function(e){ console.error('widget ticket msgs:', e); });
+}
+
+function sendWidgetChatMsg(){
+  var input = document.getElementById('chatWidgetInput');
+  if (!input) return;
+  var text = input.value.trim();
+  if (!text) return;
+  input.disabled = true;
+  if (widgetTicketId) {
+    sendWidgetMsgToTicket(widgetTicketId, text, input);
+  } else {
+    createWidgetTicket(text, input);
+  }
+}
+
+function createWidgetTicket(text, input){
+  var u = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : {};
+  var ticketRef = db.collection('tickets').doc();
+  var ticketId = ticketRef.id;
+  var objet = text.length > 40 ? text.substring(0, 40) + '...' : text;
+  ticketRef.set({
+    userId: currentUid, nom: u.nom || '', email: u.email || '',
+    objet: objet, statut: 'ouvert',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastMessage: text, unreadAdmin: 1, unreadUser: 0
+  }).then(function(){
+    return db.collection('tickets').doc(ticketId).collection('messages').add({
+      from: 'user', text: text, fileUrl: null, fileType: null, fileName: null,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      readByAdmin: false, readByUser: true
+    });
+  }).then(function(){
+    widgetTicketId = ticketId;
+    input.value = ''; input.disabled = false; input.focus();
+    attachWidgetTicketListener(ticketId);
+  }).catch(function(e){
+    input.disabled = false;
+    addChatMsg('Erreur : ' + e.message, 'bot');
+  });
+}
+
+function sendWidgetMsgToTicket(ticketId, text, input){
+  var msgData = {
+    from: 'user', text: text,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    readByAdmin: false, readByUser: true,
+    fileUrl: null, fileType: null, fileName: null
+  };
+  db.collection('tickets').doc(ticketId).collection('messages').add(msgData).then(function(){
+    return db.collection('tickets').doc(ticketId).update({
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastMessage: text,
+      unreadAdmin: firebase.firestore.FieldValue.increment(1)
+    });
+  }).then(function(){
+    input.value = ''; input.disabled = false; input.focus();
+  }).catch(function(e){
+    input.disabled = false;
+    addChatMsg('Erreur : ' + e.message, 'bot');
   });
 }
 </script>
