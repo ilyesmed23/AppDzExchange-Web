@@ -105,12 +105,6 @@ async function sendUserNotification(to, lang, subject, title, message) {
 // Textes bilingues pour chaque changement de statut de transfert.
 // {nom} est remplace par le prenom/nom de l'utilisateur.
 const TRANSFER_NOTICES = {
-  validee: {
-    fr: { subject: "Votre transfert a été validé ✅", title: "Transfert validé",
-      msg: "Bonjour {nom}, votre demande de transfert vient d'être validée. Connectez-vous à votre espace personnel pour voir les détails et l'étape suivante." },
-    ar: { subject: "تم قبول تحويلك ✅", title: "تم قبول التحويل",
-      msg: "مرحباً {nom}، تم قبول طلب التحويل الخاص بك. يرجى الدخول إلى مساحتك الشخصية لمعرفة التفاصيل والخطوة التالية." }
-  },
   terminee: {
     fr: { subject: "Votre transfert est terminé 🏁", title: "Transfert terminé",
       msg: "Bonjour {nom}, votre transfert a été finalisé. Connectez-vous à votre espace personnel pour consulter la preuve de paiement." },
@@ -135,12 +129,6 @@ const TRANSFER_NOTICES = {
     ar: { subject: "تم إلغاء تحويلك 🚫", title: "تم إلغاء التحويل",
       msg: "مرحباً {nom}، تم إلغاء تحويلك. يرجى الدخول إلى مساحتك الشخصية لمزيد من التفاصيل." }
   },
-  preuve_envoyee: {
-    fr: { subject: "Preuve de paiement bien recue ", title: "Preuve recue",
-      msg: "Bonjour {nom}, nous avons bien recu votre preuve de paiement. Votre transfert est en cours de verification. Connectez-vous a votre espace personnel pour suivre son avancement." },
-    ar: { subject: "تم استلام إثبات الدفع", title: "تم استلام الإثبات",
-      msg: "مرحباً {nom}، تلقينا إثبات دفعك بنجاح. تحويلك قيد التحقق. يرجى الدخول إلى مساحتك الشخصية لمتابعة التقدم." }
-  }
 };
 
 // Se declenche a chaque mise a jour d'un document transferts/{txId}.
