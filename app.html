@@ -461,63 +461,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
     <div id="notifList"><div class="notif-empty"><div class="notif-empty-ico">🔔</div><div>Chargement...</div></div></div>
   </div>
 
-  <!-- PANEL MESSAGES / SUPPORT -->
-  <div id="panelMessages" class="panel">
-
-    <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:15px;font-weight:800;color:#1254a0;">💬 <span data-i18n="support_title">Support</span></div>
-      <button id="btnNewTicket" onclick="showNewTicketForm()"
-        style="padding:7px 14px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:22px;font-size:12px;font-weight:700;cursor:pointer;">
-        + Nouveau ticket
-      </button>
     </div>
-
-    <!-- Formulaire nouveau ticket (caché par défaut) -->
-    <div id="ticketNewView" style="display:none;">
-      <button onclick="hideNewTicketForm()"
-        style="background:none;border:none;color:#1254a0;font-size:13px;font-weight:700;cursor:pointer;padding:0;margin-bottom:14px;">← Retour</button>
-      <div id="ticketNewError" class="error-box"></div>
-      <div class="field">
-        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">OBJET DU TICKET *</label>
-        <input id="ticketObjet" type="text" maxlength="80" placeholder="Ex: Problème avec mon transfert"
-          style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:11px;font-size:14px;outline:none;background:#f8fafc;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'">
-      </div>
-      <div class="field">
-        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">VOTRE MESSAGE *</label>
-        <textarea id="ticketMsg" maxlength="1000" rows="4" placeholder="Décrivez votre problème ou question..."
-          style="width:100%;padding:11px 13px;border:1.5px solid #e0e8f5;border-radius:11px;font-size:14px;outline:none;background:#f8fafc;resize:vertical;font-family:inherit;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"></textarea>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label style="font-size:11px;color:#666;font-weight:700;letter-spacing:.4px;display:block;margin-bottom:5px;">FICHIER / PHOTO (optionnel · max 5 Mo)</label>
-        <div id="ticketFilePreview" style="display:none;background:#f0f4fa;border-radius:10px;padding:8px 12px;font-size:12px;color:#1254a0;margin-bottom:8px;align-items:center;justify-content:space-between;"></div>
-        <button onclick="document.getElementById('ticketFileInput').click()"
-          style="padding:9px 16px;border:1.5px dashed #b0c4de;border-radius:10px;background:#f8fafc;color:#666;font-size:13px;cursor:pointer;width:100%;">
-          📎 Joindre un fichier ou une photo
-        </button>
-        <input type="file" id="ticketFileInput" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleTicketFileSelect(this)">
-      </div>
-      <div id="ticketNewLoader" class="loader">Envoi en cours...</div>
-      <button onclick="createTicket()"
-        style="width:100%;padding:13px;background:linear-gradient(135deg,#1254a0,#0097a7);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
-        Envoyer le ticket →
-      </button>
-    </div>
-
-    <!-- Liste des tickets -->
-    <div id="ticketListView">
-      <div id="ticketsList"></div>
-      <div id="ticketListEmpty" style="display:none;text-align:center;padding:40px 20px;">
-        <div style="font-size:36px;margin-bottom:10px;">🎫</div>
-        <div style="font-size:14px;color:#888;">Aucun ticket pour l'instant.<br>Appuyez sur <b>+ Nouveau ticket</b> pour contacter le support.</div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
@@ -538,12 +482,7 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
     <span class="nav-label" data-i18n="nav_notifs">Notifs</span>
     <span id="notifBadge" class="nav-badge" style="display:none;">0</span>
   </button>
-  <button class="nav-item" id="navMessages" onclick="showNav('Messages')">
-    <span class="nav-icon">&#128172;</span>
-    <span class="nav-label" data-i18n="nav_support">Support</span>
-    <span id="msgBadge" class="nav-badge" style="display:none;">0</span>
-  </button>
-</nav>
+  </nav>
 
 
 <!-- IMAGE VIEWER -->
@@ -609,30 +548,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
   </div>
 </div>
 
-<!-- MODAL CLOTURE TICKET -->
-<div id="modalCloseTicket" class="modal-backdrop">
-  <div class="modal-box">
-    <div class="modal-title" data-i18n="modal_cloture_title">Clôturer le ticket</div>
-    <div class="modal-msg" data-i18n="modal_cloture_msg">Voulez-vous vraiment clôturer ce ticket ? Vous ne pourrez plus y répondre.</div>
-    <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeCloseTicketModal()" data-i18n="btn_annuler">Annuler</button>
-      <button class="modal-btn modal-btn-confirm" onclick="confirmCloseTicket()" data-i18n="tk_cloture_confirm">Clôturer</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL TICKET DEJA ACTIF -->
-<div id="modalTicketActif" class="modal-backdrop">
-  <div class="modal-box">
-    <div class="modal-title" data-i18n="modal_ticket_actif_title">Ticket en cours</div>
-    <div class="modal-msg" data-i18n="modal_ticket_actif_msg">Vous avez déjà un ticket ouvert. Vous devez le clôturer avant d'en ouvrir un nouveau.</div>
-    <div class="modal-actions" style="flex-direction:column;gap:8px;">
-      <button class="modal-btn modal-btn-confirm" style="background:linear-gradient(135deg,#1254a0,#0097a7);" onclick="document.getElementById('modalTicketActif').classList.remove('open');openActiveTicket()">Voir mon ticket en cours</button>
-      <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('modalTicketActif').classList.remove('open')">Fermer</button>
-    </div>
-  </div>
-</div>
-
 <!-- DETAIL OVERLAY -->
 <div id="detailOverlay" class="detail-overlay">
   <div class="detail-header">
@@ -640,54 +555,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
     <span class="detail-title" data-i18n="detail_title">Detail du transfert</span>
   </div>
   <div class="detail-body" id="detailBody"></div>
-</div>
-
-<!-- TICKET SHEET OVERLAY (fond) -->
-<div id="ticketSheetBg" class="ticket-sheet-overlay" onclick="closeTicketDetail()"></div>
-
-<!-- TICKET DETAIL BOTTOM SHEET -->
-<div id="ticketDetailOverlay" class="ticket-sheet">
-  <!-- Poignée + header -->
-  <div style="flex-shrink:0;">
-    <div style="text-align:center;padding:10px 0 4px;">
-      <div style="width:36px;height:4px;border-radius:2px;background:#e0e8f5;margin:0 auto;"></div>
-    </div>
-    <div style="padding:10px 16px 12px;border-bottom:1px solid #e0e8f5;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-        <div style="flex:1;">
-          <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.5px;">TICKET SUPPORT</div>
-          <div id="tdObjet" style="font-size:14px;font-weight:800;color:#1254a0;margin-top:3px;"></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span id="tdBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;"></span>
-          <button onclick="closeTicketDetail()" style="background:none;border:none;font-size:20px;color:#aaa;cursor:pointer;padding:0;line-height:1;">×</button>
-        </div>
-      </div>
-      <div id="tdCloseBtn" style="margin-top:10px;display:none;">
-        <button onclick="openCloseTicketModal()"
-          style="width:100%;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;">
-          Clôturer ce ticket
-        </button>
-      </div>
-    </div>
-  </div>
-  <!-- Thread messages -->
-  <div id="tdThread" class="chat-thread" style="flex:1;overflow-y:auto;padding:14px;background:#f8fafc;"></div>
-  <!-- Zone réponse -->
-  <div id="tdReplyArea" style="flex-shrink:0;background:#fff;border-top:1px solid #e0e8f5;padding:10px 12px;">
-    <div id="tdFileAttach" style="display:none;padding:6px 0;font-size:12px;color:#1254a0;align-items:center;justify-content:space-between;margin-bottom:6px;"></div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button onclick="document.getElementById('ticketReplyFile').click()"
-        style="background:none;border:none;font-size:20px;cursor:pointer;padding:0;color:#9ca3af;flex-shrink:0;">📎</button>
-      <input type="file" id="ticketReplyFile" accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handleReplyFileSelect(this)">
-      <input id="ticketReplyInput" type="text" placeholder="Votre réponse..." maxlength="1000"
-        style="flex:1;padding:9px 13px;border:1.5px solid #e0e8f5;border-radius:22px;font-size:14px;outline:none;background:#f8fafc;"
-        onfocus="this.style.borderColor='#1254a0'" onblur="this.style.borderColor='#e0e8f5'"
-        onkeydown="if(event.key==='Enter')sendTicketReply()">
-      <button onclick="sendTicketReply()"
-        style="background:linear-gradient(135deg,#1254a0,#0097a7);border:none;color:#fff;border-radius:50%;width:38px;height:38px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
-    </div>
-  </div>
 </div>
 
 <!-- Hidden file input for upload -->
@@ -1093,14 +960,13 @@ function calcDzd() {
 function showNav(name) {
   // Fermer le détail overlay si ouvert
   document.getElementById('detailOverlay').classList.remove('open');
-  ['Accueil','Nouveau','Profil','Notifications','Messages'].forEach(function(n) {
+  ['Accueil','Nouveau','Profil','Notifications'].forEach(function(n) {
     document.getElementById('panel'+n).classList.remove('active');
     document.getElementById('nav'+n).classList.remove('active');
   });
   document.getElementById('panel'+name).classList.add('active');
   document.getElementById('nav'+name).classList.add('active');
   if(name === 'Notifications') markAllNotifsRead();
-  if(name === 'Messages') loadTicket();
   if (name === 'Accueil') loadTransferts();
   if (name === 'Profil')  renderProfile();
 }
@@ -1524,12 +1390,8 @@ function markAllNotifsRead() {
 }
 
 // ── TICKETS SUPPORT ──
-var ticketsData        = [];
-var ticketListener     = null;
-var ticketMsgsListener = null;
-var curTicketId        = null;
-var replyFileData      = null;
-var newTicketFileData  = null;
+var ticketsData    = [];
+var ticketListener = null;
 
 function loadUnreadCount() {
   if (ticketListener) return;
@@ -1538,306 +1400,14 @@ function loadUnreadCount() {
     .onSnapshot(function(snap) {
       ticketsData = snap.docs.map(function(d) { var x = d.data(); x.id = d.id; return x; });
       var unread = ticketsData.reduce(function(acc, t) { return acc + (t.unreadUser || 0); }, 0);
-      var badge = document.getElementById('msgBadge');
-      if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'inline'; }
-      else badge.style.display = 'none';
-      if (document.getElementById('panelMessages').classList.contains('active')) renderTicketList();
+      var badge = document.getElementById('chatBubbleBadge');
+      if (badge) {
+        if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'flex'; }
+        else badge.style.display = 'none';
+      }
     }, function() {});
 }
 
-function loadTicket() {
-  renderTicketList();
-  ticketsData.forEach(function(t) {
-    if (t.unreadUser > 0) db.collection('tickets').doc(t.id).update({ unreadUser: 0 }).catch(function() {});
-  });
-  document.getElementById('msgBadge').style.display = 'none';
-}
-
-function renderTicketList() {
-  var listEl  = document.getElementById('ticketsList');
-  var emptyEl = document.getElementById('ticketListEmpty');
-  if (!ticketsData.length) {
-    listEl.innerHTML = '';
-    if (emptyEl) emptyEl.style.display = 'block';
-    return;
-  }
-  if (emptyEl) emptyEl.style.display = 'none';
-  var sorted = ticketsData.slice().sort(function(a, b) {
-    var ta = a.updatedAt && a.updatedAt.toDate ? a.updatedAt.toDate().getTime() : 0;
-    var tb = b.updatedAt && b.updatedAt.toDate ? b.updatedAt.toDate().getTime() : 0;
-    return tb - ta;
-  });
-  var dotCfg = { ouvert: '#f59e0b', en_cours: '#3b82f6', cloture: '#10b981' };
-  var lblCfg = { ouvert: t('tk_ouvert'), en_cours: t('tk_en_cours'), cloture: t('tk_cloture') };
-  listEl.innerHTML = sorted.map(function(t) {
-    var color   = dotCfg[t.statut] || '#9ca3af';
-    var label   = lblCfg[t.statut] || t.statut;
-    var ts      = t.updatedAt && t.updatedAt.toDate ? t.updatedAt.toDate().getTime() : 0;
-    var timeStr = ts ? new Date(ts).toLocaleDateString('fr-DZ') : '';
-    var unreadDot = (t.unreadUser > 0)
-      ? '<span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;flex-shrink:0;">' + t.unreadUser + '</span>' : '';
-    var faded = t.statut === 'cloture' ? 'opacity:.6;' : '';
-    return '<div onclick="openTicketDetail(\'' + t.id + '\')" style="' + faded +
-      'background:#fff;border-radius:14px;border:1px solid #eef0f5;display:flex;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:.12s;" ' +
-      'onmouseover="this.style.boxShadow=\'0 3px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.boxShadow=\'none\'">' +
-      '<div style="width:4px;background:' + color + ';flex-shrink:0;"></div>' +
-      '<div style="padding:12px 14px;display:flex;align-items:center;gap:12px;flex:1;min-width:0;">' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:13px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(t.objet || '') + '</div>' +
-          '<div style="font-size:11px;font-weight:600;color:' + color + ';margin-top:3px;">' + label + ' - ' + timeStr + '</div>' +
-          (t.lastMessage ? '<div style="font-size:11px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml((t.lastMessage || '').substring(0, 50)) + '</div>' : '') +
-        '</div>' +
-        unreadDot +
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-function openTicketDetail(id) {
-  curTicketId = id;
-  var tk = ticketsData.find(function(x) { return x.id === id; });
-  if (!tk) return;
-  document.getElementById('tdObjet').textContent = tk.objet || '';
-  var badge  = document.getElementById('tdBadge');
-  var isClos = tk.statut === 'cloture';
-  badge.textContent  = tk.statut === 'ouvert' ? t('tk_ouvert') : tk.statut === 'en_cours' ? t('tk_en_cours') : t('tk_cloture');
-  badge.style.background = tk.statut === 'ouvert' ? '#fef3c7' : tk.statut === 'en_cours' ? '#dbeafe' : '#d1fae5';
-  badge.style.color      = tk.statut === 'ouvert' ? '#92400e' : tk.statut === 'en_cours' ? '#1e40af' : '#065f46';
-  document.getElementById('tdCloseBtn').style.display  = isClos ? 'none' : 'block';
-  document.getElementById('tdReplyArea').style.display = isClos ? 'none' : 'flex';
-  if (tk.unreadUser > 0) {
-    db.collection('tickets').doc(id).update({ unreadUser: 0 }).catch(function() {});
-    tk.unreadUser = 0;
-    var total = ticketsData.reduce(function(acc, x) { return acc + (x.unreadUser || 0); }, 0);
-    var mb = document.getElementById('msgBadge');
-    if (total > 0) { mb.textContent = total > 9 ? '9+' : total; mb.style.display = 'inline'; }
-    else mb.style.display = 'none';
-    renderTicketList();
-  }
-  document.getElementById('ticketDetailOverlay').classList.add('open');
-  document.getElementById('ticketSheetBg').classList.add('open');
-  loadTicketMessages(id);
-}
-
-function closeTicketDetail() {
-  document.getElementById('ticketDetailOverlay').classList.remove('open');
-  document.getElementById('ticketSheetBg').classList.remove('open');
-  if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
-  curTicketId   = null;
-  replyFileData = null;
-  document.getElementById('tdFileAttach').style.display = 'none';
-  var ri = document.getElementById('ticketReplyInput');
-  if (ri) ri.value = '';
-}
-
-function loadTicketMessages(ticketId) {
-  if (ticketMsgsListener) { ticketMsgsListener(); ticketMsgsListener = null; }
-  var thread = document.getElementById('tdThread');
-  thread.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Chargement...</div>';
-  ticketMsgsListener = db.collection('tickets').doc(ticketId).collection('messages')
-    .onSnapshot(function(snap) {
-      var msgs = snap.docs.map(function(d) { var x = d.data(); x.id = d.id; return x; });
-      msgs.sort(function(a, b) {
-        var ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : 0;
-        var tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : 0;
-        return ta - tb;
-      });
-      if (!msgs.length) {
-        thread.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px;">Aucun message</div>';
-        return;
-      }
-      thread.innerHTML = msgs.map(function(m) {
-        var isUser  = m.from === 'user';
-        var ts      = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : 0;
-        var timeStr = ts ? new Date(ts).toLocaleTimeString('fr-DZ', {hour:'2-digit', minute:'2-digit'}) : '';
-        var fileHtml = '';
-        if (m.fileUrl) {
-          var isImg = m.fileType && m.fileType.startsWith('image');
-          fileHtml = isImg
-            ? '<br><img src="' + m.fileUrl + '" style="max-width:180px;max-height:140px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\'' + m.fileUrl + '\',\'_blank\')">'
-            : '<br><a href="' + m.fileUrl + '" target="_blank" style="color:' + (isUser ? 'rgba(255,255,255,.9)' : '#1254a0') + ';font-size:12px;text-decoration:underline;">Fichier joint</a>';
-        }
-        return '<div style="display:flex;flex-direction:column;align-items:' + (isUser ? 'flex-end' : 'flex-start') + ';margin-bottom:12px;">' +
-          '<div class="bubble bubble-' + (isUser ? 'user' : 'admin') + '">' + escHtml(m.text || '') + fileHtml + '</div>' +
-          '<div style="font-size:10px;color:#aaa;margin-top:3px;">' + (isUser ? 'Vous' : 'Support') + ' - ' + timeStr + '</div>' +
-        '</div>';
-      }).join('');
-      setTimeout(function() { thread.scrollTop = thread.scrollHeight; }, 60);
-      snap.docs.forEach(function(doc) {
-        if (doc.data().from === 'admin' && !doc.data().readByUser)
-          doc.ref.update({ readByUser: true }).catch(function() {});
-      });
-    }, function(e) {
-      thread.innerHTML = '<div style="text-align:center;padding:20px;color:#e53e3e;font-size:13px;">Erreur : ' + e.message + '</div>';
-    });
-}
-
-function showNewTicketForm() {
-  var active = ticketsData.find(function(t) { return t.statut === 'ouvert' || t.statut === 'en_cours'; });
-  if (active) {
-    document.getElementById('modalTicketActif').classList.add('open');
-    return;
-  }
-  document.getElementById('ticketListView').style.display = 'none';
-  document.getElementById('ticketNewView').style.display  = 'block';
-  document.getElementById('btnNewTicket').style.display   = 'none';
-}
-function openActiveTicket() {
-  var active = ticketsData.find(function(t) { return t.statut === 'ouvert' || t.statut === 'en_cours'; });
-  if (active) openTicketDetail(active.id);
-}
-
-function hideNewTicketForm() {
-  document.getElementById('ticketListView').style.display = 'block';
-  document.getElementById('ticketNewView').style.display  = 'none';
-  document.getElementById('btnNewTicket').style.display   = 'inline-block';
-}
-
-function showNewTicketView() { showNewTicketForm(); }
-
-function handleTicketFileSelect(input) {
-  var file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('Fichier trop lourd (max 5 Mo)','err'); input.value = ''; return; }
-  newTicketFileData = file;
-  var prev = document.getElementById('ticketFilePreview');
-  prev.style.display = 'flex';
-  prev.innerHTML = 'Fichier : ' + escHtml(file.name) + ' <button onclick="clearNewTicketFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;margin-left:auto;">x</button>';
-}
-
-function clearNewTicketFile() {
-  newTicketFileData = null;
-  document.getElementById('ticketFileInput').value = '';
-  var prev = document.getElementById('ticketFilePreview');
-  prev.style.display = 'none'; prev.innerHTML = '';
-}
-
-function handleReplyFileSelect(input) {
-  var file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('Fichier trop lourd (max 5 Mo)','err'); input.value = ''; return; }
-  replyFileData = file;
-  var att = document.getElementById('tdFileAttach');
-  att.style.display = 'flex';
-  att.innerHTML = 'Fichier : ' + escHtml(file.name) + ' <button onclick="clearReplyFile()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:18px;margin-left:auto;">x</button>';
-}
-
-function clearReplyFile() {
-  replyFileData = null;
-  document.getElementById('ticketReplyFile').value = '';
-  document.getElementById('tdFileAttach').style.display = 'none';
-}
-
-function createTicket() {
-  var objet = document.getElementById('ticketObjet').value.trim();
-  var msg   = document.getElementById('ticketMsg').value.trim();
-  var errEl = document.getElementById('ticketNewError');
-  errEl.style.display = 'none';
-  if (!objet) { errEl.textContent = 'Veuillez saisir un objet.'; errEl.style.display = 'block'; return; }
-  if (!msg)   { errEl.textContent = 'Veuillez saisir un message.'; errEl.style.display = 'block'; return; }
-  var loader    = document.getElementById('ticketNewLoader');
-  loader.style.display = 'block';
-  var u         = currentUser || {};
-  var ticketRef = db.collection('tickets').doc();
-  var ticketId  = ticketRef.id;
-  function doCreate(fileUrl, fileType, fileName) {
-    return ticketRef.set({
-      userId: currentUid, nom: u.nom || '', email: u.email || '',
-      objet: objet, statut: 'ouvert',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      lastMessage: msg, unreadAdmin: 1, unreadUser: 0
-    }).then(function() {
-      return db.collection('tickets').doc(ticketId).collection('messages').add({
-        from: 'user', text: msg,
-        fileUrl: fileUrl || null, fileType: fileType || null, fileName: fileName || null,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        readByAdmin: false, readByUser: true
-      });
-    });
-  }
-  var p = newTicketFileData
-    ? storage.ref('tickets/' + ticketId + '/' + Date.now() + '_' + newTicketFileData.name).put(newTicketFileData)
-        .then(function(s) { return s.ref.getDownloadURL(); })
-        .then(function(url) { return doCreate(url, newTicketFileData.type, newTicketFileData.name); })
-    : doCreate(null, null, null);
-  p.then(function() {
-    loader.style.display = 'none';
-    document.getElementById('ticketObjet').value = '';
-    document.getElementById('ticketMsg').value = '';
-    clearNewTicketFile();
-    hideNewTicketForm();
-  }).catch(function(e) {
-    loader.style.display = 'none';
-    errEl.textContent = 'Erreur : ' + e.message; errEl.style.display = 'block';
-  });
-}
-
-function sendTicketReply() {
-  var input = document.getElementById('ticketReplyInput');
-  var text  = input.value.trim();
-  if ((!text && !replyFileData) || !curTicketId) return;
-  input.disabled = true;
-  var msgData = {
-    from: 'user', text: text,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    readByAdmin: false, readByUser: true,
-    fileUrl: null, fileType: null, fileName: null
-  };
-  function doSend(data) {
-    return db.collection('tickets').doc(curTicketId).collection('messages').add(data)
-      .then(function() {
-        return db.collection('tickets').doc(curTicketId).update({
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          lastMessage: text || (data.fileName || ''),
-          unreadAdmin: firebase.firestore.FieldValue.increment(1)
-        });
-      });
-  }
-  var p = replyFileData
-    ? storage.ref('tickets/' + curTicketId + '/' + Date.now() + '_' + replyFileData.name).put(replyFileData)
-        .then(function(s) { return s.ref.getDownloadURL(); })
-        .then(function(url) {
-          msgData.fileUrl = url; msgData.fileType = replyFileData.type; msgData.fileName = replyFileData.name;
-          return doSend(msgData);
-        })
-    : doSend(msgData);
-  p.then(function() {
-    input.value = ''; input.disabled = false; input.focus(); clearReplyFile();
-    var uInfo = currentUser || {};
-  }).catch(function(e) {
-    input.disabled = false; toast('Erreur : ' + e.message,'err');
-  });
-}
-
-function openCloseTicketModal() {
-  document.getElementById('modalCloseTicket').classList.add('open');
-}
-function closeCloseTicketModal() {
-  document.getElementById('modalCloseTicket').classList.remove('open');
-}
-function confirmCloseTicket() {
-  closeCloseTicketModal();
-  closeTicket();
-}
-function closeTicket() {
-  if (!curTicketId) return;
-  db.collection('tickets').doc(curTicketId).update({
-    statut: 'cloture',
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    unreadAdmin: firebase.firestore.FieldValue.increment(1)
-  }).then(function() {
-    var t = ticketsData.find(function(x) { return x.id === curTicketId; });
-    if (t) t.statut = 'cloture';
-    var b = document.getElementById('tdBadge');
-    b.textContent = t('tk_cloture'); b.style.background = '#d1fae5'; b.style.color = '#065f46';
-    document.getElementById('tdCloseBtn').style.display  = 'none';
-    document.getElementById('tdReplyArea').style.display = 'none';
-  }).catch(function(e) { toast('Erreur : ' + e.message,'err'); });
-}
-
-// ── LOGOUT ──
 function handleLogout() {
   document.getElementById('modalLogout').classList.add('open');
 }
@@ -2136,22 +1706,11 @@ function setLang(lang) {
   // Rafraîchir le contenu dynamique
   if (transferts && transferts.length >= 0) renderTxList();
   if (currentUser) { renderProfile(); updateUserBadgeDisplay(); }
-  if (document.getElementById('panelMessages').classList.contains('active')) renderTicketList();
   // Modals : mettre à jour les textes des modals
   var mc = document.getElementById('modalCancel');
   if (mc) {
     var mt = mc.querySelector('.modal-title'); if (mt) mt.textContent = t('modal_cancel_title');
     var mm = mc.querySelector('.modal-msg');   if (mm) mm.textContent = t('modal_cancel_msg');
-  }
-  var mct = document.getElementById('modalCloseTicket');
-  if (mct) {
-    var mt2 = mct.querySelector('.modal-title'); if (mt2) mt2.textContent = t('modal_cloture_title');
-    var mm2 = mct.querySelector('.modal-msg');   if (mm2) mm2.textContent = t('modal_cloture_msg');
-  }
-  var mta = document.getElementById('modalTicketActif');
-  if (mta) {
-    var mt3 = mta.querySelector('.modal-title'); if (mt3) mt3.textContent = t('modal_ticket_actif_title');
-    var mm3 = mta.querySelector('.modal-msg');   if (mm3) mm3.textContent = t('modal_ticket_actif_msg');
   }
 }
 
@@ -2169,6 +1728,7 @@ function setLang(lang) {
 
 <!-- WIDGET CHAT / FAQ -->
 <div id="chatBubble" onclick="toggleChatWidget()" style="position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1254a0,#10b981);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;z-index:9999;">&#128172;</div>
+<div id="chatBubbleBadge" style="display:none;position:fixed;bottom:64px;right:14px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;align-items:center;justify-content:center;z-index:10000;padding:0 4px;">0</div>
 <div id="chatWidgetPanel" style="display:none;position:fixed;bottom:86px;right:20px;width:300px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden;z-index:9999;">
   <div style="background:#1254a0;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;">
     <div id="chatWidgetBackBtn" onclick="closeWidgetChat()" style="display:none;cursor:pointer;font-size:16px;padding:0 6px 0 0;">&#8592;</div>
@@ -2240,6 +1800,8 @@ function renderChatQuickReplies(){
 
 function openWidgetChat(){
   widgetMode = 'chat';
+  var bBadge = document.getElementById('chatBubbleBadge');
+  if (bBadge) bBadge.style.display = 'none';
   document.getElementById('chatWidgetQuick').style.display = 'none';
   document.getElementById('chatWidgetBackBtn').style.display = 'block';
   document.getElementById('chatWidgetFooter').style.display = 'flex';
@@ -2249,6 +1811,7 @@ function openWidgetChat(){
   var active = (typeof ticketsData !== 'undefined') ? ticketsData.find(function(t){ return t.statut === 'ouvert' || t.statut === 'en_cours'; }) : null;
   if (active) {
     widgetTicketId = active.id;
+    if (active.unreadUser > 0) { active.unreadUser = 0; db.collection('tickets').doc(active.id).update({ unreadUser: 0 }).catch(function(){}); }
     body.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa;font-size:11px;">Chargement...</div>';
     attachWidgetTicketListener(active.id);
   } else {
