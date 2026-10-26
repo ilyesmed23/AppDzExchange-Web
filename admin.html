@@ -288,6 +288,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
             <button onclick="setTicketFilter('en_cours')" id="tfEnCours" style="flex:1;padding:5px;border-radius:8px;border:1.5px solid #e0e8f5;background:#fff;color:#666;font-size:11px;font-weight:700;cursor:pointer;">En cours</button>
             <button onclick="setTicketFilter('cloture')" id="tfCloture" style="flex:1;padding:5px;border-radius:8px;border:1.5px solid #e0e8f5;background:#fff;color:#666;font-size:11px;font-weight:700;cursor:pointer;">Clôturés</button>
           </div>
+          <div style="display:flex;gap:6px;padding:6px 10px;border-bottom:1px solid #f0f4fa;align-items:center;font-size:11px;color:#666;flex-wrap:wrap;">
+            <span>Purger les cl&ocirc;tur&eacute;s de plus de</span>
+            <select id="purgeDays" style="border:1px solid #e0e8f5;border-radius:6px;padding:2px 4px;font-size:11px;"><option value="7">7 j</option><option value="30" selected>30 j</option><option value="90">90 j</option></select>
+            <button onclick="purgeClosedTickets()" style="padding:3px 10px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;font-size:11px;font-weight:700;cursor:pointer;">Purger</button>
+          </div>
           <div id="convItems"><div class="empty" style="padding:30px 10px;font-size:13px;">Chargement...</div></div>
         </div>
         <!-- Détail ticket -->
@@ -1554,6 +1559,41 @@ function initMessages(){
   }
 }
 
+// -- Suppression des tickets clotures (messages + ticket) --
+function deleteTicketFull(id){
+  var ref=db.collection('tickets').doc(id);
+  if(floatingChats[id]) closeFloatingChat(id);
+  return ref.collection('messages').get().then(function(snap){
+    var docs=snap.docs, p=Promise.resolve();
+    for(var i=0;i<docs.length;i+=400){(function(chunk){
+      p=p.then(function(){var b=db.batch();chunk.forEach(function(d){b.delete(d.ref);});return b.commit();});
+    })(docs.slice(i,i+400));}
+    return p;
+  }).then(function(){return ref.delete();});
+}
+function deleteTicket(id){
+  var t=allTickets.find(function(x){return x.id===id;});
+  if(!t||t.statut!=='cloture'){toast('Seuls les tickets clotures peuvent etre supprimes','err');return;}
+  showCModal('\uD83D\uDDD1','Supprimer ce ticket ?','Le ticket et tous ses messages seront supprimes definitivement.','Supprimer',true,function(){
+    deleteTicketFull(id).then(function(){toast('Ticket supprime','ok');}).catch(function(e){toast('Erreur: '+e.message,'err');});
+  });
+}
+function purgeClosedTickets(){
+  var days=parseInt(document.getElementById('purgeDays').value,10)||30;
+  var cutoff=Date.now()-days*86400000;
+  var list=allTickets.filter(function(t){
+    if(t.statut!=='cloture') return false;
+    var ts=t.updatedAt&&t.updatedAt.toDate?t.updatedAt.toDate().getTime():0;
+    return ts<cutoff;
+  });
+  if(!list.length){toast('Aucun ticket cloture de plus de '+days+' jours','ok');return;}
+  showCModal('\uD83E\uDDF9','Purger '+list.length+' ticket(s) ?','Les tickets clotures depuis plus de '+days+' jours seront supprimes avec tous leurs messages, definitivement.','Purger',true,function(){
+    var p=Promise.resolve();
+    list.forEach(function(t){p=p.then(function(){return deleteTicketFull(t.id);});});
+    p.then(function(){toast(list.length+' ticket(s) supprime(s)','ok');}).catch(function(e){toast('Erreur: '+e.message,'err');});
+  });
+}
+
 function updateMsgBadge(){
   var n=allTickets.reduce(function(acc,t){return acc+(t.unreadAdmin||0);},0);
   var b=document.getElementById('msgBadge');
@@ -1589,6 +1629,7 @@ function renderTicketList(){
       '<div style="display:flex;align-items:center;gap:4px;margin-top:4px;">'+
         '<div style="width:7px;height:7px;border-radius:50%;background:'+dotColor+';"></div>'+
         '<span style="font-size:10px;color:'+dotColor+';font-weight:700;">'+statLabel+'</span>'+
+        (t.statut==='cloture'?'<span onclick="event.stopPropagation();deleteTicket(\''+t.id+'\')" title="Supprimer ce ticket" style="margin-left:auto;cursor:pointer;font-size:13px;">&#128465;</span>':'')+
       '</div>'+
     '</div>';
   }).join('');
