@@ -59,6 +59,39 @@ function getResend() {
   return _resend;
 }
 
+// Echappe le texte saisi par un utilisateur avant de l'inserer dans un email HTML.
+function escapeHtml(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// Anti-spam du chat : au plus 1 email par ticket toutes les 5 minutes
+// (les messages suivants restent visibles dans l'espace admin / client),
+// et plus aucun email de chat si le quota Resend du jour est presque atteint
+// (on garde de la marge pour les emails de transfert).
+const CHAT_MAIL_COOLDOWN_MS = 5 * 60 * 1000;
+const CHAT_DAILY_LIMIT = 80;
+
+async function chatMailAllowed(ticketRef, ticket, field) {
+  try {
+    const last = ticket[field] && ticket[field].toMillis ? ticket[field].toMillis() : 0;
+    if (last && Date.now() - last < CHAT_MAIL_COOLDOWN_MS) return false;
+    const u = await admin.firestore().collection("config").doc("resendUsage").get();
+    if (u.exists) {
+      const d = u.data();
+      const now = new Date();
+      const dayKey = now.getUTCFullYear() + "-" + String(now.getUTCMonth() + 1).padStart(2, "0") + "-" + String(now.getUTCDate()).padStart(2, "0");
+      if (d.currentDay === dayKey && (d.sentToday || 0) >= CHAT_DAILY_LIMIT) return false;
+    }
+    await ticketRef.update({ [field]: admin.firestore.FieldValue.serverTimestamp() });
+    return true;
+  } catch (e) {
+    console.error("chatMailAllowed error:", e);
+    return true;
+  }
+}
+
 // Petit gabarit HTML sobre, aux couleurs du site, avec un bouton vers l'espace perso.
 // Le detail (montant, motif, message complet, etc.) n'est jamais inclus dans l'email :
 // on incite l'utilisateur a se connecter sur son espace pour le consulter.
@@ -198,7 +231,7 @@ exports.onTransferStatusChanged = onDocumentUpdated(
     }
 
     const t = notice[lang] || notice.fr;
-    const nom = after.nomUser || after.nom || "";
+    const nom = escapeHtml(after.nomUser || after.nom || "");
     const to = after.email || "";
     await sendUserNotification(
       to, lang, t.subject, t.title, t.msg.replace("{nom}", nom)
@@ -216,15 +249,17 @@ exports.onTicketAdminReply = onDocumentCreated(
     if (!msg || msg.from !== "admin") return;
 
     const ticketId = event.params.ticketId;
+    const ticketRef = admin.firestore().collection("tickets").doc(ticketId);
     let ticket = null;
     try {
-      const tSnap = await admin.firestore().collection("tickets").doc(ticketId).get();
+      const tSnap = await ticketRef.get();
       if (!tSnap.exists) return;
       ticket = tSnap.data();
     } catch (e) {
       console.error("ticket lookup error:", e);
       return;
     }
+    if (!(await chatMailAllowed(ticketRef, ticket, "lastUserMailAt"))) return;
 
     let lang = "fr";
     try {
@@ -236,13 +271,14 @@ exports.onTicketAdminReply = onDocumentCreated(
       console.error("lookup lang error:", e);
     }
 
-    const nom = ticket.nom || "";
+    const nom = escapeHtml(ticket.nom || "");
+    const objet = escapeHtml(ticket.objet || "");
     const to = ticket.email || "";
     const texts = {
       fr: { subject: "Nouvelle réponse à votre ticket 💬", title: "Nouvelle réponse",
-        msg: "Bonjour " + nom + ", vous avez reçu une nouvelle réponse concernant votre ticket « " + (ticket.objet || "") + " ». Connectez-vous à votre espace personnel pour la lire." },
+        msg: "Bonjour " + nom + ", vous avez reçu une nouvelle réponse concernant votre ticket « " + objet + " ». Connectez-vous à votre espace personnel pour la lire." },
       ar: { subject: "رد جديد على تذكرتك 💬", title: "رد جديد",
-        msg: "مرحباً " + nom + "، وصلك رد جديد بخصوص تذكرتك « " + (ticket.objet || "") + " ». يرجى الدخول إلى مساحتك الشخصية لقراءته." }
+        msg: "مرحباً " + nom + "، وصلك رد جديد بخصوص تذكرتك « " + objet + " ». يرجى الدخول إلى مساحتك الشخصية لقراءته." }
     };
     const t = texts[lang] || texts.fr;
     await sendUserNotification(to, lang, t.subject, t.title, t.msg);
@@ -262,8 +298,8 @@ function renderAdminEmailHtml(title, message) {
     'background:#f4f6fb;padding:24px;border-radius:12px;">' +
       '<div style="background:#ffffff;border-radius:10px;padding:24px;' +
       'box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
-        '<h2 style="margin:0 0 12px;color:#1a2b4c;font-size:20px;">' + title + "</h2>" +
-        '<p style="margin:0 0 20px;color:#3a4356;font-size:14px;line-height:1.7;white-space:pre-line;">' + message + "</p>" +
+        '<h2 style="margin:0 0 12px;color:#1a2b4c;font-size:20px;">' + escapeHtml(title) + "</h2>" +
+        '<p style="margin:0 0 20px;color:#3a4356;font-size:14px;line-height:1.7;white-space:pre-line;">' + escapeHtml(message) + "</p>" +
         '<a href="' + SITE_URL + '/admin.html" target="_blank" style="display:inline-block;' +
         "background:#1a56db;color:#ffffff;text-decoration:none;padding:12px 24px;" +
         'border-radius:8px;font-size:15px;font-weight:bold;">Ouvrir l\'espace admin</a>' +
@@ -330,15 +366,17 @@ exports.onTicketUserMessage = onDocumentCreated(
     if (!msg || msg.from !== "user") return;
 
     const ticketId = event.params.ticketId;
+    const ticketRef = admin.firestore().collection("tickets").doc(ticketId);
     let ticket = null;
     try {
-      const tSnap = await admin.firestore().collection("tickets").doc(ticketId).get();
+      const tSnap = await ticketRef.get();
       if (!tSnap.exists) return;
       ticket = tSnap.data();
     } catch (e) {
       console.error("ticket lookup error:", e);
       return;
     }
+    if (!(await chatMailAllowed(ticketRef, ticket, "lastAdminMailAt"))) return;
 
     const details =
       "De : " + (ticket.nom || "") + "\n" +

@@ -61,26 +61,23 @@ service cloud.firestore {
     }
 
     // ── CONVERSATIONS ──
+    // Ancien systeme de chat (remplace par les tickets) : plus utilise par le site.
     match /conversations/{convId} {
-      allow read:   if isAdmin()
-        || (isAuth() && resource.data.userId == request.auth.uid);
-      allow create: if isAuth();
-      allow update: if isAdmin()
-        || (isAuth() && resource.data.userId == request.auth.uid);
-      allow delete: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // ── MESSAGES ──
+    // Ancien systeme de chat (remplace par les tickets) : plus utilise par le site.
     match /messages/{msgId} {
-      allow read:   if isAdmin() || isAuth();
-      allow create: if isAuth();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // ── CONTACTS (formulaire public) ──
     match /contacts/{contactId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasOnly(['nom','email','message','timestamp','lu'])
+        && request.resource.data.nom is string && request.resource.data.nom.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() <= 200
+        && request.resource.data.message is string && request.resource.data.message.size() <= 3000;
       allow read, update, delete: if isAdmin();
     }
 
@@ -96,7 +93,9 @@ service cloud.firestore {
         || (isAuth() && resource.data.userId == request.auth.uid);
       allow create: if isAuth()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.statut == 'ouvert';
+        && request.resource.data.statut == 'ouvert'
+        && request.resource.data.keys().hasOnly(['userId','nom','email','objet','statut','createdAt','updatedAt','lastMessage','unreadAdmin','unreadUser'])
+        && request.resource.data.objet is string && request.resource.data.objet.size() <= 100;
       allow update: if isAdmin()
         || (isAuth()
             && resource.data.userId == request.auth.uid
@@ -111,10 +110,22 @@ service cloud.firestore {
       match /messages/{msgId} {
         allow read:  if isAdmin()
           || (isAuth() && get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid);
+        // Admin : tout. Client : uniquement sur SON ticket ouvert, en tant que 'user', texte seul.
         allow create: if isAuth()
-          && (isAdmin() || get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid)
-          && get(/databases/$(database)/documents/tickets/$(ticketId)).data.statut != 'cloture';
-        allow update: if isAdmin() || isAuth();
+          && get(/databases/$(database)/documents/tickets/$(ticketId)).data.statut != 'cloture'
+          && (isAdmin()
+              || (get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid
+                  && request.resource.data.from == 'user'
+                  && request.resource.data.keys().hasOnly(['from','text','fileUrl','fileType','fileName','timestamp','readByAdmin','readByUser'])
+                  && request.resource.data.text is string
+                  && request.resource.data.text.size() <= 1000
+                  && request.resource.data.fileUrl == null));
+        // Admin : tout. Client : seulement marquer un message admin comme lu.
+        allow update: if isAdmin()
+          || (isAuth()
+              && get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid
+              && resource.data.from == 'admin'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readByUser']));
         allow delete: if isAdmin();
       }
     }

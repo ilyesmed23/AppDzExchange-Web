@@ -1607,7 +1607,7 @@ function openTicket(id){
   document.getElementById('threadAv').textContent=name.charAt(0).toUpperCase();
   document.getElementById('threadName').textContent=name;
   document.getElementById('threadEmail').textContent=u.email||'';
-  document.getElementById('adminTicketObjet').textContent='📋 '+escH(t.objet||'');
+  document.getElementById('adminTicketObjet').textContent='📋 '+(t.objet||'');
   var badge=document.getElementById('adminTicketBadge');
   badge.textContent=t.statut==='ouvert'?'🟡 Ouvert':t.statut==='en_cours'?'🔵 En cours':'✅ Clôturé';
   badge.style.background=t.statut==='ouvert'?'#fef3c7':t.statut==='en_cours'?'#dbeafe':'#d1fae5';
@@ -1640,10 +1640,10 @@ function loadAdminTicketMessages(ticketId){
         var ts=m.timestamp&&m.timestamp.toDate?m.timestamp.toDate().getTime():0;
         var timeStr=ts?new Date(ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'})+' '+new Date(ts).toLocaleDateString('fr-DZ',{day:'2-digit',month:'2-digit'}):'';
         var fileHtml='';
-        if(m.fileUrl){
+        if(safeUrl(m.fileUrl)){
           var isImg=m.fileType&&m.fileType.startsWith('image');
-          fileHtml=isImg?'<br><img src="'+m.fileUrl+'" style="max-width:180px;max-height:140px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+m.fileUrl+'\',\'_blank\')">'
-            :'<br><a href="'+m.fileUrl+'" target="_blank" style="color:'+(isAdmin?'#fff':'#1254a0')+';font-size:12px;">📎 '+escH(m.fileName||'Fichier')+'</a>';
+          fileHtml=isImg?'<br><img src="'+safeUrl(m.fileUrl)+'" style="max-width:180px;max-height:140px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+safeUrl(m.fileUrl)+'\',\'_blank\')">'
+            :'<br><a href="'+safeUrl(m.fileUrl)+'" target="_blank" rel="noopener" style="color:'+(isAdmin?'#fff':'#1254a0')+';font-size:12px;">📎 '+escH(m.fileName||'Fichier')+'</a>';
         }
         return '<div class="msg-wrap from-'+(isAdmin?'admin':'user')+'">'+
           '<div class="bubble bubble-'+(isAdmin?'admin':'user')+'">'+escH(m.text||'')+fileHtml+'</div>'+
@@ -1730,7 +1730,9 @@ function useQuickReply(text) {
   if (input) { input.value = text; input.focus(); }
 }
 
-function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// URL de piece jointe : uniquement Firebase Storage en https, sans caractere pouvant casser un attribut
+function safeUrl(u){return(typeof u==='string'&&/^https:\/\/firebasestorage\.googleapis\.com\/[^\s"'<>\\]*$/.test(u))?u:'';}
 
 //  FLOATING CHATS (fenetres multiples) 
 var floatingChats = {};
@@ -1805,10 +1807,10 @@ function renderFloatingMessages(id){
         var ts = m.timestamp && m.timestamp.toDate ? m.timestamp.toDate().getTime() : 0;
         var timeStr = ts ? new Date(ts).toLocaleTimeString('fr-DZ',{hour:'2-digit',minute:'2-digit'}) : '';
         var fileHtml = '';
-        if (m.fileUrl) {
+        if (safeUrl(m.fileUrl)) {
           var isImg = m.fileType && m.fileType.startsWith('image');
-          fileHtml = isImg ? '<br><img src="'+m.fileUrl+'" style="max-width:150px;max-height:120px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+m.fileUrl+'\',\'_blank\')">'
-            : '<br><a href="'+m.fileUrl+'" target="_blank" style="color:'+(isAdmin?'#fff':'#1254a0')+';font-size:11px;">Fichier: '+escH(m.fileName||'')+'</a>';
+          fileHtml = isImg ? '<br><img src="'+safeUrl(m.fileUrl)+'" style="max-width:150px;max-height:120px;border-radius:8px;margin-top:6px;cursor:pointer;" onclick="window.open(\''+safeUrl(m.fileUrl)+'\',\'_blank\')">'
+            : '<br><a href="'+safeUrl(m.fileUrl)+'" target="_blank" rel="noopener" style="color:'+(isAdmin?'#fff':'#1254a0')+';font-size:11px;">Fichier: '+escH(m.fileName||'')+'</a>';
         }
         return '<div class="msg-wrap from-'+(isAdmin?'admin':'user')+'" style="margin-bottom:8px;">'
           +'<div class="bubble bubble-'+(isAdmin?'admin':'user')+'" style="font-size:12px;">'+escH(m.text||'')+fileHtml+'</div>'

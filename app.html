@@ -1392,7 +1392,15 @@ function loadUnreadCount() {
     .where('userId', '==', currentUid)
     .onSnapshot(function(snap) {
       ticketsData = snap.docs.map(function(d) { var x = d.data(); x.id = d.id; return x; });
-      var unread = ticketsData.reduce(function(acc, t) { return acc + (t.unreadUser || 0); }, 0);
+      var unread = ticketsData.reduce(function(acc, t) { return acc + (t.statut === 'cloture' ? 0 : (t.unreadUser || 0)); }, 0);
+      // Conversation cloturee par le support pendant que le chat est ouvert : on repart sur un nouveau ticket
+      if (widgetTicketId) {
+        var cur = ticketsData.find(function(t) { return t.id === widgetTicketId; });
+        if (cur && cur.statut === 'cloture') {
+          widgetTicketId = null;
+          addChatMsg('Cette conversation a ete cloturee. Ecris un nouveau message pour en ouvrir une autre.', 'bot');
+        }
+      }
       var badge = document.getElementById('chatBubbleBadge');
       if (badge) {
         if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.style.display = 'flex'; }
@@ -1817,6 +1825,10 @@ function openWidgetChat(){
     attachWidgetTicketListener(active.id);
   } else {
     widgetTicketId = null;
+    // Tickets clotures : on remet leur compteur a zero (sinon le badge rouge reste bloque)
+    if (typeof ticketsData !== 'undefined') ticketsData.forEach(function(t){
+      if (t.statut === 'cloture' && t.unreadUser > 0) { t.unreadUser = 0; db.collection('tickets').doc(t.id).update({ unreadUser: 0 }).catch(function(){}); }
+    });
     body.innerHTML = '<div style="background:#f3f4f6;border-radius:12px;border-bottom-left-radius:4px;padding:8px 12px;align-self:flex-start;max-width:85%;">Ecris ton message ci-dessous, un conseiller te repondra ici meme.</div>';
   }
 }
@@ -1852,8 +1864,8 @@ function attachWidgetTicketListener(ticketId){
       body.innerHTML = msgs.map(function(m){
         var isUser = m.from === 'user';
         var fileHtml = '';
-        if (m.fileUrl) {
-          fileHtml = '<br><a href="' + m.fileUrl + '" target="_blank" style="color:' + (isUser ? '#fff' : '#1254a0') + ';font-size:11px;text-decoration:underline;">Fichier joint</a>';
+        if (m.fileUrl && /^https:\/\/firebasestorage\.googleapis\.com\/[^\s"'<>\\]*$/.test(m.fileUrl)) {
+          fileHtml = '<br><a href="' + escHtml(m.fileUrl) + '" target="_blank" rel="noopener" style="color:' + (isUser ? '#fff' : '#1254a0') + ';font-size:11px;text-decoration:underline;">Fichier joint</a>';
         }
         return '<div style="padding:8px 12px;border-radius:12px;max-width:85%;' + (isUser
           ? 'background:#1254a0;color:#fff;border-bottom-right-radius:4px;align-self:flex-end;margin-left:auto;'
@@ -1873,6 +1885,10 @@ function sendWidgetChatMsg(){
   var text = input.value.trim();
   if (!text) return;
   input.disabled = true;
+  if (widgetTicketId && typeof ticketsData !== 'undefined') {
+    var cur = ticketsData.find(function(t){ return t.id === widgetTicketId; });
+    if (cur && cur.statut === 'cloture') widgetTicketId = null;
+  }
   if (widgetTicketId) {
     sendWidgetMsgToTicket(widgetTicketId, text, input);
   } else {
