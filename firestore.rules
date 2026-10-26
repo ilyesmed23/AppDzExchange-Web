@@ -38,12 +38,12 @@ service cloud.firestore {
         || (isAuth() && resource.data.userId == request.auth.uid);
       allow create: if isAuth()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.statut == 'en_attente';
+        && request.resource.data.statut == 'a_valider';
       allow update: if isAdmin()
-        // Annulation : en_attente → annulee
+        // Annulation : a_valider ou en_attente → annulee
         || (isAuth()
             && resource.data.userId == request.auth.uid
-            && resource.data.statut == 'en_attente'
+            && (resource.data.statut == 'a_valider' || resource.data.statut == 'en_attente')
             && request.resource.data.statut == 'annulee')
         // Envoi preuve : en_attente ou manque_info → preuve_envoyee
         || (isAuth()

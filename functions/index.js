@@ -138,6 +138,12 @@ async function sendUserNotification(to, lang, subject, title, message) {
 // Textes bilingues pour chaque changement de statut de transfert.
 // {nom} est remplace par le prenom/nom de l'utilisateur.
 const TRANSFER_NOTICES = {
+  approuvee: {
+    fr: { subject: "Votre demande de transfert est acceptée ✅", title: "Demande acceptée",
+      msg: "Bonjour {nom}, votre demande de transfert a été acceptée. Vous pouvez maintenant effectuer le virement et envoyer votre preuve depuis votre espace personnel." },
+    ar: { subject: "تمت الموافقة على طلب التحويل ✅", title: "تمت الموافقة على الطلب",
+      msg: "مرحباً {nom}، تمت الموافقة على طلب التحويل الخاص بك. يمكنك الآن إجراء التحويل وإرسال الإثبات من مساحتك الشخصية." }
+  },
   terminee: {
     fr: { subject: "Votre transfert est terminé 🏁", title: "Transfert terminé",
       msg: "Bonjour {nom}, votre transfert a été finalisé. Connectez-vous à votre espace personnel pour consulter la preuve de paiement." },
@@ -175,7 +181,10 @@ exports.onTransferStatusChanged = onDocumentUpdated(
     if (!before || !after) return;
     if (before.statut === after.statut) return;
 
-    const notice = TRANSFER_NOTICES[after.statut];
+    // a_valider -> en_attente = l'admin vient d'autoriser la demande
+    const noticeKey = (before.statut === "a_valider" && after.statut === "en_attente")
+      ? "approuvee" : after.statut;
+    const notice = TRANSFER_NOTICES[noticeKey];
     if (!notice) return;
 
     let lang = "fr";
@@ -308,7 +317,7 @@ exports.onNewTransferRequest = onDocumentCreated(
       "CCP : " + (tx.ccpUser || "") + "\n" +
       "Email Paysera : " + (tx.emailPaysera || "") + "\n" +
       "Montant : " + (tx.montantEur || "") + " EUR (" + (tx.montantDzd || "") + " DZD, taux " + (tx.taux || "") + ")";
-    await sendAdminNotification(" Nouvelle demande de transfert", "Nouvelle demande de transfert", details);
+    await sendAdminNotification("Nouvelle demande de transfert à valider", "Nouvelle demande à valider", details);
   }
 );
 

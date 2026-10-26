@@ -370,7 +370,11 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
         <span data-i18n="new_title">Nouvelle demande de transfert</span>
       </h3>
       <div id="newError" class="error-box"></div>
-      <div class="info-box">
+      <div class="info-box" style="background:#eff6ff;border-color:#bfdbfe;">
+        <div class="info-title" data-i18n="new_valid_title">VALIDATION PAR L'ADMIN</div>
+        <div style="font-size:12px;color:#1e3a8a;line-height:1.5;"><span data-i18n="new_valid_hint">Votre demande sera d'abord examinee par l'administrateur. Une fois acceptee, vous recevrez une notification et le numero CCP pour effectuer votre virement et envoyer la preuve.</span></div>
+      </div>
+      <div class="info-box" style="display:none;">
         <div class="info-title" data-i18n="new_ccp_title">VIREMENT BARIDIMOB (CCP ADMIN)</div>
         <div class="info-row">
           <span>Numero CCP</span>
@@ -871,7 +875,7 @@ function renderTxList() {
     return;
   }
 
-  var actifs   = transferts.filter(function(t){ return ['en_attente','preuve_envoyee','validee','manque_info'].indexOf(t.statut) >= 0; });
+  var actifs   = transferts.filter(function(t){ return ['a_valider','en_attente','preuve_envoyee','validee','manque_info'].indexOf(t.statut) >= 0; });
   var termines = transferts.filter(function(t){ return t.statut === 'terminee'; });
   var autres   = transferts.filter(function(t){ return ['rejetee','annulee'].indexOf(t.statut) >= 0; });
 
@@ -885,6 +889,8 @@ function renderTxList() {
     rejetee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', color:'#ef4444', get label(){ return t('st_rejetee'); } },
     annulee:        { svgIco:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>', color:'#9ca3af', get label(){ return t('st_annulee'); } },
   };
+
+  statusCfg.a_valider = { svgIco: statusCfg.en_attente.svgIco, color:'#0ea5e9', get label(){ return t('st_a_valider'); } };
 
   function txRow(tx, faded) {
     var cfg = statusCfg[tx.statut] || { svgIco:'', color:'#9ca3af', label: tx.statut };
@@ -939,7 +945,7 @@ function renderTxList() {
 
 function statutLabel(s) {
   var map = {
-    en_attente:'st_en_attente', preuve_envoyee:'st_preuve_envoyee',
+    a_valider:'st_a_valider', en_attente:'st_en_attente', preuve_envoyee:'st_preuve_envoyee',
     validee:'st_validee', terminee:'st_terminee', rejetee:'st_rejetee',
     annulee:'st_annulee', manque_info:'st_manque_info'
   };
@@ -995,8 +1001,8 @@ function closeDetail() {
 }
 
 function renderDetail(tx) {
-  var steps = ['en_attente','preuve_envoyee','validee','terminee'];
-  var stepLabels = ['Demande\nsoumise','Preuve\nenvoyee','Valide\npar admin','Transfert\ntermine'];
+  var steps = ['a_valider','en_attente','preuve_envoyee','validee','terminee'];
+  var stepLabels = ['Demande\nsoumise','Virement\nautorise','Preuve\nenvoyee','Valide\npar admin','Transfert\ntermine'];
   var currentIdx = steps.indexOf(tx.statut);
   var isSpecial = (tx.statut === 'rejetee' || tx.statut === 'annulee' || tx.statut === 'manque_info');
   var progressHtml = '<div class="progress-steps">';
@@ -1037,7 +1043,12 @@ function renderDetail(tx) {
 
   var uploadHtml = '';
   if (tx.statut !== 'annulee' && tx.statut !== 'rejetee') {
-    if (tx.statut === 'en_attente') {
+    if (tx.statut === 'a_valider') {
+      uploadHtml = '<div style="background:#eff6ff;border:2px solid #0ea5e9;border-radius:14px;padding:16px;margin-bottom:14px;text-align:center;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">&#9203;</div>' +
+        '<div style="font-size:14px;font-weight:800;color:#075985;margin-bottom:6px;">'+t('detail_wait_title')+'</div>' +
+        '<div style="font-size:12.5px;color:#1e3a8a;line-height:1.5;">'+t('detail_wait_msg')+'</div></div>';
+    } else if (tx.statut === 'en_attente') {
       uploadHtml = '<div style="background:linear-gradient(135deg,#fff7ed,#fef3c7);border:2px solid #f59e0b;border-radius:14px;padding:14px;margin-bottom:14px;">' +
         '<div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:8px;">OU ENVOYER VOTRE VIREMENT BARIDIMOB ?</div>' +
         '<div style="font-size:11px;color:#78350f;margin-bottom:6px;">Numero CCP a crediter :</div>' +
@@ -1070,7 +1081,7 @@ function renderDetail(tx) {
     thumbHtml(tx.preuveAdminUrl, 'Preuve admin');
 
   var cancelHtml = '';
-  if (tx.statut === 'en_attente') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
+  if (tx.statut === 'en_attente' || tx.statut === 'a_valider') cancelHtml = '<button onclick="openCancelModal()" style="width:100%;margin-top:16px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626;font-size:13px;font-weight:700;cursor:pointer;">Annuler ce transfert</button>';
 
   // Avis : formulaire si pas encore soumis, message merci sinon
   var avisHtml = '';
@@ -1163,7 +1174,7 @@ function handleCreateTransfert() {
   }
   if (!currentUser) { errEl.textContent = t('err_user'); errEl.style.display='block'; return; }
   // ── Vérif : pas de demande active déjà en cours ──
-  var actifs = ['en_attente','preuve_envoyee','manque_info','validee'];
+  var actifs = ['a_valider','en_attente','preuve_envoyee','manque_info','validee'];
   var demandeActive = transferts.find(function(t){ return actifs.indexOf(t.statut) !== -1; });
   if (demandeActive) {
     errEl.textContent = t('err_demande_active');
@@ -1180,7 +1191,7 @@ function handleCreateTransfert() {
     montantEur: eur,
     montantDzd: dzd,
     taux: currentTaux,
-    statut: 'en_attente',
+    statut: 'a_valider',
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(ref) {
     document.getElementById('newLoader').style.display = 'none';
@@ -1499,6 +1510,10 @@ var T = {
     nav_accueil: 'Accueil', nav_nouveau: 'Nouveau', nav_profil: 'Profil',
     nav_notifs: 'Notifs', nav_support: 'Support',
     new_title: 'Nouvelle demande de transfert',
+    new_valid_title: "VALIDATION PAR L'ADMIN",
+    new_valid_hint: "Votre demande sera d'abord examinée par l'administrateur. Une fois acceptée, vous recevrez une notification et le numéro CCP pour effectuer votre virement et envoyer la preuve.",
+    detail_wait_title: 'Demande en cours d\'examen',
+    detail_wait_msg: 'Votre demande a bien été reçue. L\'administrateur doit la valider avant que vous puissiez effectuer le virement. Vous serez prévenu par notification et par email.',
     new_ccp_title: 'VIREMENT BARIDIMOB (CCP ADMIN)',
     new_ccp_hint: 'Veuillez procéder au virement de la somme souhaitée vers ce numéro CCP / BaridiMob, puis soumettez votre demande et uploadez la preuve de virement.',
     new_montant_label: 'MONTANT EN EUROS *',
@@ -1531,7 +1546,7 @@ var T = {
     loader_create: 'Création de la demande...',
     loading: 'Chargement...',
     // Statuts
-    st_en_attente: 'En attente', st_preuve_envoyee: 'Preuve envoyée',
+    st_a_valider: 'En attente de validation', st_en_attente: 'En attente', st_preuve_envoyee: 'Preuve envoyée',
     st_validee: 'Validé', st_terminee: 'Terminé',
     st_rejetee: 'Rejeté', st_annulee: 'Annulé', st_manque_info: 'Info manquante',
     // Sections liste
@@ -1595,6 +1610,10 @@ var T = {
     nav_accueil: 'الرئيسية', nav_nouveau: 'جديد', nav_profil: 'الملف',
     nav_notifs: 'الإشعارات', nav_support: 'الدعم',
     new_title: 'طلب تحويل جديد',
+    new_valid_title: 'موافقة الإدارة',
+    new_valid_hint: 'ستتم مراجعة طلبك أولاً من طرف المسؤول. بعد الموافقة ستتلقى إشعاراً مع رقم CCP لإجراء التحويل وإرسال الإثبات.',
+    detail_wait_title: 'طلبك قيد المراجعة',
+    detail_wait_msg: 'تم استلام طلبك. يجب أن يوافق عليه المسؤول قبل أن تتمكن من إجراء التحويل. سيتم إعلامك بإشعار وبريد إلكتروني.',
     new_ccp_title: 'تحويل بريدي موب (CCP الإدارة)',
     new_ccp_hint: 'يرجى إجراء التحويل للمبلغ المطلوب إلى رقم CCP / بريدي موب هذا، ثم قدّم طلبك وأرسل إثبات التحويل.',
     new_montant_label: 'المبلغ بالأورو *',
@@ -1625,7 +1644,7 @@ var T = {
     detail_title: 'تفاصيل التحويل',
     loader_create: 'جارٍ الإنشاء...',
     loading: 'جارٍ التحميل...',
-    st_en_attente: 'في الانتظار', st_preuve_envoyee: 'الإثبات مُرسَل',
+    st_a_valider: 'بانتظار الموافقة', st_en_attente: 'في الانتظار', st_preuve_envoyee: 'الإثبات مُرسَل',
     st_validee: 'تم التحقق', st_terminee: 'مكتمل',
     st_rejetee: 'مرفوض', st_annulee: 'ملغى', st_manque_info: 'معلومة ناقصة',
     sec_en_cours: 'قيد المعالجة', sec_termines: 'مكتملة', sec_autres: 'ملغاة / مرفوضة',
