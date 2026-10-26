@@ -8,7 +8,6 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 :root{--bg:#f0f4fa;--card:#fff;--card2:#f8fafc;--text:#1a1a2e;--muted:#666;--border:#e0e8f5;}
-[data-theme="dark"]{--bg:#0f1420;--card:#1b212f;--card2:#232a3a;--text:#e8ecf5;--muted:#9aa3b5;--border:#2a3142;}
 body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh;
   display:flex; flex-direction:column; overflow-x:hidden; transition:background .2s,color .2s; }
 .header { background:linear-gradient(135deg,#1254a0,#0097a7); color:#fff;
@@ -181,7 +180,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 /* ── NOTIFICATIONS ── */
 .notif-item{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid #1254a0;display:flex;gap:12px;align-items:flex-start;}
 .notif-item.unread{border-left-color:#ef4444;background:#fff9f9;}
-[data-theme="dark"] .notif-item.unread{background:#2a1f26;}
 .notif-item.unread::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:4px;}
 .notif-ico{font-size:22px;flex-shrink:0;}
 .notif-body{flex:1;}
@@ -324,9 +322,6 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
         <span id="headerBadge" style="display:none;"></span>
         <span id="emailVerifBadge" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px;color:#92400e;">📧 Email non confirmée</span>
       </div>
-      <button onclick="toggleTheme()" title="Mode sombre / clair" id="themeToggleBtn"
-        style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
-               padding:7px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;">🌙</button>
       <button onclick="handleLogout()" title="Se déconnecter"
         style="background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;
                padding:7px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -574,23 +569,9 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 <script>
 function toast(msg,type){var el=document.getElementById('toast');if(!el){window.alert(msg);return;}el.textContent=msg;el.className='toast show '+(type||'info');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){el.className='toast';},3500);}
 // ── Thème sombre ──
-(function initTheme(){
-  var saved = localStorage.getItem('theme');
-  var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-})();
-function toggleTheme(){
-  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  var next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-document.addEventListener('DOMContentLoaded', function(){
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
-});
+// Theme: toujours clair
+try{localStorage.removeItem('theme');}catch(e){}
+document.documentElement.setAttribute('data-theme','light');
 // ── Firebase Init ──
 const firebaseConfig = {
   apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",

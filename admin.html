@@ -8,7 +8,6 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#f0f4fa;--card:#fff;--card2:#f8fafc;--text:#1a1f36;--muted:#888;--border:#e0e8f5;}
-[data-theme="dark"]{--bg:#0f1420;--card:#1b212f;--card2:#232a3a;--text:#e8ecf5;--muted:#9aa3b5;--border:#2a3142;}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s;}
 .layout{display:flex;min-height:100vh;}
 .sidebar{width:230px;background:#1a1f36;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;display:flex;flex-direction:column;}
@@ -227,9 +226,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
   <div class="page-header">
     <div><div class="page-title" id="pgTitle">Tableau de bord</div><div class="page-sub" id="pgSub">Vue d'ensemble</div></div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <button onclick="toggleTheme()" title="Mode sombre / clair" id="themeToggleBtn"
-        style="background:var(--card2);border:1.5px solid var(--border);color:var(--text);border-radius:8px;
-               padding:7px 10px;cursor:pointer;font-size:15px;line-height:1;">🌙</button>
       <div style="font-size:12px;color:var(--muted);" id="adminLbl"></div>
     </div>
   </div>
@@ -1979,23 +1975,9 @@ function loadStats() {
 function slbl(s){return{a_valider:'À valider',en_attente:'Autorisé (virement attendu)',preuve_envoyee:'Preuve reçue',validee:'Validé',terminee:'Terminé',rejetee:'Rejeté',annulee:'Annulé',manque_info:'Info manquante'}[s]||s;}
 function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'info');setTimeout(function(){t.className='toast';},3000);}
 // Thème sombre
-(function initTheme(){
-  var saved = localStorage.getItem('theme');
-  var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-})();
-function toggleTheme(){
-  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  var next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-document.addEventListener('DOMContentLoaded', function(){
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
-});
+// Theme: toujours clair
+try{localStorage.removeItem('theme');}catch(e){}
+document.documentElement.setAttribute('data-theme','light');
 function viewImg(url){document.getElementById('ivSrc').src=url;document.getElementById('imgViewer').classList.add('open');}
 function confirmLogout(){
   showCModal('🚪','Se déconnecter ?','Vous serez redirigé vers la page de connexion.','Se déconnecter',false,function(){

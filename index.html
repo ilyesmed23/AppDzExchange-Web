@@ -41,7 +41,6 @@
   --blue:#1254a0;--teal:#0097a7;--grad:linear-gradient(135deg,#1254a0,#0097a7);
   --bg:#f0f4fa;--card:#fff;--text:#1a1a2e;--muted:#666;--border:#e0e8f5;
 }
-[data-theme="dark"]{--bg:#0f1420;--card:#1b212f;--text:#e8ecf5;--muted:#9aa3b5;--border:#2a3142;}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s;}
 body[dir="rtl"]{font-family:'Segoe UI',Tahoma,Arial,sans-serif;}
 nav{background:var(--grad);padding:0 5%;display:flex;align-items:center;
@@ -255,9 +254,6 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
       <button class="lang-btn active" id="btnFr" onclick="setLang('fr')">FR</button>
       <button class="lang-btn" id="btnAr" onclick="setLang('ar')">AR</button>
     </div>
-    <button onclick="toggleTheme()" title="Mode sombre / clair" id="themeToggleBtn"
-      style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:22px;
-             padding:8px 12px;cursor:pointer;font-size:14px;line-height:1;">🌙</button>
     <a href="#contact" class="btn-nav-contact" data-i18n="nav_contact">Contact</a>
     <a href="auth.html" class="btn-nav-login" data-i18n="nav_login">Connexion</a>
     <a href="auth.html?register=1" class="btn-nav-register" data-i18n="nav_register">S'inscrire</a>
@@ -514,23 +510,9 @@ footer{background:#0f1923;color:#fff;padding:28px 5%;text-align:center;}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-(function initTheme(){
-  var saved = localStorage.getItem('theme');
-  var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-})();
-function toggleTheme(){
-  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  var next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-document.addEventListener('DOMContentLoaded', function(){
-  var btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
-});
+// Theme: toujours clair
+try{localStorage.removeItem('theme');}catch(e){}
+document.documentElement.setAttribute('data-theme','light');
 var firebaseConfig = {
   apiKey: "AIzaSyBFl6VxDko5kQb-Ww7HGJ7sPx26r2Ff9kA",
   authDomain: "appdzexchange.firebaseapp.com",
