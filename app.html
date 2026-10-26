@@ -181,11 +181,12 @@ body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(
 /* ── NOTIFICATIONS ── */
 .notif-item{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid #1254a0;display:flex;gap:12px;align-items:flex-start;}
 .notif-item.unread{border-left-color:#ef4444;background:#fff9f9;}
+[data-theme="dark"] .notif-item.unread{background:#2a1f26;}
 .notif-item.unread::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:4px;}
 .notif-ico{font-size:22px;flex-shrink:0;}
 .notif-body{flex:1;}
-.notif-msg{font-size:13px;color:#1a1f36;font-weight:600;line-height:1.5;}
-.notif-date{font-size:11px;color:#aaa;margin-top:4px;}
+.notif-msg{font-size:13px;color:var(--text);font-weight:600;line-height:1.5;}
+.notif-date{font-size:11px;color:var(--muted);margin-top:4px;}
 .notif-empty{text-align:center;padding:40px 20px;color:#bbb;}
 .notif-empty-ico{font-size:44px;margin-bottom:10px;}
 
