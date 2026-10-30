@@ -213,6 +213,8 @@ exports.onTransferStatusChanged = onDocumentUpdated(
     const after = event.data.after.data();
     if (!before || !after) return;
     if (before.statut === after.statut) return;
+    // Annulation faite par le client lui-meme : inutile de lui renvoyer un email
+    if (after.statut === "annulee" && after.annuleePar === "client") return;
 
     // a_valider -> en_attente = l'admin vient d'autoriser la demande
     const noticeKey = (before.statut === "a_valider" && after.statut === "en_attente")

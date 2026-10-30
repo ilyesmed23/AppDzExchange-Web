@@ -55,6 +55,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 .abtn:active{transform:scale(.95);}
 .a-view{background:#eff6ff;color:#1d4ed8;}.a-ok{background:#d1fae5;color:#065f46;}.a-rej{background:#fee2e2;color:#dc2626;}.a-info{background:var(--card)7ed;color:#c2410c;}.a-del{background:#f3f4f6;color:#6b7280;}.a-proof{background:#ede9fe;color:#5b21b6;}
 .badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.b-annulee-client{background:#ffe4e6 !important;color:#be123c !important;}
 .b-a_valider{background:#e0f2fe;color:#075985;}.b-en_attente{background:#fef3c7;color:#92400e;}.b-preuve_envoyee{background:#dbeafe;color:#1e40af;}.b-validee{background:#ede9fe;color:#5b21b6;}.b-terminee{background:#d1fae5;color:#065f46;}.b-rejetee{background:#fee2e2;color:#991b1b;}.b-annulee{background:#f3f4f6;color:#6b7280;}.b-manque_info{background:var(--card)7ed;color:#c2410c;}
 .user-row{background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:.15s;}
 .user-row:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);}
@@ -1062,7 +1063,7 @@ function renderDash(){
       '<div class="tx-info"><div class="tx-user">'+(t.nomUser||t.email||'—')+'</div>'+
       '<div class="tx-amount">'+t.montantEur+' EUR</div>'+
       '<div class="tx-date">'+t.dateStr+'</div></div>'+
-      '<span class="badge b-'+t.statut+'">'+slbl(t.statut)+'</span></div>';
+      '<span class="badge b-'+t.statut+badgeX(t)+'">'+slblTx(t)+'</span></div>';
   }).join(''):'<div class="empty"><div class="empty-ico">📭</div><div>Aucune activité</div></div>';
 }
 
@@ -1102,7 +1103,7 @@ function renderTxList(){
           '<div class="tx-dzd">'+(t.montantDzd?'→ '+Number(t.montantDzd).toLocaleString('fr-DZ')+' DZD':'')+'</div>'+
           '<div class="tx-date">'+t.dateStr+'</div>'+
         '</div></div>'+
-        '<div class="tx-right"><span class="badge b-'+t.statut+'">'+slbl(t.statut)+'</span></div></div>';
+        '<div class="tx-right"><span class="badge b-'+t.statut+badgeX(t)+'">'+slblTx(t)+'</span></div></div>';
     }
 
     var acts='<button class="abtn a-view" onclick="event.stopPropagation();openDrawer(\''+t.id+'\')">👁 Voir</button>';
@@ -1125,7 +1126,7 @@ function renderTxList(){
         '<div class="tx-date">'+t.dateStr+'</div>'+
       '</div>'+
       '<div class="tx-right">'+
-        '<span class="badge b-'+t.statut+'">'+slbl(t.statut)+'</span>'+
+        '<span class="badge b-'+t.statut+badgeX(t)+'">'+slblTx(t)+'</span>'+
         '<div class="tx-acts">'+acts+'</div>'+
       '</div></div>';
   }).join('');
@@ -1208,7 +1209,7 @@ function fillDrawer(t){
       '<div class="d-row"><span>DZD à envoyer</span><b>'+(t.montantDzd?Number(t.montantDzd).toLocaleString('fr-DZ')+' DZD':'—')+'</b></div>'+
       '<div class="d-row"><span>Taux</span><b>'+(t.taux||'—')+' DZD/EUR</b></div>'+
       '<div class="d-row"><span>Date</span><b>'+t.dateStr+'</b></div>'+
-      '<div class="d-row"><span>Statut</span><span class="badge b-'+t.statut+'">'+slbl(t.statut)+'</span></div>'+
+      '<div class="d-row"><span>Statut</span><span class="badge b-'+t.statut+badgeX(t)+'">'+slblTx(t)+'</span></div>'+
       (t.motifRejet?'<div class="d-row"><span>Motif rejet</span><b>'+t.motifRejet+'</b></div>':'')+
       (t.infoManquante?'<div class="d-row"><span>Info demandée</span><b>'+t.infoManquante+'</b></div>':'')+
     '</div>'+
@@ -1284,7 +1285,9 @@ function approveRequest(id){
 function chgSt(id,s){
   var t=allTx.find(function(x){return x.id===id;});
   var wasTerminee=t&&t.statut==='terminee';
-  db.collection('transferts').doc(id).update({statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
+  var upd={statut:s,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(s==='annulee') upd.annuleePar='admin';
+  db.collection('transferts').doc(id).update(upd).then(function(){
     toast('Statut → '+slbl(s),'ok');
     // Compteur échanges terminés
     if(s==='terminee' && !wasTerminee){
@@ -1325,7 +1328,7 @@ function deleteOldProof(txId, url, uploadedAt){
 }
 function delTx(id){
   var t=allTx.find(function(x){return x.id===id;});
-  var msg=(t?'👤 '+(t.nomUser||t.email||'—')+'\n💰 '+t.montantEur+' EUR — '+slbl(t.statut)+'\n📅 '+t.dateStr+'\n\n':'')+
+  var msg=(t?'👤 '+(t.nomUser||t.email||'—')+'\n💰 '+t.montantEur+' EUR — '+slblTx(t)+'\n📅 '+t.dateStr+'\n\n':'')+
     'Les preuves (images) seront aussi supprimées.\nAssurez-vous d\'avoir exporté ce transfert.';
   showCModal('🗑️','Supprimer ce transfert ?',msg,'🗑 Supprimer',true,function(){
     toast('Suppression en cours...','info');
@@ -1353,7 +1356,7 @@ function buildExcelData(txArray){
       Number(t.montantEur)||0,
       Number(t.montantDzd)||0,
       Number(t.taux)||275,
-      slbl(t.statut),
+      slblTx(t),
       t.motifRejet||'',
       t.infoManquante||'',
       t.preuveUserUrl||'',
@@ -2015,6 +2018,13 @@ function loadStats() {
 }
 
 // ── HELPERS ──
+// Annulation : par le client ou par l'admin (anciens transferts : deduit du motif)
+function annulParClient(t){return !!t&&t.statut==='annulee'&&(t.annuleePar==='client'||(t.annuleePar!=='admin'&&t.motifAnnulation==="Annule par l'utilisateur"));}
+function slblTx(t){
+  if(t&&t.statut==='annulee') return annulParClient(t)?'Annul\u00e9 par le client':"Annul\u00e9 par l'admin";
+  return slbl(t.statut);
+}
+function badgeX(t){return annulParClient(t)?' b-annulee-client':'';}
 function slbl(s){return{a_valider:'À valider',en_attente:'Autorisé (virement attendu)',preuve_envoyee:'Preuve reçue',validee:'Validé',terminee:'Terminé',rejetee:'Rejeté',annulee:'Annulé',manque_info:'Info manquante'}[s]||s;}
 function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'info');setTimeout(function(){t.className='toast';},3000);}
 // Thème sombre

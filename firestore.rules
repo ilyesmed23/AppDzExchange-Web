@@ -44,7 +44,10 @@ service cloud.firestore {
         || (isAuth()
             && resource.data.userId == request.auth.uid
             && (resource.data.statut == 'a_valider' || resource.data.statut == 'en_attente')
-            && request.resource.data.statut == 'annulee')
+            && request.resource.data.statut == 'annulee'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['statut','motifAnnulation','annuleePar','updatedAt'])
+            && (!('annuleePar' in request.resource.data) || request.resource.data.annuleePar == 'client'))
         // Envoi preuve : en_attente ou manque_info → preuve_envoyee
         || (isAuth()
             && resource.data.userId == request.auth.uid

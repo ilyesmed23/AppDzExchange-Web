@@ -1214,13 +1214,14 @@ function confirmCancel() {
   document.getElementById('cancelLoader').style.display = 'block';
   document.getElementById('cancelError').style.display = 'none';
   db.collection('transferts').doc(currentTxId).update({
-    statut: 'annulee', motifAnnulation: "Annule par l'utilisateur"
+    statut: 'annulee', motifAnnulation: "Annule par l'utilisateur", annuleePar: 'client'
   }).then(function() {
     document.getElementById('modalCancel').classList.remove('open');
     var idx = transferts.findIndex(function(t){ return t.id === currentTxId; });
     if (idx >= 0) {
       transferts[idx].statut = 'annulee';
       transferts[idx].motifAnnulation = "Annule par l'utilisateur";
+      transferts[idx].annuleePar = 'client';
       renderDetail(transferts[idx]);
       renderTxList();
     }
